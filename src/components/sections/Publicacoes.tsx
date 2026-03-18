@@ -1,18 +1,7 @@
 "use client";
 
-// ================================
-// Dados
-// ================================
 import { publicacoes } from "@/data/publicacoes";
-
-// ================================
-// Componentes
-// ================================
 import PublicacaoCard from "@/components/ui/PublicacaoCard";
-
-// ================================
-// React
-// ================================
 import { useState } from "react";
 
 // ================================
@@ -54,7 +43,9 @@ export default function Publicacoes() {
             className="w-full py-24 px-6 bg-gray-50 dark:bg-[#020617] transition-colors scroll-mt-24"
         >
             <div className="max-w-7xl mx-auto">
-                {/* Cabeçalho */}
+                {/* ================================
+                    Cabeçalho
+                ================================ */}
                 <div className="mb-10 text-center">
                     <span className="text-sm uppercase tracking-widest text-[#D4AF37]">
                         Conteúdo
@@ -71,27 +62,37 @@ export default function Publicacoes() {
                 </div>
 
                 {/* ================================
-                 FILTRO DE CATEGORIA
+                 FILTRO DE CATEGORIA (CORRIGIDO)
                 ================================= */}
                 <div className="flex flex-wrap justify-center gap-3 mb-12">
-                    {categorias.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setCategoriaAtiva(cat)}
-                            className={`px-4 py-2 rounded-full text-sm border transition
-                                ${
-                                    categoriaAtiva === cat
-                                        ? "bg-[#D4AF37] text-black border-[#D4AF37]"
-                                        : "border-gray-300 dark:border-white/20 hover:border-[#D4AF37]"
-                                }
-                            `}
-                        >
-                            {cat}
-                        </button>
-                    ))}
+                    {categorias.map((cat) => {
+                        const ativo = categoriaAtiva === cat;
+
+                        return (
+                            <button
+                                key={cat}
+                                onClick={() => setCategoriaAtiva(cat)}
+                                className={`
+                                    px-4 py-2 rounded-full text-sm border transition-all duration-300
+
+                                    ${
+                                        ativo
+                                            ? // BOTÃO ATIVO (dourado premium)
+                                              "bg-[#D4AF37] text-black border-[#D4AF37] shadow-md"
+                                            : // BOTÃO NORMAL (AGORA CORRIGIDO)
+                                              "text-gray-800 dark:text-white border-gray-300 dark:border-white/20 hover:border-[#D4AF37] hover:text-[#D4AF37]"
+                                    }
+                                `}
+                            >
+                                {cat}
+                            </button>
+                        );
+                    })}
                 </div>
 
-                {/* CARD DESTAQUE (só aparece em "Todas") */}
+                {/* ================================
+                    CARD DESTAQUE
+                ================================ */}
                 {categoriaAtiva === "Todas" && destaque && (
                     <div className="mb-16">
                         <div className="rounded-3xl p-10 bg-gradient-to-br from-[#D4AF37]/20 to-transparent border border-[#D4AF37]/30 hover:scale-[1.01] transition">
@@ -114,10 +115,19 @@ export default function Publicacoes() {
                     </div>
                 )}
 
-                {/* GRID */}
+                {/* ================================
+                    GRID DE CARDS
+                ================================ */}
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {restantes.map((item) => (
-                        <PublicacaoCard key={item.id} publicacao={item} />
+                    {restantes.map((item, index) => (
+                        <div
+                            key={item.id}
+                            style={{
+                                animationDelay: `${index * 0.1}s`, // cascata automática
+                            }}
+                        >
+                            <PublicacaoCard publicacao={item} />
+                        </div>
                     ))}
                 </div>
             </div>
