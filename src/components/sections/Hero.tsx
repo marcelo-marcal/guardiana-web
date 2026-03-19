@@ -4,35 +4,57 @@ import Link from "next/link";
 
 export default function Hero() {
     return (
-        // Seção principal ocupando quase toda a tela
+        // ================================
+        // HERO PRINCIPAL
+        // ================================
         <section className="relative w-full h-[90vh] flex items-center justify-center overflow-hidden">
-            {/* Background (imagem ou gradiente) */}
+            {/* ================================
+               FUNDO BASE (escuro elegante)
+            ================================= */}
             <div className="absolute inset-0">
-                {/* Se quiser usar imagem depois: coloque em /public e troque aqui */}
-                <div className="w-full h-full bg-gradient-to-br from-[#0F1720] via-[#1E293B] to-[#020617] dark:from-black dark:via-[#020617] dark:to-black" />
+                <div className="w-full h-full bg-gradient-to-b from-[#0F1720] via-[#020617] to-black" />
 
-                {/* Overlay escuro suave para dar contraste */}
+                {/* Overlay escuro para contraste */}
                 <div className="absolute inset-0 bg-black/40" />
             </div>
 
-            {/* Conteúdo central */}
+            {/* ================================
+               LUZ DE CIMA (efeito abajur/lareira)
+               - radial vindo do topo
+               - cor dourada (#D4AF37)
+            ================================= */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div
+                    className="
+                        absolute top-0 left-1/2 -translate-x-1/2
+                        w-[900px] h-[600px]
+                        bg-[#D4AF37]/20
+                        blur-[120px]
+                        rounded-full
+                    "
+                />
+            </div>
+
+            {/* ================================
+               CONTEÚDO
+            ================================= */}
             <div className="relative z-10 text-center px-6 max-w-3xl">
-                {/* Título principal */}
+                {/* TÍTULO */}
                 <h1 className="text-4xl md:text-6xl font-bold leading-tight text-white">
                     Vozes que transformam o mundo
                 </h1>
 
-                {/* Subtítulo */}
+                {/* SUBTÍTULO */}
                 <p className="mt-6 text-lg md:text-xl text-gray-300">
                     A Guardiana é uma editora dedicada a amplificar histórias,
                     ideias e conhecimentos que inspiram mudança.
                 </p>
 
-                {/* Botões de ação */}
+                {/* BOTÕES */}
                 <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-4">
                     {/* CTA principal */}
                     <Link
-                        href="/publicacoes"
+                        href="#publicacoes"
                         className="bg-[#D4AF37] text-black px-6 py-3 rounded-xl font-medium hover:opacity-90 transition"
                     >
                         Ver Publicações
@@ -40,7 +62,7 @@ export default function Hero() {
 
                     {/* CTA secundário */}
                     <Link
-                        href="/sobre"
+                        href="#sobre"
                         className="border border-white/30 text-white px-6 py-3 rounded-xl hover:bg-white/10 transition"
                     >
                         Conheça a Guardiana
