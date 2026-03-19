@@ -1,4 +1,4 @@
-"use client"; // Permite usar estado e eventos no React (lado do cliente)
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -10,7 +10,12 @@ export default function Header() {
     const [darkMode, setDarkMode] = useState(false);
 
     // ================================
-    // Define tema ao carregar (PADRÃO = LIGHT)
+    // Estado do menu mobile
+    // ================================
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    // ================================
+    //  Tema padrão LIGHT
     // ================================
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme");
@@ -19,7 +24,6 @@ export default function Header() {
             document.documentElement.classList.add("dark");
             setDarkMode(true);
         } else {
-            // padrão agora é LIGHT
             document.documentElement.classList.remove("dark");
             setDarkMode(false);
         }
@@ -41,21 +45,28 @@ export default function Header() {
     };
 
     return (
-        // ================================
-        // Header fixo com efeito glass
-        // ================================
         <header className="w-full fixed top-0 z-50 border-b border-gray-200 dark:border-white/10 bg-white/70 dark:bg-[#0F1720]/70 backdrop-blur">
-            {/* Container */}
             <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
                 {/* ================================
-                 Logo / Nome (CORRIGIDO)
+                 LOGO + NOME (NOVO)
                 ================================ */}
-                <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Guardiana
+                <div className="flex items-center gap-3 text-gray-900 dark:text-white">
+                    {/* LOGO COM AJUSTE AUTOMÁTICO */}
+                    <img
+                        src="/logo02.png"
+                        alt="Logo Guardiana"
+                        className="
+                            w-8 h-8 object-contain
+                            transition
+                            dark:brightness-0 dark:invert
+                        "
+                    />
+
+                    <span className="text-lg font-semibold">Guardiana</span>
                 </div>
 
                 {/* ================================
-                    Menu
+                 MENU DESKTOP
                 ================================ */}
                 <nav className="hidden md:flex gap-8 text-sm text-gray-800 dark:text-white">
                     <Link href="/" className="hover:text-[#D4AF37] transition">
@@ -88,58 +99,113 @@ export default function Header() {
                 </nav>
 
                 {/* ================================
-                 Ações (tema + login)
+                  AÇÕES
                 ================================ */}
-                <div className="flex items-center gap-4">
-                    {/* Botão tema PROFISSIONAL */}
+                <div className="flex items-center gap-2">
+                    {/* BOTÃO TEMA */}
                     <button
                         onClick={toggleTheme}
                         className="p-2 rounded-lg border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10 transition"
                     >
                         {darkMode ? (
-                            // LUA
                             <svg
-                                xmlns="http://www.w3.org/2000/svg"
                                 className="w-5 h-5 text-gray-800 dark:text-white"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
                             >
                                 <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
                                     strokeWidth={2}
-                                    d="M21 12.79A9 9 0 0111.21 3c0 .34.02.67.05 1A7 7 0 0019 12a7 7 0 002-0.21z"
+                                    d="M21 12.79A9 9 0 0111.21 3a7 7 0 008.79 9.79z"
                                 />
                             </svg>
                         ) : (
-                            // SOL
                             <svg
-                                xmlns="http://www.w3.org/2000/svg"
                                 className="w-5 h-5 text-gray-800 dark:text-white"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
                             >
                                 <circle cx="12" cy="12" r="5" strokeWidth="2" />
-                                <path
-                                    strokeLinecap="round"
-                                    strokeWidth="2"
-                                    d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
-                                />
                             </svg>
                         )}
                     </button>
 
-                    {/* Login */}
+                    {/* BOTÃO MENU MOBILE */}
+                    <button
+                        onClick={() => setMenuOpen(!menuOpen)}
+                        className="md:hidden p-2 rounded-lg border border-gray-300 dark:border-white/20"
+                    >
+                        <svg
+                            className="w-5 h-5 text-gray-800 dark:text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            {menuOpen ? (
+                                <path
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            ) : (
+                                <path
+                                    strokeWidth={2}
+                                    d="M4 6h16M4 12h16M4 18h16"
+                                />
+                            )}
+                        </svg>
+                    </button>
+
+                    {/* LOGIN (DESKTOP) */}
                     <Link
                         href="/login"
-                        className="bg-[#D4AF37] text-black px-4 py-2 rounded-xl text-sm font-medium hover:opacity-90 transition"
+                        className="hidden md:block bg-[#D4AF37] text-black px-4 py-2 rounded-xl text-sm font-medium hover:opacity-90 transition"
                     >
                         Entrar
                     </Link>
                 </div>
             </div>
+
+            {/* ================================
+                MENU MOBILE DROPDOWN
+            ================================ */}
+            {menuOpen && (
+                <div className="md:hidden px-6 pb-6 pt-2 bg-white dark:bg-[#020617] border-t border-gray-200 dark:border-white/10">
+                    <div className="flex flex-col gap-4 text-gray-800 dark:text-white">
+                        <Link href="/" onClick={() => setMenuOpen(false)}>
+                            Início
+                        </Link>
+                        <Link href="#sobre" onClick={() => setMenuOpen(false)}>
+                            Sobre
+                        </Link>
+                        <Link
+                            href="#publicacoes"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Publicações
+                        </Link>
+                        <Link
+                            href="/autores"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Autoras
+                        </Link>
+                        <Link
+                            href="/contato"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Contato
+                        </Link>
+
+                        <Link
+                            href="/login"
+                            className="bg-[#D4AF37] text-black px-4 py-2 rounded-xl text-sm font-medium text-center"
+                        >
+                            Entrar
+                        </Link>
+                    </div>
+                </div>
+            )}
         </header>
     );
 }
