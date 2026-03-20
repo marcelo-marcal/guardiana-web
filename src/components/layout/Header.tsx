@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation"; // detecta rota atual
 
 export default function Header() {
     // ================================
@@ -15,7 +17,12 @@ export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
 
     // ================================
-    //  Tema padrão LIGHT
+    // ROTA ATUAL
+    // ================================
+    const pathname = usePathname();
+
+    // ================================
+    // Tema padrão LIGHT
     // ================================
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme");
@@ -44,25 +51,40 @@ export default function Header() {
         setDarkMode(!darkMode);
     };
 
-    return (
-        <header className="w-full fixed top-0 z-50 border-b border-gray-200 dark:border-white/10 bg-white/70 dark:bg-[#0F1720]/70 backdrop-blur">
-            <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-                {/* ================================
-                 LOGO + NOME (NOVO)
-                ================================ */}
-                <div className="flex items-center gap-3 text-gray-900 dark:text-white">
-                    {/* LOGO COM AJUSTE AUTOMÁTICO */}
-                    <img
-                        src="/logo02.png"
-                        alt="Logo Guardiana"
-                        className="
-                            w-8 h-8 object-contain
-                            transition
-                            dark:brightness-0 dark:invert
-                        "
-                    />
+    // ================================
+    // Função inteligente de navegação
+    // ================================
+    const getLink = (section: string) => {
+        // Se estiver na HOME → usa scroll (#)
+        if (pathname === "/") {
+            return `#${section}`;
+        }
 
-                    <span className="text-lg font-semibold">Guardiana</span>
+        // Se estiver em outra página → vai para home + âncora
+        return `/#${section}`;
+    };
+
+    return (
+        <header className="w-full h-16 fixed top-0 z-50 border-b border-gray-200 dark:border-white/10 bg-white/70 dark:bg-[#0F1720]/70 backdrop-blur">
+            <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-6">
+                {/* ================================
+                 LOGO + NOME
+                ================================ */}
+                <div className="flex items-center gap-2 text-gray-900 dark:text-white">
+                    {/* LOGO */}
+                    <div className="relative w-14 h-14">
+                        <Image
+                            src="/logo.svg"
+                            alt="Logo Guardiana"
+                            fill
+                            className="object-contain dark:brightness-0 dark:invert"
+                        />
+                    </div>
+
+                    {/* NOME */}
+                    <span className="text-base font-semibold leading-none">
+                        Guardiana
+                    </span>
                 </div>
 
                 {/* ================================
@@ -72,26 +94,31 @@ export default function Header() {
                     <Link href="/" className="hover:text-[#D4AF37] transition">
                         Início
                     </Link>
+
+                    {/* AGORA INTELIGENTE */}
                     <Link
-                        href="#sobre"
+                        href={getLink("sobre")}
                         className="hover:text-[#D4AF37] transition"
                     >
                         Sobre
                     </Link>
+
                     <Link
-                        href="#publicacoes"
+                        href={getLink("publicacoes")}
                         className="hover:text-[#D4AF37] transition"
                     >
                         Publicações
                     </Link>
+
                     <Link
-                        href="/autores"
+                        href={getLink("autores")}
                         className="hover:text-[#D4AF37] transition"
                     >
                         Autoras
                     </Link>
+
                     <Link
-                        href="/contato"
+                        href={getLink("contato")}
                         className="hover:text-[#D4AF37] transition"
                     >
                         Contato
@@ -99,7 +126,7 @@ export default function Header() {
                 </nav>
 
                 {/* ================================
-                  AÇÕES
+                 AÇÕES
                 ================================ */}
                 <div className="flex items-center gap-2">
                     {/* BOTÃO TEMA */}
@@ -108,6 +135,7 @@ export default function Header() {
                         className="p-2 rounded-lg border border-gray-300 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10 transition"
                     >
                         {darkMode ? (
+                            // 🌙 LUA
                             <svg
                                 className="w-5 h-5 text-gray-800 dark:text-white"
                                 fill="none"
@@ -120,6 +148,7 @@ export default function Header() {
                                 />
                             </svg>
                         ) : (
+                            // ☀️ SOL
                             <svg
                                 className="w-5 h-5 text-gray-800 dark:text-white"
                                 fill="none"
@@ -131,7 +160,7 @@ export default function Header() {
                         )}
                     </button>
 
-                    {/* BOTÃO MENU MOBILE */}
+                    {/* MENU MOBILE */}
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
                         className="md:hidden p-2 rounded-lg border border-gray-300 dark:border-white/20"
@@ -156,7 +185,7 @@ export default function Header() {
                         </svg>
                     </button>
 
-                    {/* LOGIN (DESKTOP) */}
+                    {/* LOGIN */}
                     <Link
                         href="/login"
                         className="hidden md:block bg-[#D4AF37] text-black px-4 py-2 rounded-xl text-sm font-medium hover:opacity-90 transition"
@@ -167,7 +196,7 @@ export default function Header() {
             </div>
 
             {/* ================================
-                MENU MOBILE DROPDOWN
+                MENU MOBILE
             ================================ */}
             {menuOpen && (
                 <div className="md:hidden px-6 pb-6 pt-2 bg-white dark:bg-[#020617] border-t border-gray-200 dark:border-white/10">
@@ -175,23 +204,30 @@ export default function Header() {
                         <Link href="/" onClick={() => setMenuOpen(false)}>
                             Início
                         </Link>
-                        <Link href="#sobre" onClick={() => setMenuOpen(false)}>
+
+                        <Link
+                            href={getLink("sobre")}
+                            onClick={() => setMenuOpen(false)}
+                        >
                             Sobre
                         </Link>
+
                         <Link
-                            href="#publicacoes"
+                            href={getLink("publicacoes")}
                             onClick={() => setMenuOpen(false)}
                         >
                             Publicações
                         </Link>
+
                         <Link
-                            href="/autores"
+                            href={getLink("autores")}
                             onClick={() => setMenuOpen(false)}
                         >
                             Autoras
                         </Link>
+
                         <Link
-                            href="/contato"
+                            href={getLink("contato")}
                             onClick={() => setMenuOpen(false)}
                         >
                             Contato

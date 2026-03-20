@@ -1,35 +1,62 @@
 "use client";
 
+// ================================
+// IMPORTS
+// ================================
 import Link from "next/link";
+import { motion } from "framer-motion";
 
+// ================================
+// HERO
+// ================================
 export default function Hero() {
     return (
-        // ================================
-        // HERO PRINCIPAL
-        // ================================
         <section className="relative w-full h-[90vh] flex items-center justify-center overflow-hidden">
             {/* ================================
-               FUNDO BASE (escuro elegante)
+               FUNDO
             ================================= */}
             <div className="absolute inset-0">
                 <div className="w-full h-full bg-gradient-to-b from-[#0F1720] via-[#020617] to-black" />
-
-                {/* Overlay escuro para contraste */}
                 <div className="absolute inset-0 bg-black/40" />
             </div>
 
             {/* ================================
-               LUZ DE CIMA (efeito abajur/lareira)
-               - radial vindo do topo
-               - cor dourada (#D4AF37)
+               LUZ ANIMADA
             ================================= */}
             <div className="absolute inset-0 pointer-events-none">
-                <div
+                {/* LUZ PRINCIPAL (CORRIGIDA PARA FICAR VISÍVEL) */}
+                <motion.div
+                    initial={{ opacity: 0.6, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1.1 }}
+                    transition={{
+                        duration: 2.5,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                        ease: "easeInOut",
+                    }}
                     className="
                         absolute top-0 left-1/2 -translate-x-1/2
-                        w-[900px] h-[600px]
-                        bg-[#D4AF37]/20
-                        blur-[120px]
+                        w-[800px] h-[500px]
+                        bg-[#D4AF37]/15
+                        blur-[80px]
+                        rounded-full
+                    "
+                />
+
+                {/* LUZ SECUNDÁRIA (PROFUNDIDADE VISUAL) */}
+                <motion.div
+                    initial={{ opacity: 0.3 }}
+                    animate={{ opacity: 0.6 }}
+                    transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        repeatType: "reverse",
+                    }}
+                    className="
+                        absolute top-10 left-1/2 -translate-x-1/2
+                        w-[600px] h-[400px]
+                        bg-[#D4AF37]/40
+                        blur-[60px]
                         rounded-full
                     "
                 />
@@ -40,34 +67,55 @@ export default function Hero() {
             ================================= */}
             <div className="relative z-10 text-center px-6 max-w-3xl">
                 {/* TÍTULO */}
-                <h1 className="text-4xl md:text-6xl font-bold leading-tight text-white">
+                <motion.h1
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="text-4xl md:text-6xl font-bold leading-tight text-white"
+                >
                     Vozes que transformam o mundo
-                </h1>
+                </motion.h1>
 
                 {/* SUBTÍTULO */}
-                <p className="mt-6 text-lg md:text-xl text-gray-300">
+                <motion.p
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="mt-6 text-lg md:text-xl text-gray-300"
+                >
                     A Guardiana é uma editora dedicada a amplificar histórias,
                     ideias e conhecimentos que inspiram mudança.
-                </p>
+                </motion.p>
 
                 {/* BOTÕES */}
-                <div className="mt-8 flex flex-col md:flex-row items-center justify-center gap-4">
-                    {/* CTA principal */}
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                    className="mt-8 flex flex-col md:flex-row items-center justify-center gap-4"
+                >
                     <Link
                         href="#publicacoes"
-                        className="bg-[#D4AF37] text-black px-6 py-3 rounded-xl font-medium hover:opacity-90 transition"
+                        className="
+                            bg-[#D4AF37] text-black px-6 py-3 rounded-xl font-medium
+                            hover:opacity-90 hover:scale-105
+                            transition
+                        "
                     >
                         Ver Publicações
                     </Link>
 
-                    {/* CTA secundário */}
                     <Link
                         href="#sobre"
-                        className="border border-white/30 text-white px-6 py-3 rounded-xl hover:bg-white/10 transition"
+                        className="
+                            border border-white/30 text-white px-6 py-3 rounded-xl
+                            hover:bg-white/10 hover:scale-105
+                            transition
+                        "
                     >
                         Conheça a Guardiana
                     </Link>
-                </div>
+                </motion.div>
             </div>
         </section>
     );
