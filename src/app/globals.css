@@ -13,7 +13,7 @@
 
 /* ================================
    Tema Dark (manual via classe)
-   vamos usar <html class="dark">
+   usamos <html class="dark">
 ================================ */
 .dark {
     --background: #0a0a0a;
@@ -22,7 +22,6 @@
 
 /* ================================
    Fallback automático do sistema
-   só funciona se usuário NÃO escolher manualmente
 ================================ */
 @media (prefers-color-scheme: dark) {
     :root:not(.light) {
@@ -35,14 +34,85 @@
    Aplicação global
 ================================ */
 body {
-    background-color: var(--background); /* Fundo dinâmico */
-    color: var(--foreground); /* Texto dinâmico */
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: Arial, Helvetica, sans-serif;
 }
 
 /* ================================
-   Movimento suave
+   Scroll suave global
 ================================ */
 html {
     scroll-behavior: smooth;
+}
+
+/* =========================================
+   🔥 ANIMAÇÕES (NÍVEL STARTUP / PREMIUM)
+========================================= */
+
+/* ================================
+   Fade + subir (principal)
+================================ */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Classe base */
+.animate-fade-up {
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+}
+
+/* ================================
+   Fade simples
+================================ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Classe */
+.animate-fade-in {
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+}
+
+/* ================================
+   Delay (efeito cascata)
+================================ */
+.delay-100 {
+    animation-delay: 0.1s;
+}
+.delay-200 {
+    animation-delay: 0.2s;
+}
+.delay-300 {
+    animation-delay: 0.3s;
+}
+.delay-400 {
+    animation-delay: 0.4s;
+}
+.delay-500 {
+    animation-delay: 0.5s;
+}
+
+/* ================================
+   Hover suave global (refino UX)
+================================ */
+* {
+    transition:
+        background-color 0.3s,
+        color 0.3s,
+        border-color 0.3s;
 }

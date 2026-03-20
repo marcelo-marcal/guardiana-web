@@ -1,3 +1,7 @@
+<h1 align="center">
+    <img src="./public/logo.svg" style="width: 30%;" />
+</h1>
+
 # guardiana-web
 Guardiana Editora
 
@@ -42,62 +46,86 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 
 Estrutura de Pasta e Arquivos (Profissional e Escalável)
-```bach
+
+Light / Dark
+
+```bash
 guardiana-web
+├── .next
 ├── node_modules
-├── public
+├── public/
+│   ├── logo.svg
+│   ├── jenifer-brum.png
+│   └── jenny-gonzalez.png
+│
 ├── src/
 │   ├── app/
-│   │   ├── (public)/                👈 agrupar rotas públicas
-│   │   │   ├── page.tsx
-│   │   │   ├── sobre/
-│   │   │   ├── autores/
-│   │   │   ├── publicacoes/
-│   │   │   └── contato/
+│   │   ├── (public)/               # 🌍 SITE
+│   │   │   ├── page.tsx            # HOME (landing)
 │   │   │
-│   │   ├── (auth)/                  👈 login separado
+│   │   │   ├── autores/
+│   │   │   │   └── page.tsx
+│   │   │
+│   │   │   ├── publicacoes/
+│   │   │   │   └── page.tsx
+│   │   │
+│   │   │   ├── sobre/
+│   │   │   │   └── page.tsx
+│   │   │
+│   │   │   └── contato/
+│   │   │       └── page.tsx
+│   │   │
+│   │   ├── (auth)/                 # 🔐 LOGIN (futuro)
 │   │   │   └── login/
 │   │   │       └── page.tsx
 │   │   │
-│   │   ├── (dashboard)/             👈 área protegida
+│   │   ├── (dashboard)/            # 🧠 ADMIN (futuro)
 │   │   │   └── dashboard/
-│   │   │       ├── page.tsx
-│   │   │       ├── editar/
-│   │   │       ├── uploads/
-│   │   │       └── configuracoes/
+│   │   │       └── page.tsx
 │   │   │
-│   │   ├── layout.tsx
+│   │   ├── layout.tsx              # layout global
 │   │   └── globals.css
 │   │
 │   ├── components/
-│   │   ├── ui/                      👈 shadcn
 │   │   ├── layout/
 │   │   │   ├── Header.tsx
-│   │   │   ├── Footer.tsx
-│   │   │   └── Navbar.tsx
+│   │   │   └── Footer.tsx
 │   │   │
-│   │   ├── sections/                👈 blocos da home
+│   │   ├── sections/               # HOME
 │   │   │   ├── Hero.tsx
 │   │   │   ├── Sobre.tsx
 │   │   │   ├── Publicacoes.tsx
-│   │   │   ├── Autores.tsx
-│   │   │   └── Contato.tsx
+│   │   │   ├── Autores.tsx         # 🔥 NOVO (home preview)
+│   │   │   └── Contato.tsx         # 🔥 NOVO (home preview)
 │   │   │
-│   │   └── shared/                  👈 componentes reutilizáveis
+│   │   ├── ui/
+│   │   │   └── PublicacaoCard.tsx
+│   │   │
+│   │   └── shared/
 │   │       ├── Button.tsx
-│   │       ├── Card.tsx
 │   │       └── Container.tsx
 │   │
-│   ├── lib/
-│   │   ├── auth.ts
-│   │   ├── api.ts
-│   │   └── utils.ts
+│   ├── data/                       # 🧪 MOCK (simula API)
+│   │   ├── publicacoes.ts
+│   │   ├── autores.ts              # 🔥 NOVO
+│   │   └── conteudo.ts             # 🔥 NOVO (textos editáveis)
+│   │
+│   ├── services/                   # 🔥 SIMULA API
+│   │   ├── publicacoes.service.ts
+│   │   ├── autores.service.ts
+│   │   └── conteudo.service.ts
+│   │
+│   ├── types/
+│   │   ├── publicacao.ts
+│   │   ├── autor.ts
+│   │   └── conteudo.ts
 │   │
 │   ├── hooks/
-│   ├── store/
-│   ├── styles/
-│   └── types/
-|
+│   │   └── useTheme.ts
+│   │
+│   └── lib/
+│       └── utils.ts
+│
 ├── .editorconfig
 ├── .gitignore
 ├── eslint.config.js
@@ -105,7 +133,37 @@ guardiana-web
 ├── next.config.ts
 ├── package-lock.json
 ├── package.json
+├── postcss.config.js
 ├── postcss.config.mjs
 ├── README.md
-└── tsconfig.json    
+├── tailwind.config.js
+└── tsconfig.json
 ```
+
+
+
+
+
+## COMANDOS GitHub
+main    -   Branch principal, código em produção
+staging -   Branch de homologação ou pré-produção.
+develop -   Branch de desenvolvimento
+
+### Atualizar a Branch:
+git pull origin develop
+
+git checkout develop   --> Troca de branch
+
+git merge develop
+
+npm install
+
+### Subir Projeto:
+git add .
+
+git commit -m "DESCRIÇÃO :construction:" 
+
+git push origin develop
+
+
+
