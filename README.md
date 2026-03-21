@@ -60,7 +60,7 @@ guardiana-web
 │
 ├── src/
 │   ├── app/
-│   │   ├── (public)/               # 🌍 SITE
+│   │   ├── (public)/               # SITE
 │   │   │   ├── page.tsx            # HOME (landing)
 │   │   │
 │   │   │   ├── autores/
@@ -75,11 +75,11 @@ guardiana-web
 │   │   │   └── contato/
 │   │   │       └── page.tsx
 │   │   │
-│   │   ├── (auth)/                 # 🔐 LOGIN (futuro)
+│   │   ├── (auth)/                 # LOGIN (futuro)
 │   │   │   └── login/
 │   │   │       └── page.tsx
 │   │   │
-│   │   ├── (dashboard)/            # 🧠 ADMIN (futuro)
+│   │   ├── (dashboard)/            # ADMIN (futuro)
 │   │   │   └── dashboard/
 │   │   │       └── page.tsx
 │   │   │
@@ -93,10 +93,11 @@ guardiana-web
 │   │   │
 │   │   ├── sections/               # HOME
 │   │   │   ├── Hero.tsx
+│   │   │   ├── Livro.tsx
 │   │   │   ├── Sobre.tsx
 │   │   │   ├── Publicacoes.tsx
-│   │   │   ├── Autores.tsx         # 🔥 NOVO (home preview)
-│   │   │   └── Contato.tsx         # 🔥 NOVO (home preview)
+│   │   │   ├── Autores.tsx         # NOVO (home preview)
+│   │   │   └── Contato.tsx         # NOVO (home preview)
 │   │   │
 │   │   ├── ui/
 │   │   │   └── PublicacaoCard.tsx
@@ -105,12 +106,12 @@ guardiana-web
 │   │       ├── Button.tsx
 │   │       └── Container.tsx
 │   │
-│   ├── data/                       # 🧪 MOCK (simula API)
+│   ├── data/                       # MOCK (simula API)
 │   │   ├── publicacoes.ts
-│   │   ├── autores.ts              # 🔥 NOVO
-│   │   └── conteudo.ts             # 🔥 NOVO (textos editáveis)
+│   │   ├── autores.ts              # NOVO
+│   │   └── conteudo.ts             # NOVO (textos editáveis)
 │   │
-│   ├── services/                   # 🔥 SIMULA API
+│   ├── services/                   # SIMULA API
 │   │   ├── publicacoes.service.ts
 │   │   ├── autores.service.ts
 │   │   └── conteudo.service.ts
@@ -121,10 +122,13 @@ guardiana-web
 │   │   └── conteudo.ts
 │   │
 │   ├── hooks/
-│   │   └── useTheme.ts
+│   │   └── useAuth.ts
 │   │
-│   └── lib/
-│       └── utils.ts
+│   ├── lib/
+│   │   └── utils.ts
+│   │
+│   └── service/
+│       └── conteudo.service.ts
 │
 ├── .editorconfig
 ├── .gitignore
@@ -140,7 +144,10 @@ guardiana-web
 └── tsconfig.json
 ```
 
+## LOGIN
 
+✔ Login: admin@guardiana.com
+✔ Senha: 123456
 
 
 
