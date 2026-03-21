@@ -1,13 +1,19 @@
 // ================================
 // IMPORTS DAS SEÇÕES
 // ================================
-import Header from "@/components/layout/Header";
+import dynamic from "next/dynamic";
 import Hero from "@/components/sections/Hero";
-import Sobre from "@/components/sections/Sobre";
-import Publicacoes from "@/components/sections/Publicacoes";
-import Autores from "@/components/sections/Autores";
-import Contato from "@/components/sections/Contato";
-import Footer from "@/components/layout/Footer";
+
+// ================================
+// LAZY LOAD (PERFORMANCE)
+// - Só carrega quando necessário
+// ================================
+const Sobre = dynamic(() => import("@/components/sections/Sobre"));
+const Livros = dynamic(() => import("@/components/sections/Livros"));
+const Publicacoes = dynamic(() => import("@/components/sections/Publicacoes"));
+const Autores = dynamic(() => import("@/components/sections/Autores"));
+const Contato = dynamic(() => import("@/components/sections/Contato"));
+const Footer = dynamic(() => import("@/components/layout/Footer"));
 
 // ================================
 // HOME (Landing Page)
@@ -16,9 +22,15 @@ export default function Home() {
     return (
         // Agora respeita Light / Dark automaticamente
         <main className="transition-colors duration-300">
-            <Header />
+            {/* HERO = PRIORIDADE MÁXIMA */}
             <Hero />
+
+            {/* ================================
+               SEÇÕES CARREGADAS SOB DEMANDA
+               melhora performance geral
+            ================================= */}
             <Sobre />
+            <Livros />
             <Publicacoes />
             <Autores />
             <Contato />
