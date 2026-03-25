@@ -7,22 +7,26 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getConteudo } from "@/services/conteudo.service";
+import type { Conteudo } from "@/data/conteudo"; // 👈 usa sua tipagem oficial
 
 // ================================
 // HERO
 // ================================
 export default function Hero() {
     // ================================
-    // ESTADO DO CONTEÚDO (DINÂMICO)
+    // ESTADO (SEGURO PARA SSR)
     // ================================
-    const [conteudo, setConteudoState] = useState(getConteudo());
+    const [conteudo, setConteudo] = useState<Conteudo | null>(null);
 
     // ================================
-    // ATUALIZA EM TEMPO REAL (SEM F5)
+    // CARREGA NO CLIENT (SEM SSR BUG)
     // ================================
     useEffect(() => {
+        const data = getConteudo();
+        setConteudo(data);
+
         const atualizar = () => {
-            setConteudoState(getConteudo());
+            setConteudo(getConteudo());
         };
 
         window.addEventListener("conteudoAtualizado", atualizar);
@@ -31,6 +35,11 @@ export default function Hero() {
             window.removeEventListener("conteudoAtualizado", atualizar);
         };
     }, []);
+
+    // ================================
+    // EVITA ERRO DE HIDRATAÇÃO
+    // ================================
+    if (!conteudo) return null;
 
     return (
         <section className="relative w-full h-[90vh] flex items-center justify-center overflow-hidden">
@@ -46,7 +55,6 @@ export default function Hero() {
                LUZ ANIMADA
             ================================= */}
             <div className="absolute inset-0 pointer-events-none">
-                {/* LUZ PRINCIPAL (CORRIGIDA PARA FICAR VISÍVEL) */}
                 <motion.div
                     initial={{ opacity: 0.6, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1.1 }}
@@ -56,16 +64,9 @@ export default function Hero() {
                         repeatType: "reverse",
                         ease: "easeInOut",
                     }}
-                    className="
-                        absolute top-0 left-1/2 -translate-x-1/2
-                        w-[800px] h-[500px]
-                        bg-[#D4AF37]/15
-                        blur-[80px]
-                        rounded-full
-                    "
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#D4AF37]/20 blur-[90px] rounded-full"
                 />
 
-                {/* LUZ SECUNDÁRIA (PROFUNDIDADE VISUAL) */}
                 <motion.div
                     initial={{ opacity: 0.3 }}
                     animate={{ opacity: 0.6 }}
@@ -74,13 +75,7 @@ export default function Hero() {
                         repeat: Infinity,
                         repeatType: "reverse",
                     }}
-                    className="
-                        absolute top-10 left-1/2 -translate-x-1/2
-                        w-[600px] h-[400px]
-                        bg-[#D4AF37]/40
-                        blur-[60px]
-                        rounded-full
-                    "
+                    className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#D4AF37]/40 blur-[70px] rounded-full"
                 />
             </div>
 
@@ -88,7 +83,7 @@ export default function Hero() {
                CONTEÚDO
             ================================= */}
             <div className="relative z-10 text-center px-6 max-w-3xl">
-                {/* TÍTULO DINÂMICO */}
+                {/* TÍTULO */}
                 <motion.h1
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -98,7 +93,7 @@ export default function Hero() {
                     {conteudo.hero.titulo}
                 </motion.h1>
 
-                {/* SUBTÍTULO DINÂMICO */}
+                {/* SUBTÍTULO */}
                 <motion.p
                     initial={{ opacity: 0, y: 40 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -117,22 +112,14 @@ export default function Hero() {
                 >
                     <Link
                         href="#publicacoes"
-                        className="
-                            bg-[#D4AF37] text-black px-6 py-3 rounded-xl font-medium
-                            hover:opacity-90 hover:scale-105
-                            transition
-                        "
+                        className="bg-[#D4AF37] text-black px-6 py-3 rounded-xl font-medium hover:opacity-90 hover:scale-105 transition"
                     >
                         Ver Publicações
                     </Link>
 
                     <Link
                         href="#sobre"
-                        className="
-                            border border-white/30 text-white px-6 py-3 rounded-xl
-                            hover:bg-white/10 hover:scale-105
-                            transition
-                        "
+                        className="border border-white/30 text-white px-6 py-3 rounded-xl hover:bg-white/10 hover:scale-105 transition"
                     >
                         Conheça a Guardiana
                     </Link>
