@@ -4,43 +4,24 @@
 // IMPORTS
 // ================================
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 // ================================
-// LAYOUT DASHBOARD (PROTEGIDO)
+// LAYOUT DASHBOARD RESPONSIVO
 // ================================
 export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    // ================================
-    // CONTROLE DE AUTENTICAÇÃO
-    // ================================
-    const [loading, setLoading] = useState(true);
-    const router = useRouter();
-
-    useEffect(() => {
-        const isAuth = localStorage.getItem("auth");
-
-        // Se NÃO estiver logado → manda pro login
-        if (isAuth !== "true") {
-            router.push("/login");
-        } else {
-            setLoading(false);
-        }
-    }, [router]);
-
-    // Enquanto verifica login → não renderiza nada
-    if (loading) return null;
+    const [open, setOpen] = useState(false);
 
     return (
         <div className="min-h-screen flex bg-gray-50 dark:bg-[#020617] transition-colors">
             {/* ================================
-                SIDEBAR
+                SIDEBAR DESKTOP
             ================================ */}
-            <aside className="w-64 bg-white dark:bg-[#020617] border-r border-gray-200 dark:border-white/10 p-6">
+            <aside className="hidden md:flex w-64 flex-col bg-white dark:bg-[#020617] border-r border-gray-200 dark:border-white/10 p-6">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
                     Admin
                 </h2>
@@ -51,25 +32,74 @@ export default function DashboardLayout({
                     <Link href="/dashboard/publicacoes">Publicações</Link>
                     <Link href="/dashboard/configuracoes">Configurações</Link>
                 </nav>
-
-                {/* ================================
-                   LOGOUT
-                ================================ */}
-                <button
-                    onClick={() => {
-                        localStorage.removeItem("auth");
-                        router.push("/login");
-                    }}
-                    className="mt-10 w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
-                >
-                    Sair
-                </button>
             </aside>
 
             {/* ================================
                 CONTEÚDO
             ================================ */}
-            <main className="flex-1 p-8">{children}</main>
+            <div className="flex-1 flex flex-col">
+                {/* HEADER MOBILE */}
+                <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-white/10">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                        Admin
+                    </h2>
+
+                    <button
+                        onClick={() => setOpen(true)}
+                        className="p-2 rounded-lg border border-gray-300 dark:border-white/20 text-gray-900 dark:text-white"
+                    >
+                        ☰
+                    </button>
+                </div>
+
+                {/* MENU MOBILE */}
+                {open && (
+                    <div className="fixed inset-0 z-50 flex">
+                        <div
+                            className="flex-1 bg-black/40"
+                            onClick={() => setOpen(false)}
+                        />
+
+                        <div className="w-64 h-full bg-white dark:bg-[#020617] p-6 shadow-xl">
+                            <button
+                                onClick={() => setOpen(false)}
+                                className="mb-6 text-gray-900 dark:text-white"
+                            >
+                                ✕
+                            </button>
+
+                            <nav className="flex flex-col gap-4 text-gray-700 dark:text-gray-300">
+                                <Link
+                                    href="/dashboard"
+                                    onClick={() => setOpen(false)}
+                                >
+                                    Dashboard
+                                </Link>
+                                <Link
+                                    href="/dashboard/livros"
+                                    onClick={() => setOpen(false)}
+                                >
+                                    Livros
+                                </Link>
+                                <Link
+                                    href="/dashboard/publicacoes"
+                                    onClick={() => setOpen(false)}
+                                >
+                                    Publicações
+                                </Link>
+                                <Link
+                                    href="/dashboard/configuracoes"
+                                    onClick={() => setOpen(false)}
+                                >
+                                    Configurações
+                                </Link>
+                            </nav>
+                        </div>
+                    </div>
+                )}
+
+                <main className="p-4 md:p-8">{children}</main>
+            </div>
         </div>
     );
 }

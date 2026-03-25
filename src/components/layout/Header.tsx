@@ -235,6 +235,7 @@ export default function Header() {
 
                         <Link
                             href="/login"
+                            onClick={() => setMenuOpen(false)}
                             className="bg-[#D4AF37] text-black px-4 py-2 rounded-xl text-sm font-medium text-center"
                         >
                             Entrar
