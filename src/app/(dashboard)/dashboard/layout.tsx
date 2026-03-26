@@ -28,6 +28,7 @@ export default function DashboardLayout({
 
                 <nav className="flex flex-col gap-4 text-gray-700 dark:text-gray-300">
                     <Link href="/dashboard">Dashboard</Link>
+                    <Link href="/dashboard/sobre">Sobre</Link>
                     <Link href="/dashboard/livros">Livros</Link>
                     <Link href="/dashboard/publicacoes">Publicações</Link>
                     <Link href="/dashboard/configuracoes">Configurações</Link>
@@ -74,6 +75,12 @@ export default function DashboardLayout({
                                     onClick={() => setOpen(false)}
                                 >
                                     Dashboard
+                                </Link>
+                                <Link
+                                    href="/dashboard/sobre"
+                                    onClick={() => setOpen(false)}
+                                >
+                                    Sobre
                                 </Link>
                                 <Link
                                     href="/dashboard/livros"
