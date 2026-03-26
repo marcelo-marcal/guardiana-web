@@ -1,11 +1,43 @@
 "use client";
 
+import type { Sobre } from "@/data/sobre";
+import { getConteudo, setConteudo } from "@/services/sobre.service";
 // ================================
 // Import de imagem otimizada do Next
 // ================================
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function Sobre() {
+
+    // ================================
+    // ESTADO (SEGURO PARA SSR)
+    // ================================
+    const [conteudo, setConteudo] = useState<Sobre | null>(null);
+
+    // ================================
+    // CARREGA NO CLIENT (SEM SSR BUG)
+    // ================================
+    useEffect(() => {
+        const data = getConteudo();
+        setConteudo(data);
+
+        const atualizar = () => {
+            setConteudo(getConteudo());
+        };
+
+        window.addEventListener("conteudoAtualizado", atualizar);
+
+        return () => {
+            window.removeEventListener("conteudoAtualizado", atualizar);
+        };
+    }, []);
+
+    // ================================
+    // EVITA ERRO DE HIDRATAÇÃO
+    // ================================
+    if (!conteudo) return null;
+    
     return (
         // ID + scroll offset para header fixo
         <section
@@ -27,22 +59,12 @@ export default function Sobre() {
 
                     {/* Título */}
                     <h2 className="mt-4 text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-snug">
-                        Uma editora que protege, amplifica e transforma vozes
+                        {conteudo.sobre.titulo}
                     </h2>
 
                     {/* Texto */}
                     <p className="mt-6 text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
-                        A Guardiana nasceu com o propósito de dar espaço a
-                        histórias que precisam ser contadas. Trabalhamos com
-                        autoras e autores que desejam impactar o mundo através
-                        da escrita, oferecendo suporte editorial, visibilidade e
-                        cuidado em cada publicação.
-                    </p>
-
-                    <p className="mt-4 text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
-                        Mais do que publicar livros, construímos pontes entre
-                        ideias e pessoas, fortalecendo narrativas que inspiram
-                        transformação social, cultural e pessoal.
+                        {conteudo.sobre.subtitulo}
                     </p>
                 </div>
 
