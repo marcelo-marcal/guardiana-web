@@ -18,7 +18,7 @@ npm run dev
 # or
 yarn dev
 # or
-pnpm dev
+npm dev
 # or
 bun dev
 ```
@@ -54,37 +54,56 @@ guardiana-web
 ├── .next
 ├── node_modules
 ├── public/
+│   ├── livros/
+│   │   ├── livro1.png
+│   │   ├── livro2.png
+│   │   └── livro3.png
+│   │
 │   ├── logo.svg
 │   ├── jenifer-brum.png
 │   └── jenny-gonzalez.png
 │
 ├── src/
 │   ├── app/
-│   │   ├── (public)/               # SITE
-│   │   │   ├── page.tsx            # HOME (landing)
-│   │   │
-│   │   │   ├── autores/
-│   │   │   │   └── page.tsx
-│   │   │
-│   │   │   ├── publicacoes/
-│   │   │   │   └── page.tsx
-│   │   │
-│   │   │   ├── sobre/
-│   │   │   │   └── page.tsx
-│   │   │
-│   │   │   └── contato/
-│   │   │       └── page.tsx
-│   │   │
 │   │   ├── (auth)/                 # LOGIN (futuro)
 │   │   │   └── login/
 │   │   │       └── page.tsx
 │   │   │
 │   │   ├── (dashboard)/            # ADMIN (futuro)
 │   │   │   └── dashboard/
+│   │   │       ├── configuraçoes
+│   │   │       │   └── page.tsx
+│   │   │       │
+│   │   │       ├── livros/
+│   │   │       │   └── page.tsx
+│   │   │       │
+│   │   │       ├── publicacoes/
+│   │   │       │   └── page.tsx
+│   │   │       │
+│   │   │       ├── sobre/
+│   │   │       │   └── page.tsx
+│   │   │       │
+│   │   │       ├── layout.tsx
 │   │   │       └── page.tsx
 │   │   │
-│   │   ├── layout.tsx              # layout global
-│   │   └── globals.css
+│   │   ├── (public)/               # SITE
+│   │   │   ├── autores/
+│   │   │   │   └── page.tsx
+│   │   │   │
+│   │   │   ├── contato/
+│   │   │   │   └── page.tsx
+│   │   │   │
+│   │   │   ├── publicacoes/
+│   │   │   │   └── page.tsx
+│   │   │   │
+│   │   │   ├── sobre/
+│   │   │   │   └── page.tsx
+│   │   │   │
+│   │   │   └── page.tsx            # HOME (landing)
+│   │   │
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   └── layout.tsx              # layout global
 │   │
 │   ├── components/
 │   │   ├── layout/
@@ -92,43 +111,39 @@ guardiana-web
 │   │   │   └── Footer.tsx
 │   │   │
 │   │   ├── sections/               # HOME
+│   │   │   ├── Autores.tsx         # NOVO (home preview)
+│   │   │   ├── Contato.tsx         # NOVO (home preview)
 │   │   │   ├── Hero.tsx
 │   │   │   ├── Livro.tsx
-│   │   │   ├── Sobre.tsx
 │   │   │   ├── Publicacoes.tsx
-│   │   │   ├── Autores.tsx         # NOVO (home preview)
-│   │   │   └── Contato.tsx         # NOVO (home preview)
+│   │   │   └── Sobre.tsx
 │   │   │
-│   │   ├── ui/
-│   │   │   └── PublicacaoCard.tsx
+│   │   ├── shared/
+│   │   │   ├── Button.tsx          # Esse Aruivo NÃO existe.
+│   │   │   └── Container.tsx       # Esse Aruivo NÃO existe.
 │   │   │
-│   │   └── shared/
-│   │       ├── Button.tsx
-│   │       └── Container.tsx
+│   │   └── ui/
+│   │       └── PublicacaoCard.tsx
 │   │
 │   ├── data/                       # MOCK (simula API)
+│   │   ├── conteudo.ts             # NOVO (textos editáveis)
 │   │   ├── publicacoes.ts
-│   │   ├── autores.ts              # NOVO
-│   │   └── conteudo.ts             # NOVO (textos editáveis)
-│   │
-│   ├── services/                   # SIMULA API
-│   │   ├── publicacoes.service.ts
-│   │   ├── autores.service.ts
-│   │   └── conteudo.service.ts
-│   │
-│   ├── types/
-│   │   ├── publicacao.ts
-│   │   ├── autor.ts
-│   │   └── conteudo.ts
+│   │   └── sobre.ts
 │   │
 │   ├── hooks/
 │   │   └── useAuth.ts
 │   │
 │   ├── lib/
-│   │   └── utils.ts
+│   │   └── utils.ts                # Esse Aruivo NÃO existe.
 │   │
-│   └── service/
-│       └── conteudo.service.ts
+│   ├── services/                   # SIMULA API
+│   │   ├── conteudo.service.ts
+│   │   └── sobre.service.ts
+│   │
+│   ├── store/                      # Pasta vazia.
+│   │
+│   └── types/                      # Pasta vazia.
+│
 │
 ├── .editorconfig
 ├── .gitignore
@@ -161,7 +176,7 @@ git pull origin develop
 
 git checkout develop   --> Troca de branch
 
-git merge develop
+git merge origin/develop
 
 npm install
 
