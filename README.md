@@ -87,25 +87,18 @@ guardiana-web
 │   │   │       └── page.tsx
 │   │   │
 │   │   ├── (public)/               # SITE
-│   │   │   ├── autores/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   ├── contato/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   ├── publicacoes/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   ├── sobre/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   └── page.tsx            # HOME (landing)
+│   │   │   └── sobre/
+│   │   │       └── page.tsx
 │   │   │
 │   │   ├── favicon.ico
 │   │   ├── globals.css
 │   │   └── layout.tsx              # layout global
 │   │
 │   ├── components/
+│   │   │
+│   │   ├── auth/
+│   │   │   └── WithAuth.tsx
+│   │   │
 │   │   ├── layout/
 │   │   │   ├── Header.tsx
 │   │   │   └── Footer.tsx
@@ -118,10 +111,6 @@ guardiana-web
 │   │   │   ├── Publicacoes.tsx
 │   │   │   └── Sobre.tsx
 │   │   │
-│   │   ├── shared/
-│   │   │   ├── Button.tsx          # Esse Aruivo NÃO existe.
-│   │   │   └── Container.tsx       # Esse Aruivo NÃO existe.
-│   │   │
 │   │   └── ui/
 │   │       └── PublicacaoCard.tsx
 │   │
@@ -133,16 +122,9 @@ guardiana-web
 │   ├── hooks/
 │   │   └── useAuth.ts
 │   │
-│   ├── lib/
-│   │   └── utils.ts                # Esse Aruivo NÃO existe.
-│   │
-│   ├── services/                   # SIMULA API
-│   │   ├── conteudo.service.ts
-│   │   └── sobre.service.ts
-│   │
-│   ├── store/                      # Pasta vazia.
-│   │
-│   └── types/                      # Pasta vazia.
+│   └── services/                   # SIMULA API
+│       ├── conteudo.service.ts
+│       └── sobre.service.ts
 │
 │
 ├── .editorconfig
