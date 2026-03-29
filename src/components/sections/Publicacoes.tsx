@@ -22,19 +22,19 @@ export default function Publicacoes() {
     ];
 
     // ================================
-    // separa destaque
+    // Separa destaque
     // ================================
     const destaque = publicacoes.find((p) => p.destaque);
 
     // ================================
-    // filtra publicações
+    // Filtra publicações
     // ================================
     const filtradas =
         categoriaAtiva === "Todas"
             ? publicacoes
             : publicacoes.filter((p) => p.categoria === categoriaAtiva);
 
-    // remove destaque do grid
+    // Remove destaque do grid
     const restantes = filtradas.filter((p) => !p.destaque);
 
     return (
@@ -44,17 +44,15 @@ export default function Publicacoes() {
         >
             <div className="max-w-7xl mx-auto">
                 {/* ================================
-                    Cabeçalho
+                    CABEÇALHO
                 ================================ */}
                 <div className="mb-10 text-center">
                     <span className="text-sm uppercase tracking-widest text-[#D4AF37]">
                         Conteúdo
                     </span>
-
                     <h2 className="mt-4 text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                         Publicações em destaque
                     </h2>
-
                     <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                         Explore ideias, histórias e conteúdos que inspiram
                         transformação.
@@ -62,27 +60,24 @@ export default function Publicacoes() {
                 </div>
 
                 {/* ================================
-                 FILTRO DE CATEGORIA (CORRIGIDO)
-                ================================= */}
+                    FILTRO DE CATEGORIA
+                    - className em linha única para evitar hydration error
+                ================================ */}
                 <div className="flex flex-wrap justify-center gap-3 mb-12">
                     {categorias.map((cat) => {
                         const ativo = categoriaAtiva === cat;
+                        const classeBase =
+                            "px-4 py-2 rounded-full text-sm border transition-all duration-300";
+                        const classeAtivo =
+                            "bg-[#D4AF37] text-black border-[#D4AF37] shadow-md";
+                        const classeInativo =
+                            "text-gray-800 dark:text-white border-gray-300 dark:border-white/20 hover:border-[#D4AF37] hover:text-[#D4AF37]";
 
                         return (
                             <button
                                 key={cat}
                                 onClick={() => setCategoriaAtiva(cat)}
-                                className={`
-                                    px-4 py-2 rounded-full text-sm border transition-all duration-300
-
-                                    ${
-                                        ativo
-                                            ? // BOTÃO ATIVO (dourado premium)
-                                              "bg-[#D4AF37] text-black border-[#D4AF37] shadow-md"
-                                            : // BOTÃO NORMAL (AGORA CORRIGIDO)
-                                              "text-gray-800 dark:text-white border-gray-300 dark:border-white/20 hover:border-[#D4AF37] hover:text-[#D4AF37]"
-                                    }
-                                `}
+                                className={`${classeBase} ${ativo ? classeAtivo : classeInativo}`}
                             >
                                 {cat}
                             </button>
@@ -99,15 +94,12 @@ export default function Publicacoes() {
                             <span className="text-xs uppercase tracking-widest text-[#D4AF37]">
                                 {destaque.categoria}
                             </span>
-
                             <h3 className="mt-4 text-3xl font-bold text-gray-900 dark:text-white">
                                 {destaque.titulo}
                             </h3>
-
                             <p className="mt-4 text-gray-600 dark:text-gray-300 text-lg max-w-3xl">
                                 {destaque.descricao}
                             </p>
-
                             <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
                                 {destaque.autor} • {destaque.data}
                             </div>
@@ -122,9 +114,7 @@ export default function Publicacoes() {
                     {restantes.map((item, index) => (
                         <div
                             key={item.id}
-                            style={{
-                                animationDelay: `${index * 0.1}s`, // cascata automática
-                            }}
+                            style={{ animationDelay: `${index * 0.1}s` }}
                         >
                             <PublicacaoCard publicacao={item} />
                         </div>

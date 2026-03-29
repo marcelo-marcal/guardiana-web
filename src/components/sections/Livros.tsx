@@ -46,11 +46,9 @@ export default function Livros() {
                     <span className="text-sm uppercase tracking-widest text-[#D4AF37]">
                         Publicações
                     </span>
-
                     <h2 className="mt-4 text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
                         Livros publicados
                     </h2>
-
                     <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                         Conheça as obras que já impactaram leitores e continuam
                         transformando histórias em experiências únicas.
@@ -64,27 +62,17 @@ export default function Livros() {
                     {livros.map((livro) => (
                         <div
                             key={livro.id}
-                            className="
-                                group
-                                flex flex-col items-center text-center
-                                transition
-                            "
+                            className="group flex flex-col items-center text-center transition"
                         >
-                            {/* CAPA */}
-                            <div
-                                className="
-                                    relative w-48 h-64
-                                    rounded-xl overflow-hidden
-                                    shadow-lg
-                                    group-hover:scale-105
-                                    transition
-                                "
-                            >
+                            {/* CAPA - className em linha única para evitar hydration error */}
+                            <div className="relative w-48 h-64 rounded-xl overflow-hidden shadow-lg group-hover:scale-105 transition">
                                 <Image
                                     src={livro.capa}
                                     alt={livro.titulo}
                                     fill
                                     className="object-cover"
+                                    priority={livro.id === 1}
+                                    loading={livro.id === 1 ? "eager" : "lazy"}
                                 />
                             </div>
 
