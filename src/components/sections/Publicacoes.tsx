@@ -2,7 +2,9 @@
 
 import { publicacoes } from "@/data/publicacoes";
 import PublicacaoCard from "@/components/ui/PublicacaoCard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { PublicacaoConfig, publicacaoConfig } from "@/data/publicacaoConfig";
+import { getConteudoConfig } from "@/services/publicacoes.services";
 
 // ================================
 // Seção de Publicações
@@ -12,6 +14,7 @@ export default function Publicacoes() {
     // Estado do filtro
     // ================================
     const [categoriaAtiva, setCategoriaAtiva] = useState("Todas");
+    const [conteudoConfig, setConteudoConfig] = useState<PublicacaoConfig | null>(null);
 
     // ================================
     // Extrai categorias únicas
@@ -37,6 +40,23 @@ export default function Publicacoes() {
     // Remove destaque do grid
     const restantes = filtradas.filter((p) => !p.destaque);
 
+    useEffect(() => {
+        const data = getConteudoConfig();
+        setConteudoConfig(data);
+
+        const atualizar = () => {
+            setConteudoConfig(getConteudoConfig());
+        }
+
+        window.addEventListener("conteudoAtualizado", atualizar);
+
+        return () => {
+            window.removeEventListener("conteudoAtualizado", atualizar);
+        };
+    }, []);
+
+    if (!conteudoConfig) return null;
+
     return (
         <section
             id="publicacoes"
@@ -51,11 +71,10 @@ export default function Publicacoes() {
                         Conteúdo
                     </span>
                     <h2 className="mt-4 text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-                        Publicações em destaque
+                        {conteudoConfig.titulo}
                     </h2>
                     <p className="mt-4 text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                        Explore ideias, histórias e conteúdos que inspiram
-                        transformação.
+                        {conteudoConfig.subtitulo}
                     </p>
                 </div>
 
