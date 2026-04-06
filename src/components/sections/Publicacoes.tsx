@@ -1,10 +1,19 @@
 "use client";
 
-import { publicacoes } from "@/data/publicacoes";
 import PublicacaoCard from "@/components/ui/PublicacaoCard";
 import { useEffect, useState } from "react";
 import { PublicacaoConfig, publicacaoConfig } from "@/data/publicacaoConfig";
 import { getConteudoConfig } from "@/services/publicacoes.services";
+
+const initialCategorias = [
+    { id: 1, categoria: "Categoria 1" },
+    { id: 2, categoria: "Categoria 2" },
+];
+
+const initialPublicacoes = [
+    { id: 1, categoria: "Categoria 1", titulo: "Publicação 1", descricao: "Descrição 1", autor: "Autor 1", data: "05/04/2026" },
+    { id: 2, categoria: "Categoria 2", titulo: "Publicação 2", descricao: "Descrição 2", autor: "Autor 2", data: "05/04/2026" },
+];
 
 // ================================
 // Seção de Publicações
@@ -15,30 +24,25 @@ export default function Publicacoes() {
     // ================================
     const [categoriaAtiva, setCategoriaAtiva] = useState("Todas");
     const [conteudoConfig, setConteudoConfig] = useState<PublicacaoConfig | null>(null);
-
-    // ================================
-    // Extrai categorias únicas
-    // ================================
-    const categorias = [
-        "Todas",
-        ...Array.from(new Set(publicacoes.map((p) => p.categoria))),
-    ];
+    const [categorias, setCategorias] = useState<typeof initialCategorias>([]);
+    const [publicacao, setPublicacao] = useState<typeof initialPublicacoes>([])
+    
 
     // ================================
     // Separa destaque
     // ================================
-    const destaque = publicacoes.find((p) => p.destaque);
+    const destaque = publicacao.find((p) => p.id == 1);
 
     // ================================
     // Filtra publicações
     // ================================
     const filtradas =
         categoriaAtiva === "Todas"
-            ? publicacoes
-            : publicacoes.filter((p) => p.categoria === categoriaAtiva);
+            ? publicacao
+            : publicacao.filter((p) => p.categoria === categoriaAtiva);
 
     // Remove destaque do grid
-    const restantes = filtradas.filter((p) => !p.destaque);
+    const restantes = filtradas.filter((p) => p.id != 1);
 
     useEffect(() => {
         const data = getConteudoConfig();
@@ -53,6 +57,22 @@ export default function Publicacoes() {
         return () => {
             window.removeEventListener("conteudoAtualizado", atualizar);
         };
+    }, []);
+
+    useEffect(() => {
+        const data = localStorage.getItem("categorias");
+
+        if (data) {
+            setCategorias(JSON.parse(data));
+        }
+    }, []);
+
+    useEffect(() => {
+        const data = localStorage.getItem("publicacoes");
+
+        if (data) {
+            setPublicacao(JSON.parse(data));
+        }
     }, []);
 
     if (!conteudoConfig) return null;
@@ -84,7 +104,7 @@ export default function Publicacoes() {
                 ================================ */}
                 <div className="flex flex-wrap justify-center gap-3 mb-12">
                     {categorias.map((cat) => {
-                        const ativo = categoriaAtiva === cat;
+                        const ativo = categoriaAtiva === cat.categoria;
                         const classeBase =
                             "px-4 py-2 rounded-full text-sm border transition-all duration-300";
                         const classeAtivo =
@@ -94,11 +114,11 @@ export default function Publicacoes() {
 
                         return (
                             <button
-                                key={cat}
-                                onClick={() => setCategoriaAtiva(cat)}
+                                key={cat.id}
+                                onClick={() => setCategoriaAtiva(cat.categoria)}
                                 className={`${classeBase} ${ativo ? classeAtivo : classeInativo}`}
                             >
-                                {cat}
+                                {cat.categoria}
                             </button>
                         );
                     })}
