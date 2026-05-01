@@ -4,10 +4,11 @@
 // IMPORTS
 // ================================
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getConteudo } from "@/services/conteudo.service";
-import type { Conteudo } from "@/data/conteudo"; // 👈 usa sua tipagem oficial
+import type { Conteudo } from "@/data/conteudo";
 
 // ================================
 // HERO
@@ -19,11 +20,10 @@ export default function Hero() {
     const [conteudo, setConteudo] = useState<Conteudo | null>(null);
 
     // ================================
-    // CARREGA NO CLIENT (SEM SSR BUG)
+    // CARREGA CONTEÚDO DINÂMICO DO ADMIN
     // ================================
     useEffect(() => {
-        const data = getConteudo();
-        setConteudo(data);
+        setConteudo(getConteudo());
 
         const atualizar = () => {
             setConteudo(getConteudo());
@@ -42,88 +42,93 @@ export default function Hero() {
     if (!conteudo) return null;
 
     return (
-        <section className="relative w-full h-[90vh] flex items-center justify-center overflow-hidden">
+        <section className="w-full bg-[#F7F7F7] dark:bg-[#020617] transition-colors">
             {/* ================================
-               FUNDO
+               ÁREA SUPERIOR DO HERO
             ================================= */}
-            <div className="absolute inset-0">
-                <div className="w-full h-full bg-gradient-to-b from-[#0F1720] via-[#020617] to-black" />
-                <div className="absolute inset-0 bg-black/40" />
-            </div>
-
-            {/* ================================
-               LUZ ANIMADA
-            ================================= */}
-            <div className="absolute inset-0 pointer-events-none">
+            <div className="max-w-7xl mx-auto px-6 py-10 md:py-12 grid grid-cols-1 lg:grid-cols-[260px_1fr_360px] items-center gap-8">
+                {/* LOGO GRANDE À ESQUERDA */}
                 <motion.div
-                    initial={{ opacity: 0.6, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1.1 }}
-                    transition={{
-                        duration: 2.5,
-                        repeat: Infinity,
-                        repeatType: "reverse",
-                        ease: "easeInOut",
-                    }}
-                    className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#D4AF37]/20 blur-[90px] rounded-full"
-                />
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.7 }}
+                    className="relative mx-auto lg:mx-0 w-56 h-56 md:w-64 md:h-64"
+                >
+                    <Image
+                        src="/logo-grande.png"
+                        alt="Guardiana Editora"
+                        fill
+                        priority
+                        className="object-contain"
+                    />
+                </motion.div>
 
+                {/* ILUSTRAÇÃO CENTRAL */}
                 <motion.div
-                    initial={{ opacity: 0.3 }}
-                    animate={{ opacity: 0.6 }}
-                    transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        repeatType: "reverse",
-                    }}
-                    className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#D4AF37]/40 blur-[70px] rounded-full"
-                />
-            </div>
-
-            {/* ================================
-               CONTEÚDO
-            ================================= */}
-            <div className="relative z-10 text-center px-6 max-w-3xl">
-                {/* TÍTULO */}
-                <motion.h1
-                    initial={{ opacity: 0, y: 40 }}
+                    initial={{ opacity: 0, y: 25 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
-                    className="text-4xl md:text-6xl font-bold leading-tight text-white"
+                    className="relative w-full h-[300px] md:h-[420px]"
                 >
-                    {conteudo.hero.titulo}
-                </motion.h1>
-
-                {/* SUBTÍTULO */}
-                <motion.p
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="mt-6 text-lg md:text-xl text-gray-300"
-                >
-                    {conteudo.hero.subtitulo}
-                </motion.p>
-
-                {/* BOTÕES */}
-                <motion.div
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.4 }}
-                    className="mt-8 flex flex-col md:flex-row items-center justify-center gap-4"
-                >
-                    <Link
-                        href="#publicacoes"
-                        className="bg-[#D4AF37] text-black px-6 py-3 rounded-xl font-medium hover:opacity-90 hover:scale-105 transition"
-                    >
-                        Ver Publicações
-                    </Link>
-
-                    <Link
-                        href="#sobre"
-                        className="border border-white/30 text-white px-6 py-3 rounded-xl hover:bg-white/10 hover:scale-105 transition"
-                    >
-                        Conheça a Guardiana
-                    </Link>
+                    <Image
+                        src="/hero-guardiana.png"
+                        alt="Ilustração Guardiana"
+                        fill
+                        priority
+                        className="object-contain"
+                    />
                 </motion.div>
+
+                {/* TÍTULO À DIREITA */}
+                <motion.div
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.7, delay: 0.15 }}
+                    className="text-center lg:text-left"
+                >
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-[#C95F52] dark:text-[#D4AF37]">
+                        {conteudo.hero.titulo}
+                    </h1>
+                </motion.div>
+            </div>
+
+            {/* ================================
+               FAIXA INFERIOR AZUL
+            ================================= */}
+            <div className="w-full bg-[#18384A] dark:bg-[#0F1720]">
+                <div className="max-w-7xl mx-auto px-6 py-8 text-center">
+                    {/* SUBTÍTULO */}
+                    <motion.p
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.7, delay: 0.25 }}
+                        className="text-white text-base md:text-xl leading-relaxed max-w-5xl mx-auto"
+                    >
+                        {conteudo.hero.subtitulo}
+                    </motion.p>
+
+                    {/* BOTÕES */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.7, delay: 0.4 }}
+                        className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-6"
+                    >
+                        <Link
+                            href="#publicacoes"
+                            className="bg-[#C8A92F] text-white px-8 py-3 rounded-full font-bold hover:scale-105 hover:brightness-110 transition"
+                        >
+                            Ver Publicações →
+                        </Link>
+
+                        <Link
+                            href="#sobre"
+                            className="bg-[#C8A92F] text-white px-8 py-3 rounded-full font-bold hover:scale-105 hover:brightness-110 transition"
+                        >
+                            Conheça a Guardiana
+                        </Link>
+                    </motion.div>
+                </div>
             </div>
         </section>
     );

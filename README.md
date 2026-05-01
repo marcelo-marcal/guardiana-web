@@ -87,8 +87,10 @@ guardiana-web
 │   │   │       └── page.tsx
 │   │   │
 │   │   ├── (public)/               # SITE
-│   │   │   └── sobre/
-│   │   │       └── page.tsx
+│   │   │   ├── sobre/
+│   │   │   │   └── page.tsx
+│   │   │   │
+│   │   │   └── page.tsx
 │   │   │
 │   │   ├── favicon.ico
 │   │   ├── globals.css
@@ -116,6 +118,7 @@ guardiana-web
 │   │
 │   ├── data/                       # MOCK (simula API)
 │   │   ├── conteudo.ts             # NOVO (textos editáveis)
+│   │   ├── publicacaoConfig.ts
 │   │   ├── publicacoes.ts
 │   │   └── sobre.ts
 │   │
@@ -124,8 +127,8 @@ guardiana-web
 │   │
 │   └── services/                   # SIMULA API
 │       ├── conteudo.service.ts
+│       ├── publicacoes.service.ts
 │       └── sobre.service.ts
-│
 │
 ├── .editorconfig
 ├── .gitignore
