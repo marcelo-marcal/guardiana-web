@@ -40,14 +40,15 @@ export default function Livros() {
         >
             {/* ================================
                 FAIXA DOURADA INCLINADA
+                - esquerda mais estreita
+                - direita mais larga/alta
             ================================ */}
             <div
                 className="
-                    absolute left-0 right-0 top-20
-                    h-[390px] md:h-[430px]
+                    absolute inset-x-0 top-24
+                    h-[420px] md:h-[460px]
                     bg-[#C4AA35] dark:bg-[#8F7A22]
-                    -skew-y-3
-                    origin-top-left
+                    [clip-path:polygon(0_18%,100%_0,100%_100%,0_82%)]
                 "
             />
 

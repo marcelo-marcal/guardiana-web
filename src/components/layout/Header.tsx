@@ -6,7 +6,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
 // ================================
@@ -18,7 +18,6 @@ export default function Header() {
     // ================================
     const { user, logout } = useAuth();
     const router = useRouter();
-    const pathname = usePathname();
 
     // ================================
     // ESTADO: TEMA (Light/Dark)
@@ -45,6 +44,7 @@ export default function Header() {
         } else {
             document.documentElement.classList.remove("dark");
         }
+
         setDarkMode(isDark);
     }, []);
 
@@ -53,6 +53,7 @@ export default function Header() {
     // ================================
     const toggleTheme = () => {
         const newMode = !darkMode;
+
         document.documentElement.classList.toggle("dark", newMode);
         localStorage.setItem("theme", newMode ? "dark" : "light");
         setDarkMode(newMode);
@@ -66,16 +67,6 @@ export default function Header() {
         localStorage.removeItem("redirectTo");
         router.replace("/login");
         setMenuOpen(false);
-    };
-
-    // ================================
-    // NAVEGAÇÃO INTELIGENTE (Home vs Outras páginas)
-    // ================================
-    const getLink = (section: string) => {
-        if (pathname === "/") {
-            return `#${section}`;
-        }
-        return `/#${section}`;
     };
 
     return (
@@ -95,39 +86,51 @@ export default function Header() {
                                 className="object-contain dark:brightness-0 dark:invert"
                             />
                         </div>
+
                         <span className="text-base font-semibold leading-none">
                             Guardiana
                         </span>
                     </div>
 
                     {/* MENU DESKTOP */}
-                    <nav className="hidden md:flex gap-6 text-sm text-gray-800 dark:text-white items-center">
+                    <nav className="hidden md:flex gap-6 text-lg text-gray-800 dark:text-white items-center">
                         <Link
                             href="/"
                             className="hover:text-[#D4AF37] transition"
                         >
                             Início
                         </Link>
+
                         <Link
-                            href={getLink("sobre")}
+                            href="/guardiana"
                             className="hover:text-[#D4AF37] transition"
                         >
-                            Sobre
+                            Guardiana
                         </Link>
+
                         <Link
-                            href={getLink("publicacoes")}
+                            href="/servicos-editoriais"
                             className="hover:text-[#D4AF37] transition"
                         >
-                            Publicações
+                            Serviços Editoriais
                         </Link>
+
                         <Link
-                            href={getLink("autores")}
+                            href="/livros"
                             className="hover:text-[#D4AF37] transition"
                         >
-                            Autoras
+                            Livros
                         </Link>
+
                         <Link
-                            href={getLink("contato")}
+                            href="/fundadoras"
+                            className="hover:text-[#D4AF37] transition"
+                        >
+                            Fundadoras
+                        </Link>
+
+                        <Link
+                            href="/contato"
                             className="hover:text-[#D4AF37] transition"
                         >
                             Contato
@@ -255,35 +258,48 @@ export default function Header() {
                                 >
                                     Início
                                 </Link>
+
                                 <Link
-                                    href={getLink("sobre")}
+                                    href="/guardiana"
                                     onClick={() => setMenuOpen(false)}
                                     className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
                                 >
-                                    Sobre
+                                    Guardiana
                                 </Link>
+
                                 <Link
-                                    href={getLink("publicacoes")}
+                                    href="/servicos-editoriais"
                                     onClick={() => setMenuOpen(false)}
                                     className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
                                 >
-                                    Publicações
+                                    Serviços Editoriais
                                 </Link>
+
                                 <Link
-                                    href={getLink("autores")}
+                                    href="/livros"
                                     onClick={() => setMenuOpen(false)}
                                     className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
                                 >
-                                    Autoras
+                                    Livros
                                 </Link>
+
                                 <Link
-                                    href={getLink("contato")}
+                                    href="/fundadoras"
+                                    onClick={() => setMenuOpen(false)}
+                                    className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
+                                >
+                                    Fundadoras
+                                </Link>
+
+                                <Link
+                                    href="/contato"
                                     onClick={() => setMenuOpen(false)}
                                     className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
                                 >
                                     Contato
                                 </Link>
                             </nav>
+
                             <div className="p-4 border-t border-gray-200 dark:border-white/10">
                                 <Link
                                     href="/login"
@@ -315,6 +331,7 @@ export default function Header() {
                                     <span className="text-lg font-semibold text-gray-900 dark:text-white">
                                         Menu Admin
                                     </span>
+
                                     <button
                                         onClick={() => setMenuOpen(false)}
                                         className="p-2 rounded-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition"
@@ -324,7 +341,7 @@ export default function Header() {
                                     </button>
                                 </div>
 
-                                {/* LINKS - CORREÇÃO: removido 'block' onde havia conflito com 'flex' */}
+                                {/* LINKS */}
                                 <nav className="flex-1 overflow-y-auto p-6 space-y-2">
                                     <Link
                                         href="/"
@@ -333,36 +350,48 @@ export default function Header() {
                                     >
                                         Início
                                     </Link>
+
                                     <Link
-                                        href={getLink("sobre")}
+                                        href="/guardiana"
                                         onClick={() => setMenuOpen(false)}
                                         className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
                                     >
-                                        Sobre
+                                        Guardiana
                                     </Link>
+
                                     <Link
-                                        href={getLink("publicacoes")}
+                                        href="/servicos-editoriais"
                                         onClick={() => setMenuOpen(false)}
                                         className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
                                     >
-                                        Publicações
+                                        Serviços Editoriais
                                     </Link>
+
                                     <Link
-                                        href={getLink("autores")}
+                                        href="/livros"
                                         onClick={() => setMenuOpen(false)}
                                         className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
                                     >
-                                        Autoras
+                                        Livros
                                     </Link>
+
                                     <Link
-                                        href={getLink("contato")}
+                                        href="/fundadoras"
+                                        onClick={() => setMenuOpen(false)}
+                                        className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                    >
+                                        Fundadoras
+                                    </Link>
+
+                                    <Link
+                                        href="/contato"
                                         onClick={() => setMenuOpen(false)}
                                         className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
                                     >
                                         Contato
                                     </Link>
 
-                                    {/* Painel Admin - Destaque verde (já usa flex, sem conflito) */}
+                                    {/* Painel Admin - Destaque verde */}
                                     <Link
                                         href="/dashboard"
                                         onClick={() => setMenuOpen(false)}

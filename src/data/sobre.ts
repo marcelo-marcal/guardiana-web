@@ -18,5 +18,3 @@ export const conteudoInicial: Sobre = {
             "A Guardiana nasceu com o propósito de dar espaço a histórias que precisam ser contadas. Trabalhamos com autoras e autores que desejam impactar o mundo através da escrita, oferecendo suporte editorial, visibilidade e cuidado em cada publicação. Mais do que publicar livros, construímos pontes entre ideias e pessoas, fortalecendo narrativas que inspiram transformação social, cultural e pessoal."
     }
 };
-
-

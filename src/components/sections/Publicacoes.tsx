@@ -192,8 +192,7 @@ export default function Publicacoes() {
                     absolute left-0 right-0 top-16
                     h-[520px] md:h-[560px]
                     bg-[#C95F52] dark:bg-[#7E342D]
-                    -skew-y-3
-                    origin-top-right
+                    [clip-path:polygon(0_18%,100%_0,100%_100%,0_82%)]
                 "
             />
 
