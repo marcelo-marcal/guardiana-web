@@ -70,8 +70,7 @@ export default function Contato() {
                     absolute left-0 right-0 top-16
                     h-[520px]
                     bg-[#18384A] dark:bg-[#0F1720]
-                    skew-y-3
-                    origin-top-left
+                    [clip-path:polygon(0_0,100%_18%,100%_82%,0_100%)]
                 "
             />
 
