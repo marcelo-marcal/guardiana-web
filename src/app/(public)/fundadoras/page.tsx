@@ -2,6 +2,7 @@
 // IMPORTS
 // ================================
 import Image from "next/image";
+import Link from "next/link";
 
 // ================================
 // DADOS DAS FUNDADORAS
@@ -19,7 +20,7 @@ const fundadoras = [
                     Com uma sensibilidade estética que complementa
                     seu olhar editorial unindo técnica e criatividade,
                     transita entre o rigor do texto e a liberdade da
-                    imagem.`
+                    imagem.`,
     },
     {
         id: 2,
@@ -31,19 +32,19 @@ const fundadoras = [
                     uma forma de preservar histórias e ampliar vozes.
                     Apaixonada pela leitura, vê nos livros pontes entre
                     tempos, experiências e identidades. Seu trabalho
-                    une sensibilidade, escuta e compromisso.`
+                    une sensibilidade, escuta e compromisso.`,
     },
     {
         id: 3,
-        imagem: "/jenifer-brum.png",
+        imagem: "/sandra-salcedo.png",
         autor: "Sandra Salcedo",
         descricao: `Formada em Ciências Políticas. Apaixonada por
                     livros e leituras, dedica-se a transformar ideias em
                     obras que inspiram e informam. Seu olhar atento e
                     curadoria cuidadosa refletem o compromisso com o
                     conhecimento e a qualidade. Entre páginas e
-                    projetos, constrói pontes entre autores e leitores.`
-    }
+                    projetos, constrói pontes entre autores e leitores.`,
+    },
 ];
 
 // ================================
@@ -99,7 +100,12 @@ export default function Fundadoras() {
                                             <h2 className="text-2xl text-center md:text-3xl font-extrabold text-[#18384A] dark:text-white">
                                                 {bloco.autor}
                                             </h2>
-                                            <p style={{whiteSpace: 'pre-line'}} className="mt-3 md:h-[300px] text-center text-[#344454] dark:text-gray-300 text-base md:text-lg leading-relaxed">
+                                            <p
+                                                style={{
+                                                    whiteSpace: "pre-line",
+                                                }}
+                                                className="mt-3 md:h-[300px] text-center text-[#344454] dark:text-gray-300 text-base md:text-lg leading-relaxed"
+                                            >
                                                 {bloco.descricao}
                                             </p>
                                         </article>
@@ -137,6 +143,40 @@ export default function Fundadoras() {
                             </div>
                         );
                     })}
+                </div>
+            </section>
+
+            {/* ================================
+                CTA FINAL
+            ================================ */}
+            <section className="relative overflow-hidden px-6 py-20 bg-[#C95F52] dark:bg-[#7E342D]">
+                <div className="max-w-7xl mx-auto text-center">
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-white">
+                        Tem uma história para publicar?
+                    </h2>
+
+                    <p className="mt-5 text-white text-lg max-w-3xl mx-auto leading-relaxed">
+                        Entre em contato com a Guardiana e converse conosco
+                        sobre sua ideia, seu livro ou seu projeto editorial.
+                    </p>
+
+                    <Link
+                        href="/contato"
+                        className="
+                            inline-flex
+                            mt-8
+                            px-8 py-3
+                            rounded-full
+                            border border-white
+                            text-white
+                            font-bold
+                            hover:bg-white
+                            hover:text-[#C95F52]
+                            transition-all duration-300
+                        "
+                    >
+                        Fale conosco →
+                    </Link>
                 </div>
             </section>
         </main>

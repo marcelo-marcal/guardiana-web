@@ -29,7 +29,7 @@ const equipe = [
         id: 3,
         nome: "Sandra Salcedo",
         cargo: "Curadora - Produtora Editorial",
-        imagem: "/logo-grande.png",
+        imagem: "/sandra-salcedo.png",
         descricao:
             "Formada em Ciências Políticas. Apaixonada por livros e leituras, dedica-se a transformar ideias em obras que inspiram e informam. Seu olhar atento e curadoria cuidadosa refletem o compromisso com o conhecimento e a qualidade. Entre páginas e projetos, constrói pontes entre autores e leitores.",
     },
