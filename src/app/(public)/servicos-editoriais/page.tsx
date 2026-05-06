@@ -2,6 +2,7 @@
 // IMPORTS
 // ================================
 import Image from "next/image";
+import Link from "next/link";
 
 // ================================
 // DADOS DOS SERVIÇOS EDITORIAIS
@@ -171,6 +172,39 @@ export default function ServicosEditoriaisPage() {
                             </div>
                         );
                     })}
+                </div>
+            </section>
+            {/* ================================
+                CTA FINAL
+            ================================ */}
+            <section className="relative overflow-hidden px-6 py-20 bg-[#C95F52] dark:bg-[#7E342D]">
+                <div className="max-w-7xl mx-auto text-center">
+                    <h2 className="text-3xl md:text-4xl font-extrabold text-white">
+                        Tem uma história para publicar?
+                    </h2>
+
+                    <p className="mt-5 text-white text-lg max-w-3xl mx-auto leading-relaxed">
+                        Entre em contato com a Guardiana e converse conosco
+                        sobre sua ideia, seu livro ou seu projeto editorial.
+                    </p>
+
+                    <Link
+                        href="/contato"
+                        className="
+                            inline-flex
+                            mt-8
+                            px-8 py-3
+                            rounded-full
+                            border border-white
+                            text-white
+                            font-bold
+                            hover:bg-white
+                            hover:text-[#C95F52]
+                            transition-all duration-300
+                        "
+                    >
+                        Fale conosco →
+                    </Link>
                 </div>
             </section>
         </main>
