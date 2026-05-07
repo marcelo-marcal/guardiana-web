@@ -1,8 +1,8 @@
-// ================================
-// IMPORTS
-// ================================
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 // ================================
 // DADOS DOS LIVROS
@@ -36,15 +36,13 @@ const livros = [
     },
 ];
 
-// ================================
-// PÁGINA: LIVROS
-// ================================
 export default function Livros() {
+    const [idBook, setIdBook] = useState(null);
+    const livroSelecionado = livros.find((l) => l.id === idBook);
+
     return (
-        <main className="bg-[#F7F7F7] dark:bg-[#020617] transition-colors">
-            {/* ================================
-                HERO DA PÁGINA
-            ================================ */}
+        <main className="bg-[#F7F7F7] dark:bg-[#020617] transition-colors min-h-screen">
+            {/* HERO DA PÁGINA */}
             <section className="px-6 py-20">
                 <div className="max-w-7xl mx-auto text-center">
                     <span className="text-sm uppercase tracking-widest text-[#D4AF37]">
@@ -56,89 +54,106 @@ export default function Livros() {
                 </div>
             </section>
 
-            {/* ================================
-                BLOCOS DE LIVROS
-            ================================ */}
-            <section className="px-6 pb-24">
-                <div className="max-w-7xl mx-auto space-y-24">
-                    {livros.map((bloco, index) => {
-                        return (
-                            <div
-                                key={bloco.id}
-                                className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center lg:[&>*:first-child]:order-2`}
-                            >
-                                {/* ================================
-                                    TEXTO DOS LIVROS
-                                ================================ */}
-                                <div className="space-y-8">
-                                    <div className="space-y-7">
-                                        {bloco.conteudos.map((conteudo) => (
-                                            <article
-                                                key={conteudo.titulo}
-                                                className="
-                                                    group
-                                                    rounded-2xl
-                                                    bg-white dark:bg-[#0F1720]
-                                                    border border-gray-200 dark:border-white/10
-                                                    p-6
-                                                    shadow-md
-                                                    hover:-translate-y-1
-                                                    hover:shadow-xl
-                                                    transition-all duration-500
-                                                "
-                                            >
-                                                <p
-                                                    style={{
-                                                        whiteSpace: "pre-line",
-                                                    }}
-                                                    className="mt-3 md:h-[600px] text-[#344454] dark:text-gray-300 text-base md:text-lg leading-relaxed"
-                                                >
-                                                    {conteudo.descricao}
-                                                </p>
-                                            </article>
-                                        ))}
-                                    </div>
+            {/* SEÇÃO DE DETALHES (REVELADA AO CLICAR) */}
+            {livroSelecionado && (
+                <section className="px-6 pb-24 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+                            
+                            {/* COLUNA DA ESQUERDA: IMAGEM + INFO BÁSICA */}
+                            <div className="space-y-6">
+                                <div className="relative w-full h-[450px] md:h-[700px] rounded-3xl overflow-hidden shadow-2xl border border-gray-200 dark:border-white/10">
+                                    <Image
+                                        src={livroSelecionado.imagem}
+                                        alt={livroSelecionado.titulo}
+                                        fill
+                                        className="object-cover"
+                                        priority
+                                    />
                                 </div>
-
-                                {/* ================================
-                                    IMAGEM DO LIVRO
-                                ================================ */}
-                                <div className="mt-10">
-                                    <div
-                                        className="
-                                            group
-                                            relative
-                                            w-full
-                                            h-[200px] md:h-[800px]
-                                            rounded-3xl
-                                            overflow-hidden
-                                            shadow-xl
-                                            border border-gray-200 dark:border-white/10
-                                            hover:-translate-y-2
-                                            hover:shadow-2xl
-                                            transition-all duration-500
-                                        "
-                                    >
-                                        <Image
-                                            src={bloco.imagem}
-                                            alt="Serviços Editoriais Guardiana"
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition duration-700"
-                                            priority={bloco.id === 1}
-                                        />
-                                    </div>
-                                    <div className="mt-10">
-                                        <h2 className="text-2xl text-center md:text-3xl font-extrabold text-[#18384A] dark:text-white">
-                                            {bloco.titulo}
-                                        </h2>
-                                        <p className="mt-3 text-center text-[#344454] dark:text-gray-300 text-base md:text-lg leading-relaxed">
-                                            {bloco.autor}
-                                        </p>
-                                    </div>
+                                
+                                {/* NOME E AUTOR ABAIXO DA IMAGEM */}
+                                <div className="text-center lg:text-left">
+                                    <h2 className="text-3xl md:text-4xl font-extrabold text-[#18384A] dark:text-white">
+                                        {livroSelecionado.titulo}
+                                    </h2>
+                                    <p className="mt-2 text-xl text-[#D4AF37] font-medium tracking-wide">
+                                        {livroSelecionado.autor}
+                                    </p>
                                 </div>
                             </div>
-                        );
-                    })}
+
+                            {/* COLUNA DA DIREITA: DESCRIÇÃO/CONTEÚDO */}
+                            <div className="space-y-8 pt-4">
+                                {livroSelecionado.conteudos.map((conteudo, idx) => (
+                                    <article
+                                        key={idx}
+                                        className="
+                                        rounded-2xl
+                                        bg-white dark:bg-[#0F1720]
+                                        border border-gray-200 dark:border-white/10
+                                        p-8
+                                        md:p-10
+                                        shadow-sm
+                                        "
+                                    >
+                                        <p
+                                            style={{
+                                                whiteSpace: "pre-line",
+                                             }}
+                                            className="text-[#344454] dark:text-gray-300 text-lg leading-relaxed"
+                                        >
+                                            {conteudo.descricao}
+                                        </p>
+                                    </article>
+                                ))}
+                                
+                                <button 
+                                    onClick={() => setIdBook(null)}
+                                    className="flex items-center gap-2 text-[#18384A] dark:text-white font-bold hover:text-[#D4AF37] transition-colors"
+                                >
+                                    ← Voltar para a lista
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div className="max-w-7xl mx-auto mt-20 border-b border-gray-200 dark:border-white/10" />
+                </section>
+            )}
+
+            {/* GRID DE LIVROS (LISTA GERAL) */}
+            <section className="px-6 pb-24">
+                <div className="max-w-7xl mx-auto">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                        {livros.map((livro) => (
+                            <div
+                                key={livro.id}
+                                onClick={() => {
+                                    setIdBook(livro.id);
+                                    window.scrollTo({ top: 400, behavior: "smooth" });
+                                }}
+                                className="group cursor-pointer"
+                            >
+                                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
+                                    <Image
+                                        src={livro.imagem}
+                                        alt={livro.titulo}
+                                        fill
+                                        className="object-cover group-hover:scale-110 transition duration-700"
+                                    />
+                                </div>
+                                <div className="mt-4 text-center">
+                                    <h4 className="font-bold text-[#18384A] dark:text-white group-hover:text-[#D4AF37] transition-colors">
+                                        {livro.titulo}
+                                    </h4>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {livro.autor}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
             {/* ================================
