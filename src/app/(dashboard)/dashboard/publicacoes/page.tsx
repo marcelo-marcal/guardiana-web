@@ -4,8 +4,10 @@
 // IMPORTS
 // ================================
 import { useEffect, useState } from "react";
-import { getConteudoConfig, setConteudoConfig } from "@/services/publicacoes.services";
-import { sub } from "framer-motion/client";
+import {
+    getConteudoConfig,
+    setConteudoConfig,
+} from "@/services/publicacoes.services";
 
 const initialCategorias = [
     { id: 1, categoria: "Categoria 1" },
@@ -13,8 +15,22 @@ const initialCategorias = [
 ];
 
 const initialPublicacoes = [
-    { id: 1, categoria: "Categoria 1", titulo: "Publicação 1", descricao: "Descrição 1", autor: "Autor 1", data: "05/04/2026" },
-    { id: 2, categoria: "Categoria 2", titulo: "Publicação 2", descricao: "Descrição 2", autor: "Autor 2", data: "05/04/2026" },
+    {
+        id: 1,
+        categoria: "Categoria 1",
+        titulo: "Publicação 1",
+        descricao: "Descrição 1",
+        autor: "Autor 1",
+        data: "05/04/2026",
+    },
+    {
+        id: 2,
+        categoria: "Categoria 2",
+        titulo: "Publicação 2",
+        descricao: "Descrição 2",
+        autor: "Autor 2",
+        data: "05/04/2026",
+    },
 ];
 
 // ================================
@@ -22,15 +38,15 @@ const initialPublicacoes = [
 // ================================
 export default function PublicacoesAdmin() {
     const [titulo, setTitulo] = useState("");
-    const [subtitulo, setSubtitulo] = useState("")
-    const [categoria, setCategoria] = useState<typeof initialCategorias>([])
-    const [nmcategoria, setNmCategoria] = useState("")
-    const [categoriaSelecionada, setCategoriaSelecionada] = useState("")
-    const [tituloPublicacao, setTituloPublicacao] = useState("")
-    const [descricaoPublicacao, setDescricaoPublicacao] = useState("")
-    const [autorPublicacao, setAutorPublicacao] = useState("")
-    const [dataPublicacao, setDataPublicacao] = useState("")
-    const [publicacao, setPublicacao] = useState<typeof initialPublicacoes>([])
+    const [subtitulo, setSubtitulo] = useState("");
+    const [categoria, setCategoria] = useState<typeof initialCategorias>([]);
+    const [nmcategoria, setNmCategoria] = useState("");
+    const [categoriaSelecionada, setCategoriaSelecionada] = useState("");
+    const [tituloPublicacao, setTituloPublicacao] = useState("");
+    const [descricaoPublicacao, setDescricaoPublicacao] = useState("");
+    const [autorPublicacao, setAutorPublicacao] = useState("");
+    const [dataPublicacao, setDataPublicacao] = useState("");
+    const [publicacao, setPublicacao] = useState<typeof initialPublicacoes>([]);
 
     // ================================
     // CARREGAR DADOS
@@ -52,8 +68,8 @@ export default function PublicacoesAdmin() {
             setPublicacao(initialPublicacoes);
         }
 
-        setTitulo(data.titulo)
-        setSubtitulo(data.subtitulo)
+        setTitulo(data.titulo);
+        setSubtitulo(data.subtitulo);
     }, []);
 
     useEffect(() => {
@@ -74,8 +90,8 @@ export default function PublicacoesAdmin() {
     const salvar = () => {
         setConteudoConfig({
             titulo: titulo,
-            subtitulo: subtitulo
-        })
+            subtitulo: subtitulo,
+        });
         // AVISA O SITE
         window.dispatchEvent(new Event("conteudoAtualizado"));
 
@@ -91,7 +107,7 @@ export default function PublicacoesAdmin() {
         };
 
         setCategoria([...categoria, novo]);
-        setNmCategoria("")
+        setNmCategoria("");
     };
 
     const removerCategoria = (id: number) => {
@@ -99,7 +115,13 @@ export default function PublicacoesAdmin() {
     };
 
     const adicionarPublicacao = () => {
-        if (!tituloPublicacao || !descricaoPublicacao || !autorPublicacao || !dataPublicacao) return;
+        if (
+            !tituloPublicacao ||
+            !descricaoPublicacao ||
+            !autorPublicacao ||
+            !dataPublicacao
+        )
+            return;
 
         const novo = {
             id: Date.now(),
@@ -107,14 +129,14 @@ export default function PublicacoesAdmin() {
             titulo: tituloPublicacao,
             descricao: descricaoPublicacao,
             autor: autorPublicacao,
-            data: dataPublicacao
+            data: dataPublicacao,
         };
 
         setPublicacao([...publicacao, novo]);
-        setTituloPublicacao("")
-        setDescricaoPublicacao("")
-        setAutorPublicacao("")
-        setDataPublicacao("")
+        setTituloPublicacao("");
+        setDescricaoPublicacao("");
+        setAutorPublicacao("");
+        setDataPublicacao("");
     };
 
     const removerPublicacao = (id: number) => {
@@ -264,7 +286,6 @@ export default function PublicacoesAdmin() {
                         </option>
                     ))}
                 </select>
-
 
                 <input
                     value={tituloPublicacao}
