@@ -1,26 +1,15 @@
 // ================================
 // IMPORTS
 // ================================
-import { publicacoes } from "@/data/publicacoes";
 import { publicacaoConfig } from "@/data/publicacaoConfig";
 
 // ================================
 // TIPAGEM DO CONTEÚDO
 // ================================
-type Publicacao = {
-    id: number,
-    titulo: string,
-    descricao: string,
-    autor: string,
-    data: string,
-    categoria: string,
-    destaque?: boolean
-};
-
 type PublicacaoConfig = {
-    titulo: string,
-    subtitulo: string
-}
+    titulo: string;
+    subtitulo: string;
+};
 
 // ================================
 // CHAVE DO "BANCO"
@@ -48,5 +37,8 @@ export function getConteudoConfig(): PublicacaoConfig {
 export function setConteudoConfig(novoConteudo: PublicacaoConfig) {
     if (typeof window === "undefined") return;
 
-    localStorage.setItem(STORAGE_KEY_PUBLICACOES_CONFIG, JSON.stringify(novoConteudo));
+    localStorage.setItem(
+        STORAGE_KEY_PUBLICACOES_CONFIG,
+        JSON.stringify(novoConteudo),
+    );
 }

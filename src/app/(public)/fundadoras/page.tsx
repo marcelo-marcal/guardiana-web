@@ -72,7 +72,7 @@ export default function Fundadoras() {
             ================================ */}
             <section className="px-6 pb-24">
                 <div className="max-w-7xl mx-auto space-y-24">
-                    {fundadoras.map((bloco, index) => {
+                    {fundadoras.map((bloco) => {
                         return (
                             <div
                                 key={bloco.id}
@@ -148,8 +148,9 @@ export default function Fundadoras() {
 
             {/* ================================
                 CTA FINAL
+                - mt-auto mantém a faixa colada embaixo
             ================================ */}
-            <section className="relative overflow-hidden px-6 py-20 bg-[#C95F52] dark:bg-[#7E342D]">
+            <section className="mt-auto relative overflow-hidden px-6 py-20 bg-[#C95F52] dark:bg-[#7E342D]">
                 <div className="max-w-7xl mx-auto text-center">
                     <h2 className="text-3xl md:text-4xl font-extrabold text-white">
                         Tem uma história para publicar?
