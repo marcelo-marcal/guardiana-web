@@ -87,6 +87,21 @@ guardiana-web
 │   │   │       └── page.tsx
 │   │   │
 │   │   ├── (public)/               # SITE
+│   │   │   ├── contato/
+│   │   │   │   └── page.tsx
+│   │   │   │
+│   │   │   ├── fundadoras/
+│   │   │   │   └── page.tsx
+│   │   │   │
+│   │   │   ├── guardiana/
+│   │   │   │   └── page.tsx
+│   │   │   │
+│   │   │   ├── livros/
+│   │   │   │   └── page.tsx
+│   │   │   │
+│   │   │   ├── servicos-editoriais/
+│   │   │   │   └── page.tsx
+│   │   │   │
 │   │   │   ├── sobre/
 │   │   │   │   └── page.tsx
 │   │   │   │

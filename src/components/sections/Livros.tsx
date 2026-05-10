@@ -4,35 +4,39 @@
 // IMPORTS
 // ================================
 import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getLivrosDestaque, type Livro } from "@/services/livros.service";
 
 // ================================
-// MOCK DE LIVROS (futuro backend)
-// ================================
-const livros = [
-    {
-        id: 1,
-        titulo: "O Cavaleiro dos Sete Reinos",
-        autora: "George R. R. Martin",
-        capa: "/livros/livro1.png",
-    },
-    {
-        id: 2,
-        titulo: "Malala",
-        autora: "Adriana Carranca",
-        capa: "/livros/livro2.png",
-    },
-    {
-        id: 3,
-        titulo: "As Conchas Não Falam",
-        autora: "Taylane Cruz",
-        capa: "/livros/livro3.png",
-    },
-];
-
-// ================================
-// SEÇÃO LIVROS
+// SEÇÃO LIVROS DA HOME
 // ================================
 export default function Livros() {
+    // ================================
+    // ESTADO: LIVROS EM DESTAQUE
+    // ================================
+    const [livros, setLivros] = useState<Livro[]>([]);
+
+    // ================================
+    // CARREGAR SOMENTE OS 3 DESTAQUES
+    // ================================
+    useEffect(() => {
+        const carregarLivrosDestaque = () => {
+            setLivros(getLivrosDestaque());
+        };
+
+        carregarLivrosDestaque();
+
+        window.addEventListener("livrosAtualizados", carregarLivrosDestaque);
+
+        return () => {
+            window.removeEventListener(
+                "livrosAtualizados",
+                carregarLivrosDestaque,
+            );
+        };
+    }, []);
+
     return (
         <section
             id="livros"
@@ -40,8 +44,6 @@ export default function Livros() {
         >
             {/* ================================
                 FAIXA DOURADA INCLINADA
-                - esquerda mais estreita
-                - direita mais larga/alta
             ================================ */}
             <div
                 className="
@@ -85,75 +87,102 @@ export default function Livros() {
                 ================================ */}
                 <div className="text-center mb-16">
                     <span className="text-2xl text-[#18384A] dark:text-white">
-                        Publicações
+                        Destaques
                     </span>
 
                     <h2 className="mt-3 text-3xl md:text-4xl font-extrabold text-white leading-tight">
-                        Livros publicados
+                        Livros em destaque
                     </h2>
 
                     <p className="mt-5 text-white text-lg md:text-xl max-w-5xl mx-auto leading-relaxed">
-                        Conheça as obras que já impactaram leitores e continuam
-                        transformando histórias em experiências únicas.
+                        Conheça as obras selecionadas pela Guardiana para
+                        aparecerem na página inicial.
                     </p>
                 </div>
 
                 {/* ================================
-                    GRID DE LIVROS
+                    GRID DE LIVROS EM DESTAQUE
                 ================================ */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-14 lg:gap-24 items-start">
-                    {livros.map((livro) => (
-                        <div
-                            key={livro.id}
-                            className="
-                                group
-                                flex flex-col items-center text-center
-                                transition-all duration-500
-                                hover:-translate-y-2
-                            "
-                        >
-                            {/* CAPA */}
-                            <div
+                {livros.length === 0 ? (
+                    <div className="max-w-2xl mx-auto rounded-2xl bg-white dark:bg-[#0F1720] border border-gray-200 dark:border-white/10 p-8 text-center shadow-xl">
+                        <p className="text-[#344454] dark:text-gray-300">
+                            Nenhum livro foi marcado como destaque ainda.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-14 lg:gap-24 items-start">
+                        {livros.map((livro) => (
+                            <Link
+                                key={livro.id}
+                                href="/livros"
                                 className="
-                                    relative
-                                    w-52 h-72
-                                    md:w-56 md:h-80
-                                    rounded-lg
-                                    overflow-hidden
-                                    bg-white
-                                    p-5
-                                    shadow-xl
-                                    border border-gray-100 dark:border-white/10
-                                    group-hover:shadow-2xl
-                                    group-hover:scale-105
+                                    group
+                                    flex flex-col items-center text-center
                                     transition-all duration-500
+                                    hover:-translate-y-2
                                 "
                             >
-                                <div className="relative w-full h-full">
-                                    <Image
-                                        src={livro.capa}
-                                        alt={livro.titulo}
-                                        fill
-                                        className="object-cover"
-                                        priority={livro.id === 1}
-                                        loading={
-                                            livro.id === 1 ? "eager" : "lazy"
-                                        }
-                                    />
+                                {/* CAPA */}
+                                <div
+                                    className="
+                                        relative
+                                        w-52 h-72
+                                        md:w-56 md:h-80
+                                        rounded-lg
+                                        overflow-hidden
+                                        bg-white
+                                        p-5
+                                        shadow-xl
+                                        border border-gray-100 dark:border-white/10
+                                        group-hover:shadow-2xl
+                                        group-hover:scale-105
+                                        transition-all duration-500
+                                    "
+                                >
+                                    <div className="relative w-full h-full">
+                                        <Image
+                                            src={livro.imagem}
+                                            alt={livro.titulo}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* TÍTULO */}
-                            <h3 className="mt-8 text-lg md:text-xl font-extrabold text-[#18384A] dark:text-white group-hover:text-[#C95F52] dark:group-hover:text-[#D4AF37] transition">
-                                {livro.titulo}
-                            </h3>
+                                {/* TÍTULO */}
+                                <h3 className="mt-8 text-lg md:text-xl font-extrabold text-[#18384A] dark:text-white group-hover:text-[#C95F52] dark:group-hover:text-[#D4AF37] transition">
+                                    {livro.titulo}
+                                </h3>
 
-                            {/* AUTORA */}
-                            <p className="mt-1 text-sm text-[#344454] dark:text-gray-400">
-                                {livro.autora}
-                            </p>
-                        </div>
-                    ))}
+                                {/* AUTOR */}
+                                <p className="mt-1 text-sm text-[#344454] dark:text-gray-400">
+                                    {livro.autor}
+                                </p>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+
+                {/* ================================
+                    LINK PARA TODOS OS LIVROS
+                ================================ */}
+                <div className="mt-16 text-center">
+                    <Link
+                        href="/livros"
+                        className="
+                            inline-flex
+                            px-8 py-3
+                            rounded-full
+                            bg-[#C95F52]
+                            text-white
+                            font-bold
+                            hover:scale-105
+                            hover:brightness-110
+                            transition-all duration-300
+                        "
+                    >
+                        Ver todos os livros →
+                    </Link>
                 </div>
             </div>
         </section>

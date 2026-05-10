@@ -5,60 +5,39 @@
 // ================================
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-
-// ================================
-// TIPAGENS
-// ================================
-type LivroConteudo = {
-    titulo: string;
-    descricao: string;
-};
-
-type Livro = {
-    id: number;
-    imagem: string;
-    titulo: string;
-    autor: string;
-    conteudos: LivroConteudo[];
-};
-
-// ================================
-// DADOS DOS LIVROS
-// Futuramente esses dados poderão vir do Admin/SaaS
-// ================================
-const livros: Livro[] = [
-    {
-        id: 1,
-        imagem: "/livro-emaranhado.jpeg",
-        titulo: "Emaranhado",
-        autor: "Talles Lisot",
-        conteudos: [
-            {
-                titulo: "Emaranhado",
-                descricao: `Emaranhado nasce como um mergulho íntimo na mente do jovem artista brasileiro de Marau, Rio Grande do Sul, Talles Lisot. Neste livro de escritos e poemas, a palavra se torna espelho e labirinto. Um espaço onde dúvidas sobre a vida, a criação e a própria identidade se entrelaçam sem a promessa de respostas fáceis.
-
-Livro físico
-Ano: 2026
-ISBN: 978-65-975564-0-3
-Capa comum
-108 páginas
-Preço:
-Dimensões: 14x21 cm
-Idioma: Português`,
-            },
-        ],
-    },
-];
+import { useEffect, useState } from "react";
+import { getLivros, type Livro } from "@/services/livros.service";
 
 // ================================
 // PÁGINA: LIVROS
 // ================================
 export default function Livros() {
     // ================================
+    // ESTADO: LISTA DE LIVROS
+    // ================================
+    const [livros, setLivros] = useState<Livro[]>([]);
+
+    // ================================
     // ESTADO DO LIVRO SELECIONADO
     // ================================
     const [idBook, setIdBook] = useState<number | null>(null);
+
+    // ================================
+    // CARREGAR LIVROS DO "BANCO" LOCAL
+    // ================================
+    useEffect(() => {
+        const carregarLivros = () => {
+            setLivros(getLivros());
+        };
+
+        carregarLivros();
+
+        window.addEventListener("livrosAtualizados", carregarLivros);
+
+        return () => {
+            window.removeEventListener("livrosAtualizados", carregarLivros);
+        };
+    }, []);
 
     // ================================
     // BUSCA LIVRO SELECIONADO
@@ -103,7 +82,6 @@ export default function Livros() {
 
             {/* ================================
                 CONTEÚDO PRINCIPAL
-                - flex-1 empurra o CTA para baixo
             ================================ */}
             <div className="flex-1">
                 {/* ================================
@@ -138,29 +116,71 @@ export default function Livros() {
 
                                 {/* COLUNA DIREITA: DESCRIÇÃO */}
                                 <div className="space-y-8 pt-4">
-                                    {livroSelecionado.conteudos.map(
-                                        (conteudo) => (
-                                            <article
-                                                key={conteudo.titulo}
-                                                className="
-                                                    rounded-2xl
-                                                    bg-white dark:bg-[#0F1720]
-                                                    border border-gray-200 dark:border-white/10
-                                                    p-8
-                                                    md:p-10
-                                                    shadow-sm
-                                                "
-                                            >
-                                                <h3 className="text-2xl font-extrabold text-[#18384A] dark:text-white mb-6">
-                                                    {conteudo.titulo}
-                                                </h3>
+                                    <article
+                                        className="
+                                            rounded-2xl
+                                            bg-white dark:bg-[#0F1720]
+                                            border border-gray-200 dark:border-white/10
+                                            p-8
+                                            md:p-10
+                                            shadow-sm
+                                        "
+                                    >
+                                        <h3 className="text-2xl font-extrabold text-[#18384A] dark:text-white mb-6">
+                                            {livroSelecionado.titulo}
+                                        </h3>
 
-                                                <p className="whitespace-pre-line text-[#344454] dark:text-gray-300 text-lg leading-relaxed">
-                                                    {conteudo.descricao}
+                                        <p className="whitespace-pre-line text-[#344454] dark:text-gray-300 text-lg leading-relaxed">
+                                            {livroSelecionado.descricao}
+                                        </p>
+
+                                        {/* ================================
+                                            DADOS TÉCNICOS DO LIVRO
+                                        ================================ */}
+                                        <div className="mt-8 grid sm:grid-cols-2 gap-4 text-sm text-[#344454] dark:text-gray-300">
+                                            {livroSelecionado.ano && (
+                                                <p>
+                                                    <strong>Ano:</strong>{" "}
+                                                    {livroSelecionado.ano}
                                                 </p>
-                                            </article>
-                                        ),
-                                    )}
+                                            )}
+
+                                            {livroSelecionado.isbn && (
+                                                <p>
+                                                    <strong>ISBN:</strong>{" "}
+                                                    {livroSelecionado.isbn}
+                                                </p>
+                                            )}
+
+                                            {livroSelecionado.paginas && (
+                                                <p>
+                                                    <strong>Páginas:</strong>{" "}
+                                                    {livroSelecionado.paginas}
+                                                </p>
+                                            )}
+
+                                            {livroSelecionado.preco && (
+                                                <p>
+                                                    <strong>Preço:</strong>{" "}
+                                                    {livroSelecionado.preco}
+                                                </p>
+                                            )}
+
+                                            {livroSelecionado.dimensoes && (
+                                                <p>
+                                                    <strong>Dimensões:</strong>{" "}
+                                                    {livroSelecionado.dimensoes}
+                                                </p>
+                                            )}
+
+                                            {livroSelecionado.idioma && (
+                                                <p>
+                                                    <strong>Idioma:</strong>{" "}
+                                                    {livroSelecionado.idioma}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </article>
 
                                     <button
                                         type="button"
@@ -179,45 +199,60 @@ export default function Livros() {
 
                 {/* ================================
                     GRID DE LIVROS
+                    - Mostra TODOS os livros cadastrados
+                    - Destaque ou não destaque
                 ================================ */}
                 <section className="px-6 pb-24">
                     <div className="max-w-7xl mx-auto">
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                            {livros.map((livro) => (
-                                <button
-                                    key={livro.id}
-                                    type="button"
-                                    onClick={() => selecionarLivro(livro.id)}
-                                    className="group cursor-pointer text-left"
-                                >
-                                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
-                                        <Image
-                                            src={livro.imagem}
-                                            alt={livro.titulo}
-                                            fill
-                                            className="object-cover group-hover:scale-110 transition duration-700"
-                                        />
-                                    </div>
+                        {livros.length === 0 ? (
+                            <p className="text-center text-gray-600 dark:text-gray-300">
+                                Nenhum livro cadastrado ainda.
+                            </p>
+                        ) : (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                                {livros.map((livro) => (
+                                    <button
+                                        key={livro.id}
+                                        type="button"
+                                        onClick={() =>
+                                            selecionarLivro(livro.id)
+                                        }
+                                        className="group cursor-pointer text-left"
+                                    >
+                                        <div className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg group-hover:shadow-2xl group-hover:-translate-y-2 transition-all duration-500">
+                                            <Image
+                                                src={livro.imagem}
+                                                alt={livro.titulo}
+                                                fill
+                                                className="object-cover group-hover:scale-110 transition duration-700"
+                                            />
+                                        </div>
 
-                                    <div className="mt-4 text-center">
-                                        <h4 className="font-bold text-[#18384A] dark:text-white group-hover:text-[#D4AF37] transition-colors">
-                                            {livro.titulo}
-                                        </h4>
+                                        <div className="mt-4 text-center">
+                                            <h4 className="font-bold text-[#18384A] dark:text-white group-hover:text-[#D4AF37] transition-colors">
+                                                {livro.titulo}
+                                            </h4>
 
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            {livro.autor}
-                                        </p>
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                {livro.autor}
+                                            </p>
+
+                                            {livro.destaqueHome && (
+                                                <span className="inline-block mt-2 rounded-full bg-[#D4AF37] px-3 py-1 text-xs font-bold text-black">
+                                                    Destaque Home
+                                                </span>
+                                            )}
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </section>
             </div>
 
             {/* ================================
                 CTA FINAL
-                - mt-auto mantém a faixa colada embaixo
             ================================ */}
             <section className="mt-auto relative overflow-hidden px-6 py-20 bg-[#C95F52] dark:bg-[#7E342D]">
                 <div className="max-w-7xl mx-auto text-center">
