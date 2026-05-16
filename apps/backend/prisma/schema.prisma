@@ -1,0 +1,120 @@
+// 1. Configuração da conexão com o banco de dados
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  name     String
+  password String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Contact {
+  id    String @id @default(uuid())
+  title String
+  description String
+  question String
+  answer String
+  subtitleone String
+  descriptionone String
+  subtitletwo String
+  descriptiontwo String
+  subtitlethree String
+  descriptionthree String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Founder {
+  id String @id @default(uuid())
+  name String
+  position String
+  description String
+  image String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("founders")
+}
+
+model Book {
+  id String @id @default(uuid())
+  name String
+  author String
+  description String
+  image String
+  year String
+  isbn String
+  price Decimal
+  dimensions String
+  language String
+  blbookmark String
+  category String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("book")
+}
+
+model Service {
+  id String @id @default(uuid())
+  title String
+  description String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("services")
+}
+
+model EditorialService {
+  id String @id @default(uuid())
+  service_id String
+  title String
+  description String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service    Service     @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  @@map("editorialservices")
+}
+
+model EditorialServiceImage {
+  id String @id @default(uuid())
+  editorial_service_id String
+  image String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  editorialservice    EditorialService     @relation(fields: [editorial_service_id], references: [id], onDelete: Cascade)
+
+  @@map("editorialserviceimages")
+}
+
+model Guardiana {
+  id String @id @default(uuid())
+  pretitle String
+  title String
+  description String
+  descriptionTwo String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model About {
+  id String @id @default(uuid())
+  title String
+  description String
+  image String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
