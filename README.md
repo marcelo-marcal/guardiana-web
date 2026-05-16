@@ -51,112 +51,143 @@ Light / Dark
 
 ```bash
 guardiana-web
-├── .next
 ├── node_modules
-├── public/
-│   ├── livros/
-│   │   ├── livro1.png
-│   │   ├── livro2.png
-│   │   └── livro3.png
+├── apps/
+│   ├── backend/
+│   │   ├── prisma/
+│   │   │   └── schema.prisma
+│   │   │
+│   │   ├── src/
+│   │   │   ├── modules/
+│   │   │   │   ├── audit/
+│   │   │   │   ├── auth/
+│   │   │   │   ├── books/
+│   │   │   │   ├── orders/
+│   │   │   │   ├── poems/
+│   │   │   │   └── users/
+│   │   │   │
+│   │   │   ├── shared/
+│   │   │   │   ├── errors/
+│   │   │   │   ├── http/
+│   │   │   │   └── utils/
+│   │   │   │
+│   │   │   └── server.ts
+│   │   │
+│   │   ├── package.json
+│   │   └── tsconfig.json
 │   │
-│   ├── logo.svg
-│   ├── jenifer-brum.png
-│   └── jenny-gonzalez.png
+│   └── frontend/
+│       ├── .next/
+│       ├── node_modules/
+│       ├── public/
+│       │   ├── livros/
+│       │
+│       ├── src/
+│       │   ├── app/
+│       │   │   ├── (auth)/                 # LOGIN (futuro)
+│       │   │   │   └── login/
+│       │   │   │       └── page.tsx
+│       │   │   │
+│       │   │   ├── (dashboard)/            # ADMIN (futuro)
+│       │   │   │   └── dashboard/
+│       │   │   │       ├── configuraçoes
+│       │   │   │       │   └── page.tsx
+│       │   │   │       │
+│       │   │   │       ├── livros/
+│       │   │   │       │   └── page.tsx
+│       │   │   │       │
+│       │   │   │       ├── publicacoes/
+│       │   │   │       │   └── page.tsx
+│       │   │   │       │
+│       │   │   │       ├── sobre/
+│       │   │   │       │   └── page.tsx
+│       │   │   │       │
+│       │   │   │       ├── layout.tsx
+│       │   │   │       └── page.tsx
+│       │   │   │
+│       │   │   ├── (public)/               # SITE
+│       │   │   │   ├── contato/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   ├── fundadoras/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   ├── guardiana/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   ├── livros/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   ├── servicos-editoriais/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   ├── sobre/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   └── page.tsx
+│       │   │   │
+│       │   │   ├── favicon.ico
+│       │   │   ├── globals.css
+│       │   │   └── layout.tsx              # layout global
+│       │   │
+│       │   ├── components/
+│       │   │   │
+│       │   │   ├── auth/
+│       │   │   │   └── WithAuth.tsx
+│       │   │   │
+│       │   │   ├── layout/
+│       │   │   │   ├── Header.tsx
+│       │   │   │   └── Footer.tsx
+│       │   │   │
+│       │   │   ├── sections/               # HOME
+│       │   │   │   ├── Autores.tsx         # NOVO (home preview)
+│       │   │   │   ├── Contato.tsx         # NOVO (home preview)
+│       │   │   │   ├── Hero.tsx
+│       │   │   │   ├── Livro.tsx
+│       │   │   │   ├── Publicacoes.tsx
+│       │   │   │   └── Sobre.tsx
+│       │   │   │
+│       │   │   └── ui/
+│       │   │       └── PublicacaoCard.tsx
+│       │   │
+│       │   ├── data/                       # MOCK (simula API)
+│       │   │   ├── conteudo.ts             # NOVO (textos editáveis)
+│       │   │   ├── publicacaoConfig.ts
+│       │   │   ├── publicacoes.ts
+│       │   │   └── sobre.ts
+│       │   │
+│       │   ├── hooks/
+│       │   │   └── useAuth.ts
+│       │   │
+│       │   └── services/                   # SIMULA API
+│       │       ├── conteudo.service.ts
+│       │       ├── livros.service.ts
+│       │       ├── publicacoes.service.ts
+│       │       └── sobre.service.ts
+│       │
+│       ├── .editorconfig
+│       ├── .gitignore
+│       ├── eslint.config.js
+│       ├── next-env.d.ts
+│       ├── next.config.ts
+│       ├── package-lock.json
+│       ├── package.json
+│       ├── postcss.config.js
+│       ├── postcss.config.mjs
+│       ├── README.md
+│       ├── tailwind.config.js
+│       ├── tsconfig.json
+│       └── tsconfig.tsbuildinfo
+│    
 │
-├── src/
-│   ├── app/
-│   │   ├── (auth)/                 # LOGIN (futuro)
-│   │   │   └── login/
-│   │   │       └── page.tsx
-│   │   │
-│   │   ├── (dashboard)/            # ADMIN (futuro)
-│   │   │   └── dashboard/
-│   │   │       ├── configuraçoes
-│   │   │       │   └── page.tsx
-│   │   │       │
-│   │   │       ├── livros/
-│   │   │       │   └── page.tsx
-│   │   │       │
-│   │   │       ├── publicacoes/
-│   │   │       │   └── page.tsx
-│   │   │       │
-│   │   │       ├── sobre/
-│   │   │       │   └── page.tsx
-│   │   │       │
-│   │   │       ├── layout.tsx
-│   │   │       └── page.tsx
-│   │   │
-│   │   ├── (public)/               # SITE
-│   │   │   ├── contato/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   ├── fundadoras/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   ├── guardiana/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   ├── livros/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   ├── servicos-editoriais/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   ├── sobre/
-│   │   │   │   └── page.tsx
-│   │   │   │
-│   │   │   └── page.tsx
-│   │   │
-│   │   ├── favicon.ico
-│   │   ├── globals.css
-│   │   └── layout.tsx              # layout global
-│   │
-│   ├── components/
-│   │   │
-│   │   ├── auth/
-│   │   │   └── WithAuth.tsx
-│   │   │
-│   │   ├── layout/
-│   │   │   ├── Header.tsx
-│   │   │   └── Footer.tsx
-│   │   │
-│   │   ├── sections/               # HOME
-│   │   │   ├── Autores.tsx         # NOVO (home preview)
-│   │   │   ├── Contato.tsx         # NOVO (home preview)
-│   │   │   ├── Hero.tsx
-│   │   │   ├── Livro.tsx
-│   │   │   ├── Publicacoes.tsx
-│   │   │   └── Sobre.tsx
-│   │   │
-│   │   └── ui/
-│   │       └── PublicacaoCard.tsx
-│   │
-│   ├── data/                       # MOCK (simula API)
-│   │   ├── conteudo.ts             # NOVO (textos editáveis)
-│   │   ├── publicacaoConfig.ts
-│   │   ├── publicacoes.ts
-│   │   └── sobre.ts
-│   │
-│   ├── hooks/
-│   │   └── useAuth.ts
-│   │
-│   └── services/                   # SIMULA API
-│       ├── conteudo.service.ts
-│       ├── publicacoes.service.ts
-│       └── sobre.service.ts
+├── docs/
+├── infra/
 │
 ├── .editorconfig
 ├── .gitignore
-├── eslint.config.js
-├── next-env.d.ts
-├── next.config.ts
-├── package-lock.json
 ├── package.json
-├── postcss.config.js
-├── postcss.config.mjs
-├── README.md
-├── tailwind.config.js
-└── tsconfig.json
+├── PROJECT_SUMMARY.md
+└── README.md 
 ```
 
 ## LOGIN
@@ -188,4 +219,12 @@ git commit -m "DESCRIÇÃO :construction:"
 git push origin develop
 
 
+## Monorepo
 
+## Rode na Rais da pasta guardiana-web
+
+`npm install`
+
+`npm run dev:frontend`
+
+`npm run dev:backend`
