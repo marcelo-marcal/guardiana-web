@@ -1,21 +1,51 @@
 "use client";
 
 // ================================
-// HOOK DE AUTENTICAÇÃO (MOCK) - VERSÃO SYNC
+// IMPORTS
 // ================================
-// Correção: Adiciona evento personalizado para sincronizar
-// o estado de autenticação entre todos os componentes
-// que usam useAuth() em tempo real
-// ================================
+import { useCallback, useEffect, useState } from "react";
 
-import { useEffect, useState } from "react";
+// ================================
+// CONFIGURAÇÃO DA API
+// ================================
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 
 // ================================
 // TIPAGEM DO USUÁRIO
 // ================================
 type User = {
+    id: string;
+    name: string;
     email: string;
+    role: "USER" | "ADMIN" | "SUPER_ADMIN";
+    status: string;
+    avatarUrl: string | null;
 };
+
+// ================================
+// RESPOSTA DO LOGIN
+// ================================
+type LoginResponse = {
+    success: boolean;
+    token: string;
+    user: User;
+    message?: string;
+};
+
+// ================================
+// RESPOSTA DO /AUTH/ME
+// ================================
+type MeResponse = {
+    success: boolean;
+    user: User;
+    message?: string;
+};
+
+// ================================
+// CHAVES DO LOCALSTORAGE
+// ================================
+const TOKEN_KEY = "guardiana_token";
+const USER_KEY = "guardiana_user";
 
 // ================================
 // HOOK PRINCIPAL
@@ -25,94 +55,119 @@ export function useAuth() {
     const [loading, setLoading] = useState(true);
 
     // ================================
-    // FUNÇÃO INTERNA: Verificar sessão no localStorage
+    // FUNÇÃO INTERNA: limpar sessão
     // ================================
-    // Centraliza a lógica de leitura para reuso no listener
-    const checkAuth = () => {
-        // Segurança: só executa no cliente
+    const clearSession = useCallback(() => {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+
+        // Remove chaves antigas do mock
+        localStorage.removeItem("auth");
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        localStorage.removeItem("auth_token");
+
+        setUser(null);
+    }, []);
+
+    // ================================
+    // FUNÇÃO INTERNA: verificar sessão real
+    // ================================
+    const checkAuth = useCallback(async () => {
         if (typeof window === "undefined") {
             setLoading(false);
             return;
         }
 
-        const storedUser = localStorage.getItem("user");
-        const isAuth = localStorage.getItem("auth");
+        try {
+            const token = localStorage.getItem(TOKEN_KEY);
 
-        if (storedUser && isAuth === "true") {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch (error) {
-                // Se houver erro ao parsear, limpa dados inválidos
-                console.error("Erro ao carregar usuário:", error);
-                localStorage.removeItem("user");
-                localStorage.removeItem("auth");
-                setUser(null);
+            if (!token) {
+                clearSession();
+                return;
             }
-        } else {
-            setUser(null);
+
+            const response = await fetch(`${API_URL}/auth/me`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const data = (await response.json()) as MeResponse;
+
+            if (!response.ok || !data.success) {
+                clearSession();
+                return;
+            }
+
+            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            setUser(data.user);
+        } catch {
+            clearSession();
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
-    };
+    }, [clearSession]);
 
     // ================================
     // EFEITO: Verifica ao montar + Escuta evento de sync
     // ================================
     useEffect(() => {
-        // 1. Verificação inicial ao carregar o componente
-        checkAuth();
+        void checkAuth();
 
-        // 2. Listener para evento personalizado de atualização de auth
-        // Quando qualquer componente disparar 'auth:updated', este hook re-verifica
-        const handleAuthUpdate = () => checkAuth();
+        const handleAuthUpdate = () => {
+            void checkAuth();
+        };
+
         window.addEventListener("auth:updated", handleAuthUpdate);
 
-        // Cleanup: remove listener ao desmontar (evita memory leak)
         return () => {
             window.removeEventListener("auth:updated", handleAuthUpdate);
         };
-    }, []);
+    }, [checkAuth]);
 
     // ================================
-    // LOGIN (MOCK)
+    // LOGIN REAL COM BACKEND
     // ================================
-    const login = (email: string, senha: string) => {
-        // Simula validação de backend
-        if (email === "admin@guardiana.com" && senha === "123456") {
-            const userData = { email };
+    const login = async (email: string, senha: string) => {
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    password: senha,
+                }),
+            });
 
-            // Salva no localStorage (persistência)
-            localStorage.setItem("user", JSON.stringify(userData));
-            localStorage.setItem("auth", "true");
+            const data = (await response.json()) as LoginResponse;
 
-            // Atualiza estado local deste hook
-            setUser(userData);
-
-            // DISPARA EVENTO: avisa TODOS os componentes que auth mudou
-            // Isso faz o Header, Dashboard, etc. re-verificarem o estado
-            if (typeof window !== "undefined") {
-                window.dispatchEvent(new Event("auth:updated"));
+            if (!response.ok || !data.success) {
+                return false;
             }
 
+            localStorage.setItem(TOKEN_KEY, data.token);
+            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+
+            setUser(data.user);
+
+            window.dispatchEvent(new Event("auth:updated"));
+
             return true;
+        } catch {
+            return false;
         }
-        return false;
     };
 
     // ================================
     // LOGOUT
     // ================================
     const logout = () => {
-        // Limpa dados do localStorage
-        localStorage.removeItem("user");
-        localStorage.removeItem("auth");
-
-        // Atualiza estado local
-        setUser(null);
-
-        // DISPARA EVENTO: avisa TODOS os componentes que auth mudou
-        if (typeof window !== "undefined") {
-            window.dispatchEvent(new Event("auth:updated"));
-        }
+        clearSession();
+        window.dispatchEvent(new Event("auth:updated"));
     };
 
     return { user, login, logout, loading };

@@ -5,6 +5,7 @@ import type { Request, Response } from "express";
 import { createBookSchema } from "../dto/create-book.dto.js";
 import { updateBookSchema } from "../dto/update-book.dto.js";
 import { BookService } from "../services/BookService.js";
+import type { AuthenticatedRequest } from "../../auth/middleware/authenticate.js";
 
 // ================================
 // CONTROLLER: LIVROS
@@ -92,10 +93,17 @@ export class BookController {
     // CRIAR LIVRO
     // Protegido: ADMIN / SUPER_ADMIN
     // ================================
-    async create(request: Request, response: Response) {
+    async create(request: AuthenticatedRequest, response: Response) {
         try {
+            if (!request.user) {
+                return response.status(401).json({
+                    success: false,
+                    message: "Usuário não autenticado.",
+                });
+            }
+
             const data = createBookSchema.parse(request.body);
-            const book = await this.bookService.create(data);
+            const book = await this.bookService.create(data, request.user.id);
 
             return response.status(201).json({
                 success: true,
@@ -118,11 +126,18 @@ export class BookController {
     // ATUALIZAR LIVRO
     // Protegido: ADMIN / SUPER_ADMIN
     // ================================
-    async update(request: Request, response: Response) {
+    async update(request: AuthenticatedRequest, response: Response) {
         try {
+            if (!request.user) {
+                return response.status(401).json({
+                    success: false,
+                    message: "Usuário não autenticado.",
+                });
+            }
+
             const { id } = request.params;
             const data = updateBookSchema.parse(request.body);
-            const book = await this.bookService.update(id, data);
+            const book = await this.bookService.update(id, data, request.user.id);
 
             return response.json({
                 success: true,
@@ -145,10 +160,17 @@ export class BookController {
     // REMOVER LIVRO
     // Protegido: ADMIN / SUPER_ADMIN
     // ================================
-    async remove(request: Request, response: Response) {
+    async remove(request: AuthenticatedRequest, response: Response) {
         try {
+            if (!request.user) {
+                return response.status(401).json({
+                    success: false,
+                    message: "Usuário não autenticado.",
+                });
+            }
+
             const { id } = request.params;
-            const book = await this.bookService.remove(id);
+            const book = await this.bookService.remove(id, request.user.id);
 
             return response.json({
                 success: true,

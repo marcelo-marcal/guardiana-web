@@ -1,8 +1,13 @@
 // ================================
-// TIPAGEM DO LIVRO
+// CONFIGURAÇÃO DA API
+// ================================
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+
+// ================================
+// TIPAGEM DO LIVRO NO FRONTEND
 // ================================
 export type Livro = {
-    id: number;
+    id: string;
     titulo: string;
     autor: string;
     imagem: string;
@@ -17,96 +22,97 @@ export type Livro = {
 };
 
 // ================================
-// CHAVE DO "BANCO" LOCAL
+// TIPAGEM DO LIVRO VINDO DO BACKEND
 // ================================
-const STORAGE_KEY_LIVROS = "guardiana_livros";
+type BackendBook = {
+    id: string;
+    title: string;
+    author: string;
+    description: string;
+    coverUrl: string | null;
+    year: string | null;
+    isbn: string | null;
+    pages: string | null;
+    price: string | number | null;
+    dimensions: string | null;
+    language: string | null;
+    isHomeFeature: boolean;
+};
 
 // ================================
-// LIVROS INICIAIS
+// RESPOSTA DA API
 // ================================
-export const livrosIniciais: Livro[] = [
-    {
-        id: 1,
-        titulo: "Emaranhado",
-        autor: "Talles Lisot",
-        imagem: "/livro-emaranhado.jpeg",
-        descricao:
-            "Emaranhado nasce como um mergulho íntimo na mente do jovem artista brasileiro de Marau, Rio Grande do Sul, Talles Lisot. Neste livro de escritos e poemas, a palavra se torna espelho e labirinto. Um espaço onde dúvidas sobre a vida, a criação e a própria identidade se entrelaçam sem a promessa de respostas fáceis.",
-        ano: "2026",
-        isbn: "978-65-975564-0-3",
-        paginas: "108 páginas",
-        preco: "",
-        dimensoes: "14x21 cm",
-        idioma: "Português",
-        destaqueHome: true,
-    },
-];
+type BooksResponse = {
+    success: boolean;
+    books: BackendBook[];
+};
 
 // ================================
-// VALIDAR SE O OBJETO É LIVRO
+// CONVERTER BACKEND -> FRONTEND
 // ================================
-function isLivro(value: unknown): value is Livro {
-    if (typeof value !== "object" || value === null) return false;
-
-    const livro = value as Record<string, unknown>;
-
-    return (
-        typeof livro.id === "number" &&
-        typeof livro.titulo === "string" &&
-        typeof livro.autor === "string" &&
-        typeof livro.imagem === "string" &&
-        typeof livro.descricao === "string" &&
-        typeof livro.ano === "string" &&
-        typeof livro.isbn === "string" &&
-        typeof livro.paginas === "string" &&
-        typeof livro.preco === "string" &&
-        typeof livro.dimensoes === "string" &&
-        typeof livro.idioma === "string" &&
-        typeof livro.destaqueHome === "boolean"
-    );
+function mapBackendBookToLivro(book: BackendBook): Livro {
+    return {
+        id: book.id,
+        titulo: book.title,
+        autor: book.author,
+        imagem: book.coverUrl
+            ? book.coverUrl.startsWith("/uploads")
+                ? `${API_URL}${book.coverUrl}`
+                : book.coverUrl
+            : "/livro-emaranhado.jpeg",
+        descricao: book.description,
+        ano: book.year || "",
+        isbn: book.isbn || "",
+        paginas: book.pages || "",
+        preco: book.price !== null ? String(book.price) : "",
+        dimensoes: book.dimensions || "",
+        idioma: book.language || "Português",
+        destaqueHome: book.isHomeFeature,
+    };
 }
 
 // ================================
-// BUSCAR LIVROS
+// BUSCAR TODOS OS LIVROS
+// API REAL: GET /books
 // ================================
-export function getLivros(): Livro[] {
-    if (typeof window === "undefined") return livrosIniciais;
+export async function getLivros(): Promise<Livro[]> {
+    const response = await fetch(`${API_URL}/books`, {
+        method: "GET",
+        cache: "no-store",
+    });
 
-    const data = localStorage.getItem(STORAGE_KEY_LIVROS);
-
-    if (!data) return livrosIniciais;
-
-    try {
-        const parsed: unknown = JSON.parse(data);
-
-        if (Array.isArray(parsed) && parsed.every(isLivro)) {
-            return parsed;
-        }
-
-        return livrosIniciais;
-    } catch {
-        return livrosIniciais;
+    if (!response.ok) {
+        throw new Error("Erro ao buscar livros.");
     }
+
+    const data = (await response.json()) as BooksResponse;
+
+    if (!data.success) {
+        throw new Error("Erro ao carregar livros.");
+    }
+
+    return data.books.map(mapBackendBookToLivro);
 }
 
 // ================================
-// SALVAR LIVROS
+// BUSCAR LIVROS EM DESTAQUE DA HOME
+// API REAL: GET /books/home-features
 // ================================
-export function setLivros(livros: Livro[]) {
-    if (typeof window === "undefined") return;
+export async function getLivrosDestaque(): Promise<Livro[]> {
+    const response = await fetch(`${API_URL}/books/home-features`, {
+        method: "GET",
+        cache: "no-store",
+    });
 
-    localStorage.setItem(STORAGE_KEY_LIVROS, JSON.stringify(livros));
+    if (!response.ok) {
+        throw new Error("Erro ao buscar livros em destaque.");
+    }
 
-    // Aviso global para Home e página pública atualizarem
-    window.dispatchEvent(new Event("livrosAtualizados"));
-}
+    const data = (await response.json()) as BooksResponse;
 
-// ================================
-// BUSCAR LIVROS EM DESTAQUE
-// Regra: Home mostra no máximo 3
-// ================================
-export function getLivrosDestaque(): Livro[] {
-    return getLivros()
-        .filter((livro) => livro.destaqueHome)
-        .slice(0, 3);
+    if (!data.success) {
+        throw new Error("Erro ao carregar destaques.");
+    }
+
+    return data.books.map(mapBackendBookToLivro);
 }

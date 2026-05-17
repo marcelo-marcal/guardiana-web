@@ -65,6 +65,13 @@ guardiana-web
 │   │   ├── src/
 │   │   │   ├── modules/
 │   │   │   │   ├── audit/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   └── AuditController.ts
+│   │   │   │   │   ├── routes/
+│   │   │   │   │   │   └── audit.routes.ts
+│   │   │   │   │   └── services/
+│   │   │   │   │       └── AuditService.ts
+│   │   │   │   │
 │   │   │   │   ├── auth/
 │   │   │   │   │   ├── controllers/
 │   │   │   │   │   │   ├── AuthController.ts
@@ -260,3 +267,14 @@ git push origin develop
 Busca erros nos arquivos do Back-End:
 
 `npm run typecheck --workspace=@guardiana/backend`
+
+
+Conetctado Back e Front
+
+apps/frontend/.env.local
+
+NEXT_PUBLIC_API_URL=http://localhost:3333
+
+
+superadmin@guardiana.com
+Super@123456
