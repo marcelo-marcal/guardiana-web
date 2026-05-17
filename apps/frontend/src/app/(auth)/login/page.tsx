@@ -16,19 +16,27 @@ export default function Login() {
 
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
+    const [loading, setLoading] = useState(false);
 
     // ================================
     // SUBMIT
     // ================================
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const success = login(email, senha);
+        try {
+            setLoading(true);
 
-        if (success) {
-            router.push("/dashboard"); // entra no painel
-        } else {
+            const success = await login(email, senha);
+
+            if (success) {
+                router.push("/dashboard");
+                return;
+            }
+
             alert("Credenciais inválidas");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -58,11 +66,22 @@ export default function Login() {
 
                     <button
                         type="submit"
-                        className="w-full bg-[#D4AF37] text-black py-3 rounded-lg font-medium hover:opacity-90 transition"
+                        disabled={loading}
+                        className="w-full bg-[#D4AF37] text-black py-3 rounded-lg font-medium hover:opacity-90 transition disabled:opacity-60"
                     >
-                        Entrar
+                        {loading ? "Entrando..." : "Entrar"}
                     </button>
                 </form>
+
+                <div className="mt-6 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 p-4 text-sm text-gray-600 dark:text-gray-300">
+                    <p className="font-semibold text-gray-900 dark:text-white">
+                        Acesso administrativo
+                    </p>
+                    <p className="mt-2">
+                        Use um usuário Admin ou SuperAdmin cadastrado no
+                        backend.
+                    </p>
+                </div>
             </div>
         </div>
     );
