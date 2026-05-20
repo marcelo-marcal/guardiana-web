@@ -268,6 +268,17 @@ export class PoemService {
 
         const nextHighlight = !poem.isHighlighted;
 
+        // VALIDAÇÃO DE LIMITE (MÁXIMO 6)
+        if (nextHighlight) {
+            const highlightCount = await prisma.poem.count({
+                where: { isHighlighted: true, status: PoemStatus.HIGHLIGHTED }
+            });
+
+            if (highlightCount >= 6) {
+                throw new Error("O limite de 6 poemas em destaque já foi atingido.");
+            }
+        }
+
         const updatedPoem = await prisma.poem.update({
             where: {
                 id: poemId,

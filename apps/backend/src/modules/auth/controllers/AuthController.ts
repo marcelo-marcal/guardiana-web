@@ -1,38 +1,42 @@
-// ================================
-// IMPORTS
-// ================================
-import type { Request, Response } from "express";
-import { loginSchema } from "../dto/login.dto.js";
+import { Request, Response } from "express";
 import { AuthService } from "../services/AuthService.js";
 
-// ================================
-// CONTROLLER DE AUTENTICAÇÃO
-// ================================
+const authService = new AuthService();
+
 export class AuthController {
-    private readonly authService = new AuthService();
-
-    // ================================
-    // LOGIN
-    // ================================
-    async login(request: Request, response: Response) {
+    async request(req: Request, res: Response) {
         try {
-            const data = loginSchema.parse(request.body);
-            const result = await this.authService.login(data);
+            const { email } = req.body;
+            if (!email) return res.status(400).json({ error: "E-mail obrigatório" });
+            
+            const result = await authService.requestAccessCode(email);
+            return res.json(result);
+        } catch (error: any) {
+            return res.status(500).json({ error: error.message });
+        }
+    }
 
-            return response.json({
-                success: true,
-                ...result,
-            });
-        } catch (error) {
-            const message =
-                error instanceof Error
-                    ? error.message
-                    : "Erro ao realizar login.";
+    async verify(req: Request, res: Response) {
+        try {
+            const { email, code } = req.body;
+            if (!email || !code) return res.status(400).json({ error: "E-mail e código são obrigatórios" });
 
-            return response.status(401).json({
-                success: false,
-                message,
-            });
+            const result = await authService.verifyCode(email, code);
+            return res.json(result);
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    }
+
+    async adminLogin(req: Request, res: Response) {
+        try {
+            const { email, password } = req.body;
+            if (!email || !password) return res.status(400).json({ error: "E-mail e senha são obrigatórios" });
+
+            const result = await authService.adminLogin(email, password);
+            return res.json(result);
+        } catch (error: any) {
+            return res.status(401).json({ error: error.message }); // 401 Unauthorized para falhas de login
         }
     }
 }
