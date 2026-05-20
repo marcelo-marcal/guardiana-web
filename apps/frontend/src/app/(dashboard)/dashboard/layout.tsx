@@ -4,6 +4,7 @@
 // IMPORTS
 // ================================
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import WithAuth from "../../../components/auth/WithAuth";
 
@@ -18,7 +19,11 @@ export default function DashboardLayout({
     // ================================
     // ESTADO: MENU MOBILE
     // ================================
+    const { user } = useAuth();
     const [open, setOpen] = useState(false);
+
+    const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+    const dashboardTitle = isAdmin ? "Admin" : "Meu Perfil";
 
     return (
         <div className="min-h-screen flex bg-gray-50 dark:bg-[#020617] transition-colors">
@@ -29,39 +34,47 @@ export default function DashboardLayout({
             ================================ */}
             <aside className="hidden md:flex w-64 flex-col bg-white dark:bg-[#020617] border-r border-gray-200 dark:border-white/10 p-6">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                    Admin
+                    {dashboardTitle}
                 </h2>
                 <nav className="flex flex-col gap-4 text-gray-700 dark:text-gray-300">
                     <Link
                         href="/dashboard"
                         className="hover:text-[#D4AF37] transition"
                     >
-                        Dashboard
+                        {isAdmin ? "Dashboard" : "Meus Poemas"}
                     </Link>
-                    <Link
-                        href="/dashboard/sobre"
-                        className="hover:text-[#D4AF37] transition"
-                    >
-                        Sobre
-                    </Link>
-                    <Link
-                        href="/dashboard/livros"
-                        className="hover:text-[#D4AF37] transition"
-                    >
-                        Livros
-                    </Link>
-                    <Link
-                        href="/dashboard/publicacoes"
-                        className="hover:text-[#D4AF37] transition"
-                    >
-                        Publicações
-                    </Link>
-                    <Link
-                        href="/dashboard/configuracoes"
-                        className="hover:text-[#D4AF37] transition"
-                    >
-                        Configurações
-                    </Link>
+                    
+                    {isAdmin && (
+                        <>
+                            <Link
+                                href="/dashboard/sobre"
+                                className="hover:text-[#D4AF37] transition"
+                            >
+                                Sobre
+                            </Link>
+                            <Link
+                                href="/dashboard/livros"
+                                className="hover:text-[#D4AF37] transition"
+                            >
+                                Livros
+                            </Link>
+                            <Link
+                                href="/dashboard/publicacoes"
+                                className="hover:text-[#D4AF37] transition"
+                            >
+                                Publicações
+                            </Link>
+                        </>
+                    )}
+                    
+                    {isAdmin && (
+                        <Link
+                            href="/dashboard/configuracoes"
+                            className="hover:text-[#D4AF37] transition"
+                        >
+                            Configurações
+                        </Link>
+                    )}
                 </nav>
             </aside>
 
@@ -75,7 +88,7 @@ export default function DashboardLayout({
                 ================================ */}
                 <div className="md:hidden flex items-center justify-between p-4 border-b border-gray-200 dark:border-white/10">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                        Admin
+                        {dashboardTitle}
                     </h2>
                     <button
                         onClick={() => setOpen(true)}
@@ -119,36 +132,44 @@ export default function DashboardLayout({
                                     onClick={() => setOpen(false)}
                                     className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
                                 >
-                                    Dashboard
+                                    {isAdmin ? "Dashboard" : "Meus Poemas"}
                                 </Link>
-                                <Link
-                                    href="/dashboard/sobre"
-                                    onClick={() => setOpen(false)}
-                                    className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
-                                >
-                                    Sobre
-                                </Link>
-                                <Link
-                                    href="/dashboard/livros"
-                                    onClick={() => setOpen(false)}
-                                    className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
-                                >
-                                    Livros
-                                </Link>
-                                <Link
-                                    href="/dashboard/publicacoes"
-                                    onClick={() => setOpen(false)}
-                                    className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
-                                >
-                                    Publicações
-                                </Link>
-                                <Link
-                                    href="/dashboard/configuracoes"
-                                    onClick={() => setOpen(false)}
-                                    className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
-                                >
-                                    Configurações
-                                </Link>
+                                
+                                {isAdmin && (
+                                    <>
+                                        <Link
+                                            href="/dashboard/sobre"
+                                            onClick={() => setOpen(false)}
+                                            className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        >
+                                            Sobre
+                                        </Link>
+                                        <Link
+                                            href="/dashboard/livros"
+                                            onClick={() => setOpen(false)}
+                                            className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        >
+                                            Livros
+                                        </Link>
+                                        <Link
+                                            href="/dashboard/publicacoes"
+                                            onClick={() => setOpen(false)}
+                                            className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        >
+                                            Publicações
+                                        </Link>
+                                    </>
+                                )}
+
+                                {isAdmin && (
+                                    <Link
+                                        href="/dashboard/configuracoes"
+                                        onClick={() => setOpen(false)}
+                                        className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                    >
+                                        Configurações
+                                    </Link>
+                                )}
                             </nav>
                         </div>
 

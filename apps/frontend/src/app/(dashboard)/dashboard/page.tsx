@@ -7,6 +7,8 @@ export default function UserDashboard() {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<"poemas" | "livros">("poemas");
 
+    const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
+
     // ================================
     // ESTADOS: MODAL E FORMULÁRIO
     // ================================
@@ -100,22 +102,24 @@ export default function UserDashboard() {
             </header>
 
             {/* ABAS */}
-            <div className="flex gap-4 border-b border-gray-200 dark:border-white/10 mb-8">
-                <button 
-                    onClick={() => setActiveTab("poemas")}
-                    className={`pb-4 px-2 font-medium transition ${activeTab === "poemas" ? "border-b-2 border-[#C95F52] text-[#C95F52]" : "text-gray-500"}`}
-                >
-                    Meus Poemas
-                </button>
-                <button 
-                    onClick={() => setActiveTab("livros")}
-                    className={`pb-4 px-2 font-medium transition ${activeTab === "livros" ? "border-b-2 border-[#C95F52] text-[#C95F52]" : "text-gray-500"}`}
-                >
-                    Minha Biblioteca (E-books)
-                </button>
-            </div>
+            {isAdmin && (
+                <div className="flex gap-4 border-b border-gray-200 dark:border-white/10 mb-8">
+                    <button 
+                        onClick={() => setActiveTab("poemas")}
+                        className={`pb-4 px-2 font-medium transition ${activeTab === "poemas" ? "border-b-2 border-[#C95F52] text-[#C95F52]" : "text-gray-500"}`}
+                    >
+                        Meus Poemas
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab("livros")}
+                        className={`pb-4 px-2 font-medium transition ${activeTab === "livros" ? "border-b-2 border-[#C95F52] text-[#C95F52]" : "text-gray-500"}`}
+                    >
+                        Minha Biblioteca (E-books)
+                    </button>
+                </div>
+            )}
 
-            {activeTab === "poemas" ? (
+            {activeTab === "poemas" || !isAdmin ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {/* Card de Novo Poema */}
                     <button 
