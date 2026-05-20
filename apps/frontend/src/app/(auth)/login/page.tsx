@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState(""); // Novo estado para a senha do administrador
+    const [adminRole, setAdminRole] = useState<"ADMIN" | "SUPER_ADMIN">("ADMIN");
     const [code, setCode] = useState("");
     const [name, setName] = useState(""); // Novo estado para o nome no cadastro
     const [interests, setInterests] = useState(""); // Novo estado para interesses literários
@@ -30,7 +30,7 @@ export default function LoginPage() {
     useEffect(() => {
         if (!authLoading && authUser) {
             const emailPrefix = authUser.email.split('@')[0];
-            const needsToRegister = authUser.role === "USER" && authUser.name === emailPrefix;
+            const needsToRegister = authUser.name === emailPrefix;
 
             if (needsToRegister) {
                 setLoginMode("registration");
@@ -52,7 +52,10 @@ export default function LoginPage() {
             const res = await fetch(`${API_URL}/auth/request-code`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ 
+                    email, 
+                    role: loginMode === "admin" ? adminRole : "USER" 
+                }),
             });
 
             const data = await res.json();
@@ -105,34 +108,6 @@ export default function LoginPage() {
         } catch (error) {
             console.error("Erro ao verificar código:", error);
             setError(error.message || "Código inválido ou expirado.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Login de Administrador (email/senha)
-    const handleAdminLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError("");
-
-        try {
-            const res = await fetch(`${API_URL}/auth/admin-login`, { // Novo endpoint
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Credenciais inválidas.");
-
-            // Salva token e dados do usuário no localStorage
-            localStorage.setItem(TOKEN_KEY, data.token);
-            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-            window.location.href = "/dashboard";
-        } catch (error: any) {
-            console.error("Erro no login de administrador:", error);
-            setError(error.message || "Credenciais inválidas.");
         } finally {
             setLoading(false);
         }
@@ -226,40 +201,71 @@ export default function LoginPage() {
             );
         } else if (loginMode === "admin") {
             return (
-                <form onSubmit={handleAdminLogin} className="space-y-4">
+                <form onSubmit={userLoginStep === "email" ? handleRequestCode : handleVerifyCode} className="space-y-4">
+                    {userLoginStep === "email" && (
+                        <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl mb-2">
+                            <button
+                                type="button"
+                                onClick={() => setAdminRole("ADMIN")}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${adminRole === "ADMIN" ? "bg-white dark:bg-[#18384A] shadow-sm text-[#18384A] dark:text-white" : "text-gray-500"}`}
+                            >
+                                Admin
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setAdminRole("SUPER_ADMIN")}
+                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${adminRole === "SUPER_ADMIN" ? "bg-white dark:bg-[#18384A] shadow-sm text-[#18384A] dark:text-white" : "text-gray-500"}`}
+                            >
+                                Super Admin
+                            </button>
+                        </div>
+                    )}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            E-mail
+                            E-mail Corporativo
                         </label>
                         <input
                             type="email"
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 focus:ring-[#C95F52] outline-none transition"
+                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 border-[#18384A] outline-none transition"
                             placeholder="admin@guardiana.com"
+                            disabled={userLoginStep === "code"}
                         />
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Senha
-                        </label>
-                        <input
-                            type="password"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 focus:ring-[#C95F52] outline-none transition"
-                            placeholder="********"
-                        />
-                    </div>
+                    {userLoginStep === "code" && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Código de Verificação
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                maxLength={6}
+                                value={code}
+                                onChange={(e) => setCode(e.target.value)}
+                                className="w-full px-4 py-3 text-center tracking-widest text-2xl rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 border-[#18384A] outline-none transition"
+                                placeholder="000000"
+                            />
+                        </div>
+                    )}
                     <button
                         type="submit"
                         disabled={loading}
                         className="w-full bg-[#18384A] hover:bg-[#122b3a] text-white font-bold py-3 rounded-lg transition duration-300 disabled:opacity-50"
                     >
-                        {loading ? "Entrando..." : "Entrar como Administrador"}
+                        {loading ? "Processando..." : (userLoginStep === "email" ? "Avançar" : "Entrar")}
                     </button>
+                    {userLoginStep === "code" && (
+                        <button
+                            type="button"
+                            onClick={() => setUserLoginStep("email")}
+                            className="w-full text-sm text-gray-500 hover:text-[#C95F52] transition"
+                        >
+                            Usar outro e-mail
+                        </button>
+                    )}
                     {/* Botão para voltar à seleção de perfil */}
                     <button
                         type="button"

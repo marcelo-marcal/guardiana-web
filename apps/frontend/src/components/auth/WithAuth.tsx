@@ -51,7 +51,7 @@ export default function WithAuth({ children }: WithAuthProps) {
         }
 
         // 4. Se tem usuário mas o nome ainda é o padrão (precisa completar registro)
-        if (user && user.role === "USER" && user.name === user.email.split('@')[0]) {
+        if (user && user.name === user.email.split('@')[0]) {
             if (pathname !== "/login") {
                 router.replace("/login");
             }

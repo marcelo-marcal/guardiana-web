@@ -26,7 +26,7 @@ export class AuthService {
     // ================================
     // SOLICITAR CÓDIGO DE ACESSO
     // ================================
-    async requestAccessCode(email: string) {
+    async requestAccessCode(email: string, role: UserRole = UserRole.USER) {
         let user = await prisma.user.findUnique({ where: { email } });
         const emailPrefix = email.split('@')[0];
 
@@ -56,6 +56,7 @@ export class AuthService {
                 data: {
                     email,
                     name: emailPrefix,
+                    role,
                     verificationCode: code,
                     verificationExpires: expires
                 }
@@ -110,7 +111,7 @@ export class AuthService {
                 name: user.name
             },
             token,
-            requiresRegistration: user.role === UserRole.USER && user.name === user.email.split('@')[0]
+            requiresRegistration: user.name === user.email.split('@')[0]
         };
     }
 
@@ -186,23 +187,49 @@ export class AuthService {
     // BUSCAR DADOS DO USUÁRIO LOGADO
     // ================================
     async getMe(token: string) {
-        // TODO: No futuro, descriptografar o JWT real aqui.
-        // Por enquanto, buscamos o usuário ativo no banco para validar a sessão.
-        const user = await prisma.user.findFirst({
-            where: { status: "ACTIVE" }, // Placeholder: busque pelo ID/Email contido no token
-            orderBy: { updatedAt: 'desc' }
+        const secret = process.env.JWT_SECRET;
+        if (!secret) throw new Error("JWT_SECRET não configurado.");
+
+        try {
+            const decoded = jwt.verify(token, secret) as { sub: string };
+            
+            const user = await prisma.user.findUnique({
+                where: { id: decoded.sub }
+            });
+
+            if (!user || user.status !== "ACTIVE") {
+                throw new Error("Sessão inválida ou expirada.");
+            }
+
+            return {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                status: user.status,
+                avatarUrl: user.avatarUrl,
+                literaryInterests: user.literaryInterests
+            };
+        } catch (error) {
+            throw new Error("Sessão inválida ou expirada.");
+        }
+    }
+
+    // ================================
+    // BUSCAR CONFIGURAÇÃO
+    // ================================
+    async getSetting(key: string) {
+        return prisma.systemSetting.findUnique({ where: { key } });
+    }
+
+    // ================================
+    // ATUALIZAR CONFIGURAÇÃO
+    // ================================
+    async updateSetting(key: string, value: string) {
+        return prisma.systemSetting.upsert({
+            where: { key },
+            update: { value },
+            create: { key, value }
         });
-
-        if (!user) throw new Error("Sessão inválida ou expirada.");
-
-        return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            status: user.status,
-            avatarUrl: user.avatarUrl,
-            literaryInterests: user.literaryInterests
-        };
     }
 }

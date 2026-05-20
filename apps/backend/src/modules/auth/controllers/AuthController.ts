@@ -6,10 +6,10 @@ const authService = new AuthService();
 export class AuthController {
     async request(req: Request, res: Response) {
         try {
-            const { email } = req.body;
+            const { email, role } = req.body;
             if (!email) return res.status(400).json({ error: "E-mail obrigatório" });
             
-            const result = await authService.requestAccessCode(email);
+            const result = await authService.requestAccessCode(email, role);
             return res.json(result);
         } catch (error: any) {
             return res.status(500).json({ error: error.message });
@@ -62,6 +62,35 @@ export class AuthController {
             return res.json({ success: true, user });
         } catch (error: any) {
             return res.status(401).json({ success: false, error: error.message });
+        }
+    }
+
+    async getSetting(req: Request, res: Response) {
+        try {
+            const { key } = req.params;
+            const setting = await authService.getSetting(key);
+            return res.json({ success: true, value: setting?.value || "false" });
+        } catch (error: any) {
+            return res.status(400).json({ success: false, error: error.message });
+        }
+    }
+
+    async updateSetting(req: Request, res: Response) {
+        try {
+            const { key, value } = req.body;
+            
+            // Validação básica de permissão
+            const authHeader = req.headers.authorization;
+            if (!authHeader) return res.status(401).json({ error: "Não autorizado" });
+            
+            const token = authHeader.split(" ")[1];
+            const user = await authService.getMe(token);
+            if (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN") throw new Error("Acesso negado.");
+
+            await authService.updateSetting(key, String(value));
+            return res.json({ success: true, message: "Configuração atualizada." });
+        } catch (error: any) {
+            return res.status(400).json({ success: false, error: error.message });
         }
     }
 }

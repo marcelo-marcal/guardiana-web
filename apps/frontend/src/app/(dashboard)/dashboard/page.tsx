@@ -30,7 +30,10 @@ export default function UserDashboard() {
             const token = localStorage.getItem(TOKEN_KEY);
             if (!token) return;
 
-            const response = await fetch(`${API_URL}/poems/my-poems`, {
+            // Se for admin, busca todas. Se não, busca apenas as próprias.
+            const endpoint = isAdmin ? `${API_URL}/poems/admin/all` : `${API_URL}/poems/my-poems`;
+            
+            const response = await fetch(endpoint, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -51,6 +54,54 @@ export default function UserDashboard() {
     useEffect(() => {
         if (user) void loadPoems();
     }, [user]);
+
+    // ================================
+    // ADMIN: APROVAR/REJEITAR POESIA
+    // ================================
+    const handleReview = async (poemId: string, status: 'APPROVED' | 'REJECTED') => {
+        try {
+            let rejectionReason = "";
+            if (status === 'REJECTED') {
+                rejectionReason = prompt("Motivo da rejeição:") || "";
+                if (!rejectionReason) return;
+            }
+
+            const token = localStorage.getItem(TOKEN_KEY);
+            const response = await fetch(`${API_URL}/poems/${poemId}/review`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ status, rejectionReason }),
+            });
+
+            if (!response.ok) throw new Error("Erro ao revisar poesia.");
+            await loadPoems();
+        } catch (error) {
+            alert("Não foi possível processar a revisão.");
+        }
+    };
+
+    // ================================
+    // ADMIN: DESTACAR POESIA
+    // ================================
+    const handleToggleHighlight = async (poemId: string) => {
+        try {
+            const token = localStorage.getItem(TOKEN_KEY);
+            const response = await fetch(`${API_URL}/poems/${poemId}/highlight`, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Erro ao destacar poesia.");
+            
+            await loadPoems();
+        } catch (error: any) {
+            alert(error.message);
+        }
+    };
 
     // ================================
     // SALVAR NOVA POESIA
@@ -122,13 +173,15 @@ export default function UserDashboard() {
             {activeTab === "poemas" || !isAdmin ? (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {/* Card de Novo Poema */}
-                    <button 
-                        onClick={() => setIsModalOpen(true)}
-                        className="h-64 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-[#C95F52] hover:bg-gray-50 dark:hover:bg-white/5 transition group"
-                    >
-                        <span className="text-4xl text-gray-300 group-hover:text-[#C95F52]">+</span>
-                        <span className="font-semibold text-gray-500 group-hover:text-[#C95F52]">Escrever Poesia</span>
-                    </button>
+                    {!isAdmin && (
+                        <button 
+                            onClick={() => setIsModalOpen(true)}
+                            className="h-64 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-[#C95F52] hover:bg-gray-50 dark:hover:bg-white/5 transition group"
+                        >
+                            <span className="text-4xl text-gray-300 group-hover:text-[#C95F52]">+</span>
+                            <span className="font-semibold text-gray-500 group-hover:text-[#C95F52]">Escrever Poesia</span>
+                        </button>
+                    )}
 
                     {/* LISTA REAL DE POEMAS */}
                     {loadingPoems ? (
@@ -149,11 +202,36 @@ export default function UserDashboard() {
                                              poem.status === 'REJECTED' ? 'Recusado' : 'Em Destaque'}
                                         </span>
                                     </div>
-                                    <h3 className="text-lg font-bold text-[#18384A] dark:text-white mb-2">{poem.title}</h3>
+                                    {isAdmin && (
+                                        <p className="text-[10px] text-[#C95F52] font-bold mb-1 uppercase">
+                                            Autor(a): {poem.user?.name || 'Desconhecido'}
+                                        </p>
+                                    )}
+                                    <h3 className="text-lg font-bold text-[#18384A] dark:text-white mb-2 leading-tight">{poem.title}</h3>
                                     <p className="text-gray-500 dark:text-gray-400 line-clamp-4 text-sm italic">
                                         "{poem.content}"
                                     </p>
                                 </div>
+
+                                {isAdmin && (
+                                    <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-gray-50 dark:border-white/5">
+                                        {poem.status === 'PENDING' && (
+                                            <>
+                                                <button onClick={() => handleReview(poem.id, 'APPROVED')} className="px-3 py-1.5 bg-green-600 text-white text-[10px] font-bold rounded-lg hover:bg-green-700 transition">Aprovar</button>
+                                                <button onClick={() => handleReview(poem.id, 'REJECTED')} className="px-3 py-1.5 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 transition">Rejeitar</button>
+                                            </>
+                                        )}
+                                        {(poem.status === 'APPROVED' || poem.status === 'HIGHLIGHTED') && (
+                                            <button 
+                                                onClick={() => handleToggleHighlight(poem.id)}
+                                                className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition ${poem.isHighlighted ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                            >
+                                                {poem.isHighlighted ? '★ Destacado' : '☆ Destacar'}
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className="mt-4 pt-4 border-t border-gray-50 dark:border-white/5 text-[10px] text-gray-400">
                                     Enviado em {new Date(poem.createdAt).toLocaleDateString('pt-BR')}
                                 </div>

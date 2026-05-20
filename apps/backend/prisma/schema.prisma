@@ -237,3 +237,11 @@ model AuditLog {
     @@index([action])
     @@index([createdAt])
 }
+
+// ================================
+// SYSTEM SETTINGS
+// ================================
+model SystemSetting {
+    key   String @id
+    value String
+}
