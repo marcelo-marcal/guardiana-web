@@ -1,7 +1,8 @@
 import { prisma } from "../../../shared/database/prisma.js";
 import { AuditAction, UserRole } from "@prisma/client"; // Import UserRole
 import crypto from "node:crypto";
-import { EmailService } from "./EmailService.js";
+import { EmailService } from "../../../shared/services/EmailService.js";
+import jwt from "jsonwebtoken";
 
 // import bcrypt from "bcrypt"; // Descomente e instale 'bcrypt' para senhas seguras
 
@@ -9,20 +10,52 @@ export class AuthService {
     private emailService = new EmailService();
 
     // ================================
+    // HELPER: GERAR TOKEN REAL
+    // ================================
+    private generateToken(user: { id: string; email: string; role: string }) {
+        const secret = process.env.JWT_SECRET;
+        if (!secret) throw new Error("JWT_SECRET não configurado no servidor.");
+
+        return jwt.sign(
+            { sub: user.id, email: user.email, role: user.role },
+            secret,
+            { expiresIn: "7d" } // Token vale por 7 dias
+        );
+    }
+
+    // ================================
     // SOLICITAR CÓDIGO DE ACESSO
     // ================================
     async requestAccessCode(email: string) {
-        const code = crypto.randomInt(100000, 999999).toString();
-        const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
-
         let user = await prisma.user.findUnique({ where: { email } });
+        const emailPrefix = email.split('@')[0];
+
+        // REGRA: Se o usuário já existe e já completou o cadastro (nome diferente do e-mail)
+        if (user && user.name !== emailPrefix) {
+            // Loga o usuário diretamente
+            const token = this.generateToken(user);
+            
+            return { 
+                action: "LOGGED_IN",
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    role: user.role,
+                    name: user.name
+                },
+                token
+            };
+        }
+
+        // Se o usuário não existe ou ainda é novo (nome é o prefixo do e-mail)
+        const code = crypto.randomInt(100000, 999999).toString();
+        const expires = new Date(Date.now() + 15 * 60 * 1000);
 
         if (!user) {
-            // Auto-cadastro se não existir
             user = await prisma.user.create({
                 data: {
                     email,
-                    name: email.split('@')[0], // Nome provisório
+                    name: emailPrefix,
                     verificationCode: code,
                     verificationExpires: expires
                 }
@@ -44,7 +77,7 @@ export class AuthService {
             throw new Error("Não foi possível enviar o e-mail de verificação.");
         }
         
-        return { message: "Código enviado com sucesso." };
+        return { action: "CODE_SENT", message: "Código enviado com sucesso." };
     }
 
     // ================================
@@ -67,14 +100,41 @@ export class AuthService {
             data: { verificationCode: null, verificationExpires: null }
         });
 
-        // Aqui você geraria o seu Token JWT
+        const token = this.generateToken(user);
+
         return {
             user: {
                 id: user.id,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                name: user.name
             },
-            token: "TOKEN_JWT_GERADO_AQUI"
+            token,
+            requiresRegistration: user.role === UserRole.USER && user.name === user.email.split('@')[0]
+        };
+    }
+
+    // ================================
+    // CONCLUIR CADASTRO
+    // ================================
+    async completeRegistration(email: string, name: string, literaryInterests?: string) {
+        const user = await prisma.user.update({
+            where: { email },
+            data: {
+                name,
+                literaryInterests
+            }
+        });
+
+        return {
+            user: {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                name: user.name,
+                literaryInterests: user.literaryInterests
+            },
+            message: "Cadastro concluído com sucesso."
         };
     }
 
@@ -105,8 +165,7 @@ export class AuthService {
              throw new Error("Credenciais inválidas.");
         }
 
-        // TODO: Gerar um token JWT real com o ID e a role do usuário
-        const token = `ADMIN_JWT_TOKEN_GERADO_AQUI_PARA_${user.id}_${user.role}`; // Placeholder
+        const token = this.generateToken(user);
 
         // Cria log de auditoria para o login do administrador
         await prisma.auditLog.create({
@@ -121,5 +180,29 @@ export class AuthService {
 
         // Retorna os dados do usuário e o token
         return { user: { id: user.id, email: user.email, name: user.name, role: user.role }, token };
+    }
+
+    // ================================
+    // BUSCAR DADOS DO USUÁRIO LOGADO
+    // ================================
+    async getMe(token: string) {
+        // TODO: No futuro, descriptografar o JWT real aqui.
+        // Por enquanto, buscamos o usuário ativo no banco para validar a sessão.
+        const user = await prisma.user.findFirst({
+            where: { status: "ACTIVE" }, // Placeholder: busque pelo ID/Email contido no token
+            orderBy: { updatedAt: 'desc' }
+        });
+
+        if (!user) throw new Error("Sessão inválida ou expirada.");
+
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            status: user.status,
+            avatarUrl: user.avatarUrl,
+            literaryInterests: user.literaryInterests
+        };
     }
 }

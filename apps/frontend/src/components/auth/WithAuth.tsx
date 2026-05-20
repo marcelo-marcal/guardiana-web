@@ -49,14 +49,21 @@ export default function WithAuth({ children }: WithAuthProps) {
             localStorage.setItem("redirectTo", pathname || "/dashboard");
             router.replace("/login");
         }
-        // 4. Se tem usuário → permite renderizar (o return final faz isso)
+
+        // 4. Se tem usuário mas o nome ainda é o padrão (precisa completar registro)
+        if (user && user.role === "USER" && user.name === user.email.split('@')[0]) {
+            if (pathname !== "/login") {
+                router.replace("/login");
+            }
+        }
+        // 5. Se tem usuário validado → permite renderizar (o return final faz isso)
     }, [user, loading, router, pathname]);
 
     // ================================
     // BLOQUEIO TOTAL: enquanto carrega OU não tem usuário
     // ================================
     // Nunca renderiza children nestes casos → zero flash de conteúdo
-    if (loading || !user) {
+    if (loading || !user || (user.name === user.email.split('@')[0] && pathname !== "/login")) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center bg-white dark:bg-[#020617] transition-colors">
                 <div className="text-center">

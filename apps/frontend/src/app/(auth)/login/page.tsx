@@ -1,21 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState(""); // Novo estado para a senha do administrador
     const [code, setCode] = useState("");
+    const [name, setName] = useState(""); // Novo estado para o nome no cadastro
+    const [interests, setInterests] = useState(""); // Novo estado para interesses literários
     const [userLoginStep, setUserLoginStep] = useState<"email" | "code">("email"); // Renomeado de 'step' para clareza
-    const [loginMode, setLoginMode] = useState<"selectRole" | "user" | "admin">("selectRole"); // Novo estado para seleção de perfil
+    const [loginMode, setLoginMode] = useState<"selectRole" | "user" | "admin" | "registration">("selectRole");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
 
+    const { user: authUser, loading: authLoading } = useAuth();
+
+    const TOKEN_KEY = "guardiana_token";
+    const USER_KEY = "guardiana_user";
+
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+
+    // Se o sistema detectar que você já logou mas foi mandado de volta
+    // por falta de registro, pula direto para a tela de Complete seu Cadastro
+    useEffect(() => {
+        if (!authLoading && authUser) {
+            const emailPrefix = authUser.email.split('@')[0];
+            const needsToRegister = authUser.role === "USER" && authUser.name === emailPrefix;
+
+            if (needsToRegister) {
+                setLoginMode("registration");
+                setEmail(authUser.email);
+            } else if (loginMode !== "registration") {
+                // Se já está tudo certo, vai para o dashboard
+                router.replace("/dashboard");
+            }
+        }
+    }, [authUser, authLoading, router]);
 
     // Enviar solicitação de código para o backend (para usuário comum)
     const handleRequestCode = async (e: React.FormEvent) => {
@@ -35,7 +60,15 @@ export default function LoginPage() {
                 throw new Error(data.error || "Erro desconhecido ao solicitar código.");
             }
             
-            setUserLoginStep("code"); // Corrigido: Usar userLoginStep
+            if (data.action === "LOGGED_IN") {
+                // Usuário já conhecido: Salva e entra direto
+                localStorage.setItem(TOKEN_KEY, data.token);
+                localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+                window.location.href = "/dashboard";
+            } else {
+                // Usuário novo: Mostra campo do código
+                setUserLoginStep("code");
+            }
         } catch (error: any) {
             console.error("Erro ao solicitar código:", error); // Log mais específico
             setError(error.message || "Não conseguimos enviar o código. Tente novamente mais tarde.");
@@ -61,9 +94,14 @@ export default function LoginPage() {
             if (!res.ok) throw new Error(data.error || "Código inválido.");
             
             // Salva token e dados do usuário no localStorage
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            router.push("/dashboard");
+            localStorage.setItem(TOKEN_KEY, data.token);
+            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+
+            if (data.requiresRegistration) {
+                setLoginMode("registration"); // Permanece na página para completar o nome
+            } else {
+                window.location.href = "/dashboard";
+            }
         } catch (error) {
             console.error("Erro ao verificar código:", error);
             setError(error.message || "Código inválido ou expirado.");
@@ -89,12 +127,38 @@ export default function LoginPage() {
             if (!res.ok) throw new Error(data.error || "Credenciais inválidas.");
 
             // Salva token e dados do usuário no localStorage
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            router.push("/dashboard");
+            localStorage.setItem(TOKEN_KEY, data.token);
+            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            window.location.href = "/dashboard";
         } catch (error: any) {
             console.error("Erro no login de administrador:", error);
             setError(error.message || "Credenciais inválidas.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Concluir cadastro do usuário
+    const handleCompleteRegistration = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError("");
+
+        try {
+            const res = await fetch(`${API_URL}/auth/complete-registration`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, name, literaryInterests: interests }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Erro ao salvar perfil.");
+
+            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            console.log("User data after complete registration:", data.user); // Adicione esta linha
+            window.location.href = "/dashboard";
+        } catch (error: any) {
+            setError(error.message);
         } finally {
             setLoading(false);
         }
@@ -139,7 +203,7 @@ export default function LoginPage() {
                         disabled={loading}
                         className="w-full bg-[#C95F52] hover:bg-[#A84A3F] text-white font-bold py-3 rounded-lg transition duration-300 disabled:opacity-50"
                     >
-                        {loading ? (userLoginStep === "email" ? "Enviando..." : "Verificando...") : (userLoginStep === "email" ? "Receber Código" : "Entrar")}
+                        {loading ? (userLoginStep === "email" ? "Enviando..." : "Verificando...") : "Ávançar" }
                     </button>
                     {userLoginStep === "code" && (
                         <button
@@ -206,6 +270,43 @@ export default function LoginPage() {
                     </button>
                 </form>
             );
+        } else if (loginMode === "registration") {
+            return (
+                <form onSubmit={handleCompleteRegistration} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Como gostaria de ser chamado(a)?
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 focus:ring-[#C95F52] outline-none transition"
+                            placeholder="Seu nome ou pseudônimo"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Seus interesses literários (opcional)
+                        </label>
+                        <textarea
+                            value={interests}
+                            onChange={(e) => setInterests(e.target.value)}
+                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 focus:ring-[#C95F52] outline-none transition"
+                            placeholder="Ex: Poesias, Romances, Contos..."
+                            rows={3}
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-[#C95F52] hover:bg-[#A84A3F] text-white font-bold py-3 rounded-lg transition duration-300 disabled:opacity-50"
+                    >
+                        {loading ? "Salvando..." : "Concluir Cadastro"}
+                    </button>
+                </form>
+            );
         } else { // loginMode === "selectRole"
             return (
                 <div className="space-y-4">
@@ -240,16 +341,26 @@ export default function LoginPage() {
                         />
                     </Link>
                     <h1 className="text-2xl font-bold text-[#18384A] dark:text-white">
-                        {loginMode === "selectRole" ? "Escolha seu perfil" : (loginMode === "user" ? (userLoginStep === "email" ? "Bem-vinda(o) de volta" : "Verifique seu e-mail") : "Login de Administrador")}
+                        {loginMode === "selectRole" 
+                          ? "Escolha seu perfil" 
+                          : loginMode === "registration" 
+                            ? "Complete seu cadastro"
+                            : loginMode === "admin" 
+                              ? "Login de Administrador"
+                              : userLoginStep === "email" 
+                                ? "Bem-vinda(o) de volta" 
+                                : "Verifique seu e-mail"}
                     </h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-2">
                         {loginMode === "selectRole"
                             ? "Selecione como você deseja acessar a plataforma."
-                            : (loginMode === "user"
-                                ? (userLoginStep === "email"
-                                    ? "Digite seu e-mail para acessar sua conta ou criar uma nova."
-                                    : `Enviamos um código de acesso para ${email}`)
-                                : "Acesse o painel administrativo com suas credenciais.")
+                            : loginMode === "registration"
+                                ? "Conte-nos um pouco mais sobre você."
+                                : loginMode === "admin"
+                                    ? "Acesse o painel administrativo com suas credenciais."
+                                    : userLoginStep === "email"
+                                        ? "Digite seu e-mail para acessar sua conta ou criar uma nova."
+                                        : `Enviamos um código de acesso para ${email}`
                         }
                     </p>
                 </div>

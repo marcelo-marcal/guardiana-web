@@ -39,4 +39,29 @@ export class AuthController {
             return res.status(401).json({ error: error.message }); // 401 Unauthorized para falhas de login
         }
     }
+
+    async completeRegistration(req: Request, res: Response) {
+        try {
+            const { email, name, literaryInterests } = req.body;
+            if (!email || !name) return res.status(400).json({ error: "E-mail e nome são obrigatórios" });
+
+            const result = await authService.completeRegistration(email, name, literaryInterests);
+            return res.json(result);
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    }
+
+    async me(req: Request, res: Response) {
+        try {
+            const authHeader = req.headers.authorization;
+            if (!authHeader) return res.status(401).json({ success: false, error: "Não autorizado" });
+
+            const token = authHeader.split(" ")[1];
+            const user = await authService.getMe(token);
+            return res.json({ success: true, user });
+        } catch (error: any) {
+            return res.status(401).json({ success: false, error: error.message });
+        }
+    }
 }

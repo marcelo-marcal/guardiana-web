@@ -26,7 +26,7 @@ poemRoutes.get("/highlights", (request, response) => {
 // ================================
 // ROTAS DO USUÁRIO LOGADO
 // ================================
-poemRoutes.get("/me", authenticate, (request, response) => {
+poemRoutes.get("/my-poems", authenticate, (request, response) => {
     return poemController.myPoems(request, response);
 });
 
