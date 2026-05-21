@@ -54,25 +54,60 @@ guardiana-web
 ├── node_modules
 ├── apps/
 │   ├── backend/
+│   │   ├── dist/
+│   │   ├── node_modules/
 │   │   ├── prisma/
-│   │   │   └── schema.prisma
+│   │   │   ├── migratios/
+│   │   │   │
+│   │   │   ├── schema.prisma
+│   │   │   └── seed.ts
 │   │   │
 │   │   ├── src/
 │   │   │   ├── modules/
 │   │   │   │   ├── audit/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   └── AuditController.ts
+│   │   │   │   │   ├── routes/
+│   │   │   │   │   │   └── audit.routes.ts
+│   │   │   │   │   └── services/
+│   │   │   │   │       └── AuditService.ts
+│   │   │   │   │
 │   │   │   │   ├── auth/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   ├── AuthController.ts
+│   │   │   │   │   │   └── MeController.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   └── login.dto.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── middleware/
+│   │   │   │   │   │   └── authenticate.ts
+│   │   │   │   │   │   └── authorize.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── routes/
+│   │   │   │   │   │   └── auth.routes.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── services/
+│   │   │   │   │   │   └── AuthService.ts
+│   │   │   │   │   │
+│   │   │   │   │   └── utils/
+│   │   │   │   │
 │   │   │   │   ├── books/
 │   │   │   │   ├── orders/
 │   │   │   │   ├── poems/
 │   │   │   │   └── users/
 │   │   │   │
 │   │   │   ├── shared/
+│   │   │   │   ├── database/
+│   │   │   │   │   └── database/
+│   │   │   │   │
 │   │   │   │   ├── errors/
 │   │   │   │   ├── http/
 │   │   │   │   └── utils/
 │   │   │   │
 │   │   │   └── server.ts
 │   │   │
+│   │   ├── .env
 │   │   ├── package.json
 │   │   └── tsconfig.json
 │   │
@@ -228,3 +263,18 @@ git push origin develop
 `npm run dev:frontend`
 
 `npm run dev:backend`
+
+Busca erros nos arquivos do Back-End:
+
+`npm run typecheck --workspace=@guardiana/backend`
+
+
+Conetctado Back e Front
+
+apps/frontend/.env.local
+
+NEXT_PUBLIC_API_URL=http://localhost:3333
+
+
+superadmin@guardiana.com
+Super@123456

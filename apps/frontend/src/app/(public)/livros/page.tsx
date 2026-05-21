@@ -16,27 +16,39 @@ export default function Livros() {
     // ESTADO: LISTA DE LIVROS
     // ================================
     const [livros, setLivros] = useState<Livro[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [erro, setErro] = useState("");
 
     // ================================
     // ESTADO DO LIVRO SELECIONADO
     // ================================
-    const [idBook, setIdBook] = useState<number | null>(null);
+    const [idBook, setIdBook] = useState<string | null>(null);
 
     // ================================
-    // CARREGAR LIVROS DO "BANCO" LOCAL
+    // CARREGAR LIVROS DO BACKEND
     // ================================
     useEffect(() => {
-        const carregarLivros = () => {
-            setLivros(getLivros());
-        };
+        async function carregarLivros() {
+            try {
+                setLoading(true);
+                setErro("");
 
-        carregarLivros();
+                const data = await getLivros();
 
-        window.addEventListener("livrosAtualizados", carregarLivros);
+                setLivros(data);
+            } catch (error) {
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : "Erro ao carregar livros.";
 
-        return () => {
-            window.removeEventListener("livrosAtualizados", carregarLivros);
-        };
+                setErro(message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        void carregarLivros();
     }, []);
 
     // ================================
@@ -47,7 +59,7 @@ export default function Livros() {
     // ================================
     // SELECIONAR LIVRO
     // ================================
-    const selecionarLivro = (livroId: number) => {
+    const selecionarLivro = (livroId: string) => {
         setIdBook(livroId);
 
         window.scrollTo({
@@ -199,16 +211,28 @@ export default function Livros() {
 
                 {/* ================================
                     GRID DE LIVROS
-                    - Mostra TODOS os livros cadastrados
-                    - Destaque ou não destaque
                 ================================ */}
                 <section className="px-6 pb-24">
                     <div className="max-w-7xl mx-auto">
-                        {livros.length === 0 ? (
+                        {loading && (
+                            <p className="text-center text-gray-600 dark:text-gray-300">
+                                Carregando livros...
+                            </p>
+                        )}
+
+                        {!loading && erro && (
+                            <p className="text-center text-red-600 dark:text-red-400">
+                                {erro}
+                            </p>
+                        )}
+
+                        {!loading && !erro && livros.length === 0 && (
                             <p className="text-center text-gray-600 dark:text-gray-300">
                                 Nenhum livro cadastrado ainda.
                             </p>
-                        ) : (
+                        )}
+
+                        {!loading && !erro && livros.length > 0 && (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                                 {livros.map((livro) => (
                                     <button

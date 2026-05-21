@@ -3,6 +3,7 @@
 // ================================
 import dynamic from "next/dynamic";
 import Hero from "../../components/sections/Hero";
+import PoemasDestaque from "@/components/sections/PoemasDestaque";
 
 // ================================
 // LAZY LOAD (PERFORMANCE)
@@ -34,6 +35,7 @@ export default function Home() {
             <Sobre />
             <Livros />
             <Publicacoes />
+            <PoemasDestaque />
             <Autores />
             <Contato />
             <Footer />

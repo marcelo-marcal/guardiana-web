@@ -391,14 +391,16 @@ export default function Header() {
                                         Contato
                                     </Link>
 
-                                    {/* Painel Admin - Destaque verde */}
+                                    {/* Link Dashboard Mobile - Destaque verde */}
                                     <Link
                                         href="/dashboard"
                                         onClick={() => setMenuOpen(false)}
                                         className="flex py-3 px-4 rounded-lg text-[#16B83E] dark:text-[#16B83E] font-semibold hover:bg-[#16B83E]/10 transition items-center gap-2"
                                     >
-                                        <span>🔧</span>
-                                        <span>Painel Admin</span>
+                                        <span>{user.role === 'USER' ? "👤" : "�"}</span>
+                                        <span>
+                                            {user.role === 'USER' ? "Meu Perfil" : "Painel Admin"}
+                                        </span>
                                     </Link>
                                 </nav>
 

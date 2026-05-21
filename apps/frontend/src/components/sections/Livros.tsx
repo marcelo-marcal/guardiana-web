@@ -16,25 +16,34 @@ export default function Livros() {
     // ESTADO: LIVROS EM DESTAQUE
     // ================================
     const [livros, setLivros] = useState<Livro[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [erro, setErro] = useState("");
 
     // ================================
     // CARREGAR SOMENTE OS 3 DESTAQUES
     // ================================
     useEffect(() => {
-        const carregarLivrosDestaque = () => {
-            setLivros(getLivrosDestaque());
-        };
+        async function carregarLivrosDestaque() {
+            try {
+                setLoading(true);
+                setErro("");
 
-        carregarLivrosDestaque();
+                const data = await getLivrosDestaque();
 
-        window.addEventListener("livrosAtualizados", carregarLivrosDestaque);
+                setLivros(data);
+            } catch (error) {
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : "Erro ao carregar livros em destaque.";
 
-        return () => {
-            window.removeEventListener(
-                "livrosAtualizados",
-                carregarLivrosDestaque,
-            );
-        };
+                setErro(message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        void carregarLivrosDestaque();
     }, []);
 
     return (
@@ -101,15 +110,37 @@ export default function Livros() {
                 </div>
 
                 {/* ================================
+                    ESTADO DE CARREGAMENTO
+                ================================ */}
+                {loading && (
+                    <div className="max-w-2xl mx-auto rounded-2xl bg-white dark:bg-[#0F1720] border border-gray-200 dark:border-white/10 p-8 text-center shadow-xl">
+                        <p className="text-[#344454] dark:text-gray-300">
+                            Carregando livros em destaque...
+                        </p>
+                    </div>
+                )}
+
+                {/* ================================
+                    ESTADO DE ERRO
+                ================================ */}
+                {!loading && erro && (
+                    <div className="max-w-2xl mx-auto rounded-2xl bg-white dark:bg-[#0F1720] border border-red-200 dark:border-red-900/40 p-8 text-center shadow-xl">
+                        <p className="text-red-600 dark:text-red-400">{erro}</p>
+                    </div>
+                )}
+
+                {/* ================================
                     GRID DE LIVROS EM DESTAQUE
                 ================================ */}
-                {livros.length === 0 ? (
+                {!loading && !erro && livros.length === 0 && (
                     <div className="max-w-2xl mx-auto rounded-2xl bg-white dark:bg-[#0F1720] border border-gray-200 dark:border-white/10 p-8 text-center shadow-xl">
                         <p className="text-[#344454] dark:text-gray-300">
                             Nenhum livro foi marcado como destaque ainda.
                         </p>
                     </div>
-                ) : (
+                )}
+
+                {!loading && !erro && livros.length > 0 && (
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-14 lg:gap-24 items-start">
                         {livros.map((livro) => (
                             <Link
