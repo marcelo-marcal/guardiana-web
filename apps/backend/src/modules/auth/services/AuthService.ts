@@ -34,8 +34,8 @@ export class AuthService {
         if (user && user.name !== emailPrefix) {
             // Loga o usuário diretamente
             const token = this.generateToken(user);
-            
-            return { 
+
+            return {
                 action: "LOGGED_IN",
                 user: {
                     id: user.id,
@@ -77,7 +77,7 @@ export class AuthService {
             console.error("Erro ao enviar e-mail:", error);
             throw new Error("Não foi possível enviar o e-mail de verificação.");
         }
-        
+
         return { action: "CODE_SENT", message: "Código enviado com sucesso." };
     }
 
@@ -123,7 +123,7 @@ export class AuthService {
             where: { email },
             data: {
                 name,
-                literaryInterests
+                literaryInterests: literaryInterests ?? null,
             }
         });
 
@@ -163,7 +163,7 @@ export class AuthService {
         // AVISO: A comparação abaixo é INSEGURA e APENAS para fins de teste.
         // Substitua por hashing de senha em produção!
         if (!user.passwordHash || user.passwordHash !== password) {
-             throw new Error("Credenciais inválidas.");
+            throw new Error("Credenciais inválidas.");
         }
 
         const token = this.generateToken(user);
@@ -192,7 +192,7 @@ export class AuthService {
 
         try {
             const decoded = jwt.verify(token, secret) as { sub: string };
-            
+
             const user = await prisma.user.findUnique({
                 where: { id: decoded.sub }
             });

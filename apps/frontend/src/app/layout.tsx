@@ -14,23 +14,21 @@ import "./globals.css";
 import Header from "../components/layout/Header";
 
 // ================================
-// METADATA (SEO PROFISSIONAL)
+// METADATA
 // ================================
 export const metadata: Metadata = {
     title: "Guardiana",
     description: "Editora Guardiana - Vozes que transformam o mundo",
 
-    // SEO para redes sociais (Facebook, WhatsApp, etc)
     openGraph: {
         title: "Guardiana",
         description: "Editora Guardiana - Vozes que transformam o mundo",
-        url: "https://guardiana.com", // depois você troca
+        url: "https://guardiana.com",
         siteName: "Guardiana",
         locale: "pt_BR",
         type: "website",
     },
 
-    // SEO para Twitter
     twitter: {
         card: "summary_large_image",
         title: "Guardiana",
@@ -48,23 +46,11 @@ export default function RootLayout({
 }) {
     return (
         <html lang="pt-BR">
-            {/* ================================
-               BODY GLOBAL
-               - antialiased melhora leitura
-               - transition melhora troca de tema
-            ================================= */}
-            <body className="antialiased transition-colors duration-300">
-                {/* ================================
-                   HEADER GLOBAL (FIXO)
-                   ⚠️ NÃO repetir nas páginas
-                ================================= */}
+            <body className="bg-[#F7F7F7] text-[#18384A] antialiased transition-colors duration-300 dark:bg-[#020617] dark:text-white">
                 <Header />
 
-                {/* ================================
-                   CONTEÚDO PRINCIPAL
-                   - pt-20 evita sobrepor header fixo
-                ================================= */}
-                <main className="pt-20">{children}</main>
+                {/* pt-16 = mesma altura do header h-16 */}
+                <main className="pt-16">{children}</main>
             </body>
         </html>
     );
