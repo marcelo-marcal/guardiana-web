@@ -1,384 +1,476 @@
 "use client";
 
-import { useState, useEffect } from "react";
+// ================================
+// IMPORTS
+// ================================
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function LoginPage() {
-    const [email, setEmail] = useState("");
-    const [adminRole, setAdminRole] = useState<"ADMIN" | "SUPER_ADMIN">("ADMIN");
-    const [code, setCode] = useState("");
-    const [name, setName] = useState(""); // Novo estado para o nome no cadastro
-    const [interests, setInterests] = useState(""); // Novo estado para interesses literários
-    const [userLoginStep, setUserLoginStep] = useState<"email" | "code">("email"); // Renomeado de 'step' para clareza
-    const [loginMode, setLoginMode] = useState<"selectRole" | "user" | "admin" | "registration">("selectRole");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-    const router = useRouter();
+// ================================
+// CONFIGURAÇÕES
+// ================================
+const TOKEN_KEY = "guardiana_token";
+const USER_KEY = "guardiana_user";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 
+// ================================
+// TIPAGENS
+// ================================
+type LoginMode = "email" | "code" | "registration";
+
+type LoginUser = {
+    id: string;
+    email: string;
+    name: string;
+    role: "USER" | "ADMIN" | "SUPER_ADMIN";
+    literaryInterests?: string | null;
+};
+
+type RequestCodeResponse = {
+    action?: "LOGGED_IN" | "CODE_SENT";
+    token?: string;
+    user?: LoginUser;
+    error?: string;
+};
+
+type VerifyCodeResponse = {
+    token: string;
+    user: LoginUser;
+    requiresRegistration: boolean;
+    error?: string;
+};
+
+type CompleteRegistrationResponse = {
+    user: LoginUser;
+    error?: string;
+};
+
+// ================================
+// HELPER: ERRO
+// ================================
+function getErrorMessage(error: unknown, fallback: string) {
+    return error instanceof Error ? error.message : fallback;
+}
+
+// ================================
+// PÁGINA: LOGIN
+// ================================
+export default function LoginPage() {
+    const router = useRouter();
     const { user: authUser, loading: authLoading } = useAuth();
 
-    const TOKEN_KEY = "guardiana_token";
-    const USER_KEY = "guardiana_user";
+    const [loginMode, setLoginMode] = useState<LoginMode>("email");
+    const [email, setEmail] = useState("");
+    const [code, setCode] = useState("");
+    const [name, setName] = useState("");
+    const [interests, setInterests] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
-
-    // Se o sistema detectar que você já logou mas foi mandado de volta
-    // por falta de registro, pula direto para a tela de Complete seu Cadastro
+    // ================================
+    // REDIRECIONAR USUÁRIO JÁ LOGADO
+    // ================================
     useEffect(() => {
-        if (!authLoading && authUser) {
-            const emailPrefix = authUser.email.split('@')[0];
-            const needsToRegister = authUser.name === emailPrefix;
+        if (authLoading || !authUser) return;
 
-            if (needsToRegister) {
-                setLoginMode("registration");
-                setEmail(authUser.email);
-            } else if (loginMode !== "registration") {
-                // Se já está tudo certo, vai para o dashboard
-                router.replace("/dashboard");
-            }
+        const emailPrefix = authUser.email.split("@")[0];
+        const needsToRegister = authUser.name === emailPrefix;
+
+        if (needsToRegister) {
+            setLoginMode("registration");
+            setEmail(authUser.email);
+            return;
         }
+
+        router.replace("/dashboard");
     }, [authUser, authLoading, router]);
 
-    // Enviar solicitação de código para o backend (para usuário comum)
-    const handleRequestCode = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // ================================
+    // SOLICITAR CÓDIGO / LOGIN DIRETO
+    // ================================
+    const handleRequestCode = async (event: React.FormEvent) => {
+        event.preventDefault();
+
         setLoading(true);
         setError("");
-        
+
         try {
-            const res = await fetch(`${API_URL}/auth/request-code`, {
+            const response = await fetch(`${API_URL}/auth/request-code`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    email, 
-                    role: loginMode === "admin" ? adminRole : "USER" 
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    role: "USER",
                 }),
             });
 
-            const data = await res.json();
-            if (!res.ok) {
-                throw new Error(data.error || "Erro desconhecido ao solicitar código.");
+            const data = (await response.json()) as RequestCodeResponse;
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "Não foi possível iniciar o acesso.",
+                );
             }
-            
+
             if (data.action === "LOGGED_IN") {
-                // Usuário já conhecido: Salva e entra direto
+                if (!data.token || !data.user) {
+                    throw new Error("Resposta de login inválida.");
+                }
+
                 localStorage.setItem(TOKEN_KEY, data.token);
                 localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-                window.location.href = "/dashboard";
-            } else {
-                // Usuário novo: Mostra campo do código
-                setUserLoginStep("code");
+                window.dispatchEvent(new Event("auth:updated"));
+
+                router.replace("/dashboard");
+                return;
             }
-        } catch (error: any) {
-            console.error("Erro ao solicitar código:", error); // Log mais específico
-            setError(error.message || "Não conseguimos enviar o código. Tente novamente mais tarde.");
+
+            setLoginMode("code");
+        } catch (error) {
+            const message = getErrorMessage(
+                error,
+                "Não foi possível enviar o código de acesso.",
+            );
+
+            setError(message);
         } finally {
             setLoading(false);
         }
     };
 
-    // Verificar código no backend
-    const handleVerifyCode = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // ================================
+    // VERIFICAR CÓDIGO
+    // ================================
+    const handleVerifyCode = async (event: React.FormEvent) => {
+        event.preventDefault();
+
         setLoading(true);
         setError("");
 
         try {
-            const res = await fetch(`${API_URL}/auth/verify-code`, {
+            const response = await fetch(`${API_URL}/auth/verify-code`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, code }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    code,
+                }),
             });
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Código inválido.");
-            
-            // Salva token e dados do usuário no localStorage
+            const data = (await response.json()) as VerifyCodeResponse;
+
+            if (!response.ok) {
+                throw new Error(data.error || "Código inválido ou expirado.");
+            }
+
             localStorage.setItem(TOKEN_KEY, data.token);
             localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            window.dispatchEvent(new Event("auth:updated"));
 
             if (data.requiresRegistration) {
-                setLoginMode("registration"); // Permanece na página para completar o nome
-            } else {
-                window.location.href = "/dashboard";
+                setLoginMode("registration");
+                return;
             }
+
+            router.replace("/dashboard");
         } catch (error) {
-            console.error("Erro ao verificar código:", error);
-            setError(error.message || "Código inválido ou expirado.");
+            const message = getErrorMessage(
+                error,
+                "Código inválido ou expirado.",
+            );
+
+            setError(message);
         } finally {
             setLoading(false);
         }
     };
 
-    // Concluir cadastro do usuário
-    const handleCompleteRegistration = async (e: React.FormEvent) => {
-        e.preventDefault();
+    // ================================
+    // CONCLUIR CADASTRO
+    // ================================
+    const handleCompleteRegistration = async (event: React.FormEvent) => {
+        event.preventDefault();
+
         setLoading(true);
         setError("");
 
         try {
-            const res = await fetch(`${API_URL}/auth/complete-registration`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, name, literaryInterests: interests }),
-            });
+            const response = await fetch(
+                `${API_URL}/auth/complete-registration`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        email,
+                        name,
+                        literaryInterests: interests,
+                    }),
+                },
+            );
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Erro ao salvar perfil.");
+            const data =
+                (await response.json()) as CompleteRegistrationResponse;
+
+            if (!response.ok) {
+                throw new Error(data.error || "Erro ao completar cadastro.");
+            }
 
             localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-            console.log("User data after complete registration:", data.user); // Adicione esta linha
-            window.location.href = "/dashboard";
-        } catch (error: any) {
-            setError(error.message);
+            window.dispatchEvent(new Event("auth:updated"));
+
+            router.replace("/dashboard");
+        } catch (error) {
+            const message = getErrorMessage(
+                error,
+                "Erro ao completar cadastro.",
+            );
+
+            setError(message);
         } finally {
             setLoading(false);
         }
     };
 
-    const renderLoginForms = () => {
-        if (loginMode === "user") {
-            return (
-                <form onSubmit={userLoginStep === "email" ? handleRequestCode : handleVerifyCode} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            E-mail
-                        </label>
-                        <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 focus:ring-[#C95F52] outline-none transition"
-                            placeholder="seu@email.com"
-                            disabled={userLoginStep === "code"} // Desabilita o input de e-mail após o código ser solicitado
-                        />
-                    </div>
-                    {userLoginStep === "code" && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Código de 6 dígitos
-                            </label>
-                            <input
-                                type="text"
-                                required
-                                maxLength={6}
-                                value={code}
-                                onChange={(e) => setCode(e.target.value)}
-                                className="w-full px-4 py-3 text-center tracking-widest text-2xl rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 focus:ring-[#C95F52] outline-none transition"
-                                placeholder="000000"
-                            />
-                        </div>
-                    )}
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-[#C95F52] hover:bg-[#A84A3F] text-white font-bold py-3 rounded-lg transition duration-300 disabled:opacity-50"
-                    >
-                        {loading ? (userLoginStep === "email" ? "Enviando..." : "Verificando...") : "Ávançar" }
-                    </button>
-                    {userLoginStep === "code" && (
-                        <button
-                            type="button"
-                            onClick={() => setUserLoginStep("email")}
-                            className="w-full text-sm text-gray-500 hover:text-[#C95F52] transition"
-                        >
-                            Usar outro e-mail
-                        </button>
-                    )}
-                    {/* Botão para voltar à seleção de perfil */}
-                    <button
-                        type="button"
-                        onClick={() => { setLoginMode("selectRole"); setError(""); setEmail(""); setCode(""); setPassword(""); setUserLoginStep("email"); }}
-                        className="w-full text-sm text-gray-500 hover:text-[#18384A] transition mt-4"
-                    >
-                        Voltar para seleção de perfil
-                    </button>
-                </form>
-            );
-        } else if (loginMode === "admin") {
-            return (
-                <form onSubmit={userLoginStep === "email" ? handleRequestCode : handleVerifyCode} className="space-y-4">
-                    {userLoginStep === "email" && (
-                        <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl mb-2">
-                            <button
-                                type="button"
-                                onClick={() => setAdminRole("ADMIN")}
-                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${adminRole === "ADMIN" ? "bg-white dark:bg-[#18384A] shadow-sm text-[#18384A] dark:text-white" : "text-gray-500"}`}
-                            >
-                                Admin
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setAdminRole("SUPER_ADMIN")}
-                                className={`flex-1 py-2 text-xs font-bold rounded-lg transition ${adminRole === "SUPER_ADMIN" ? "bg-white dark:bg-[#18384A] shadow-sm text-[#18384A] dark:text-white" : "text-gray-500"}`}
-                            >
-                                Super Admin
-                            </button>
-                        </div>
-                    )}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            E-mail Corporativo
-                        </label>
-                        <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 border-[#18384A] outline-none transition"
-                            placeholder="admin@guardiana.com"
-                            disabled={userLoginStep === "code"}
-                        />
-                    </div>
-                    {userLoginStep === "code" && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                Código de Verificação
-                            </label>
-                            <input
-                                type="text"
-                                required
-                                maxLength={6}
-                                value={code}
-                                onChange={(e) => setCode(e.target.value)}
-                                className="w-full px-4 py-3 text-center tracking-widest text-2xl rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 border-[#18384A] outline-none transition"
-                                placeholder="000000"
-                            />
-                        </div>
-                    )}
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-[#18384A] hover:bg-[#122b3a] text-white font-bold py-3 rounded-lg transition duration-300 disabled:opacity-50"
-                    >
-                        {loading ? "Processando..." : (userLoginStep === "email" ? "Avançar" : "Entrar")}
-                    </button>
-                    {userLoginStep === "code" && (
-                        <button
-                            type="button"
-                            onClick={() => setUserLoginStep("email")}
-                            className="w-full text-sm text-gray-500 hover:text-[#C95F52] transition"
-                        >
-                            Usar outro e-mail
-                        </button>
-                    )}
-                    {/* Botão para voltar à seleção de perfil */}
-                    <button
-                        type="button"
-                        onClick={() => { setLoginMode("selectRole"); setError(""); setEmail(""); setCode(""); setPassword(""); setUserLoginStep("email"); }}
-                        className="w-full text-sm text-gray-500 hover:text-[#18384A] transition mt-4"
-                    >
-                        Voltar para seleção de perfil
-                    </button>
-                </form>
-            );
-        } else if (loginMode === "registration") {
-            return (
-                <form onSubmit={handleCompleteRegistration} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Como gostaria de ser chamado(a)?
-                        </label>
-                        <input
-                            type="text"
-                            required
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 focus:ring-[#C95F52] outline-none transition"
-                            placeholder="Seu nome ou pseudônimo"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Seus interesses literários (opcional)
-                        </label>
-                        <textarea
-                            value={interests}
-                            onChange={(e) => setInterests(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-white/10 dark:bg-[#020617] dark:text-white focus:ring-2 focus:ring-[#C95F52] outline-none transition"
-                            placeholder="Ex: Poesias, Romances, Contos..."
-                            rows={3}
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-[#C95F52] hover:bg-[#A84A3F] text-white font-bold py-3 rounded-lg transition duration-300 disabled:opacity-50"
-                    >
-                        {loading ? "Salvando..." : "Concluir Cadastro"}
-                    </button>
-                </form>
-            );
-        } else { // loginMode === "selectRole"
-            return (
-                <div className="space-y-4">
-                    <button
-                        onClick={() => { setLoginMode("user"); setError(""); }}
-                        className="w-full bg-[#C95F52] hover:bg-[#A84A3F] text-white font-bold py-3 rounded-lg transition duration-300"
-                    >
-                        Entrar como Usuário
-                    </button>
-                    <button
-                        onClick={() => { setLoginMode("admin"); setError(""); }}
-                        className="w-full bg-[#18384A] hover:bg-[#122b3a] text-white font-bold py-3 rounded-lg transition duration-300"
-                    >
-                        Entrar como Administrador
-                    </button>
-                </div>
-            );
-        }
-    };
+    // ================================
+    // TEXTOS DINÂMICOS
+    // ================================
+    const title =
+        loginMode === "email"
+            ? "Acesse sua conta"
+            : loginMode === "code"
+              ? "Confirme seu acesso"
+              : "Complete seu cadastro";
+
+    const subtitle =
+        loginMode === "email"
+            ? "Digite seu e-mail para entrar na plataforma Guardiana."
+            : loginMode === "code"
+              ? `Enviamos um código temporário para ${email}.`
+              : "Conte-nos como você gostaria de aparecer na plataforma.";
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-[#F7F7F7] dark:bg-[#020617] px-6">
-            <div className="w-full max-w-md bg-white dark:bg-[#0F1720] rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-white/10">
-                <div className="text-center mb-8">
-                    <Link href="/">
-                        <Image 
-                            src="/logo.svg" 
-                            alt="Guardiana" 
-                            width={150} 
-                            height={50} 
-                            className="mx-auto mb-6 dark:invert"
+        <main className="min-h-screen grid lg:grid-cols-[0.95fr_1.05fr] bg-[#F4F1EC] dark:bg-[#020617]">
+            {/* ================================
+                COLUNA VISUAL
+            ================================ */}
+            <section className="hidden lg:flex relative overflow-hidden bg-[#18384A]">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(212,175,55,0.25),transparent_32%),radial-gradient(circle_at_80%_70%,rgba(201,95,82,0.28),transparent_35%)]" />
+
+                <div className="relative z-10 flex flex-col justify-between p-14 text-white">
+                    <Link href="/" className="inline-flex">
+                        <Image
+                            src="/logo.svg"
+                            alt="Guardiana Editora"
+                            width={150}
+                            height={60}
+                            priority
+                            className="brightness-0 invert"
                         />
                     </Link>
-                    <h1 className="text-2xl font-bold text-[#18384A] dark:text-white">
-                        {loginMode === "selectRole" 
-                          ? "Escolha seu perfil" 
-                          : loginMode === "registration" 
-                            ? "Complete seu cadastro"
-                            : loginMode === "admin" 
-                              ? "Login de Administrador"
-                              : userLoginStep === "email" 
-                                ? "Bem-vinda(o) de volta" 
-                                : "Verifique seu e-mail"}
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2">
-                        {loginMode === "selectRole"
-                            ? "Selecione como você deseja acessar a plataforma."
-                            : loginMode === "registration"
-                                ? "Conte-nos um pouco mais sobre você."
-                                : loginMode === "admin"
-                                    ? "Acesse o painel administrativo com suas credenciais."
-                                    : userLoginStep === "email"
-                                        ? "Digite seu e-mail para acessar sua conta ou criar uma nova."
-                                        : `Enviamos um código de acesso para ${email}`
-                        }
+
+                    <div>
+                        <p className="max-w-md text-3xl font-extrabold leading-tight">
+                            Uma plataforma editorial para leitores, autores e
+                            curadoria.
+                        </p>
+
+                        <p className="mt-5 max-w-md text-white/70 leading-relaxed">
+                            Entre com segurança. A Guardiana identifica seu
+                            perfil automaticamente e direciona você para o
+                            ambiente correto.
+                        </p>
+                    </div>
+
+                    <p className="text-sm text-white/50">
+                        Guardiana Editora © Plataforma editorial
                     </p>
                 </div>
+            </section>
 
-                {error && (
-                    <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm rounded-lg border border-red-100 dark:border-red-900/50">
-                        {error}
+            {/* ================================
+                COLUNA DO FORMULÁRIO
+            ================================ */}
+            <section className="flex min-h-screen items-center justify-center px-6 py-12">
+                <div className="w-full max-w-[440px]">
+                    <div className="mb-10 text-center lg:hidden">
+                        <Link href="/" className="inline-flex justify-center">
+                            <Image
+                                src="/logo.svg"
+                                alt="Guardiana Editora"
+                                width={150}
+                                height={60}
+                                priority
+                                className="dark:invert"
+                            />
+                        </Link>
                     </div>
-                )}
 
-                {renderLoginForms()}
-            </div>
+                    <div className="rounded-[2rem] bg-white dark:bg-[#0F1720] border border-black/5 dark:border-white/10 shadow-2xl shadow-black/10 p-8 md:p-10">
+                        <div>
+                            <span className="text-xs font-bold uppercase tracking-[0.24em] text-[#C95F52]">
+                                Guardiana Editora
+                            </span>
+
+                            <h1 className="mt-4 text-3xl font-extrabold text-[#18384A] dark:text-white">
+                                {title}
+                            </h1>
+
+                            <p className="mt-3 text-sm leading-relaxed text-[#526173] dark:text-gray-400">
+                                {subtitle}
+                            </p>
+                        </div>
+
+                        {error && (
+                            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-900/40 dark:bg-red-950/20 dark:text-red-400">
+                                {error}
+                            </div>
+                        )}
+
+                        {loginMode === "email" && (
+                            <form
+                                onSubmit={handleRequestCode}
+                                className="mt-8 space-y-5"
+                            >
+                                <div>
+                                    <label className="block text-sm font-semibold text-[#18384A] dark:text-gray-200">
+                                        E-mail
+                                    </label>
+
+                                    <input
+                                        type="email"
+                                        required
+                                        value={email}
+                                        onChange={(event) =>
+                                            setEmail(event.target.value)
+                                        }
+                                        placeholder="seu@email.com"
+                                        className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-sm text-[#18384A] outline-none transition placeholder:text-gray-400 focus:border-[#C95F52] focus:ring-4 focus:ring-[#C95F52]/10 dark:border-white/10 dark:bg-[#020617] dark:text-white"
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full rounded-2xl bg-[#C95F52] px-5 py-4 text-sm font-bold text-white shadow-lg shadow-[#C95F52]/20 transition hover:-translate-y-0.5 hover:bg-[#B95045] disabled:opacity-60"
+                                >
+                                    {loading
+                                        ? "Enviando código..."
+                                        : "Continuar"}
+                                </button>
+
+                                <p className="text-center text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                                    Usaremos seu e-mail apenas para confirmar
+                                    seu acesso com segurança.
+                                </p>
+                            </form>
+                        )}
+
+                        {loginMode === "code" && (
+                            <form
+                                onSubmit={handleVerifyCode}
+                                className="mt-8 space-y-5"
+                            >
+                                <div>
+                                    <label className="block text-sm font-semibold text-[#18384A] dark:text-gray-200">
+                                        Código de acesso
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        required
+                                        maxLength={6}
+                                        value={code}
+                                        onChange={(event) =>
+                                            setCode(event.target.value)
+                                        }
+                                        placeholder="000000"
+                                        className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-center text-2xl tracking-[0.4em] text-[#18384A] outline-none transition placeholder:text-gray-300 focus:border-[#C95F52] focus:ring-4 focus:ring-[#C95F52]/10 dark:border-white/10 dark:bg-[#020617] dark:text-white"
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full rounded-2xl bg-[#C95F52] px-5 py-4 text-sm font-bold text-white shadow-lg shadow-[#C95F52]/20 transition hover:bg-[#B95045] disabled:opacity-60"
+                                >
+                                    {loading ? "Verificando..." : "Entrar"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setLoginMode("email");
+                                        setCode("");
+                                        setError("");
+                                    }}
+                                    className="w-full text-sm font-medium text-[#526173] transition hover:text-[#C95F52] dark:text-gray-400"
+                                >
+                                    Usar outro e-mail
+                                </button>
+                            </form>
+                        )}
+
+                        {loginMode === "registration" && (
+                            <form
+                                onSubmit={handleCompleteRegistration}
+                                className="mt-8 space-y-5"
+                            >
+                                <div>
+                                    <label className="block text-sm font-semibold text-[#18384A] dark:text-gray-200">
+                                        Nome ou pseudônimo
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        required
+                                        value={name}
+                                        onChange={(event) =>
+                                            setName(event.target.value)
+                                        }
+                                        placeholder="Como deseja ser chamado(a)?"
+                                        className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-sm text-[#18384A] outline-none transition placeholder:text-gray-400 focus:border-[#C95F52] focus:ring-4 focus:ring-[#C95F52]/10 dark:border-white/10 dark:bg-[#020617] dark:text-white"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-[#18384A] dark:text-gray-200">
+                                        Interesses literários
+                                    </label>
+
+                                    <textarea
+                                        value={interests}
+                                        onChange={(event) =>
+                                            setInterests(event.target.value)
+                                        }
+                                        rows={3}
+                                        placeholder="Poesia, contos, crônicas..."
+                                        className="mt-2 w-full resize-none rounded-2xl border border-gray-200 bg-white px-4 py-4 text-sm text-[#18384A] outline-none transition placeholder:text-gray-400 focus:border-[#C95F52] focus:ring-4 focus:ring-[#C95F52]/10 dark:border-white/10 dark:bg-[#020617] dark:text-white"
+                                    />
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full rounded-2xl bg-[#C95F52] px-5 py-4 text-sm font-bold text-white shadow-lg shadow-[#C95F52]/20 transition hover:bg-[#B95045] disabled:opacity-60"
+                                >
+                                    {loading
+                                        ? "Salvando..."
+                                        : "Concluir cadastro"}
+                                </button>
+                            </form>
+                        )}
+                    </div>
+                </div>
+            </section>
         </main>
     );
 }

@@ -54,8 +54,6 @@ guardiana-web
 ├── node_modules
 ├── apps/
 │   ├── backend/
-│   │   ├── dist/
-│   │   ├── node_modules/
 │   │   ├── prisma/
 │   │   │   ├── migratios/
 │   │   │   │
@@ -81,7 +79,7 @@ guardiana-web
 │   │   │   │   │   │   └── login.dto.ts
 │   │   │   │   │   │
 │   │   │   │   │   ├── middleware/
-│   │   │   │   │   │   └── authenticate.ts
+│   │   │   │   │   │   ├── authenticate.ts
 │   │   │   │   │   │   └── authorize.ts
 │   │   │   │   │   │
 │   │   │   │   │   ├── routes/
@@ -93,27 +91,79 @@ guardiana-web
 │   │   │   │   │   └── utils/
 │   │   │   │   │
 │   │   │   │   ├── books/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   └── BookController.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   ├── create-book.dto.ts
+│   │   │   │   │   │   └── update-book.dto.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── routes/
+│   │   │   │   │   │   └── books.routes.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── services/
+│   │   │   │   │       └── BookService.ts
+│   │   │   │   │
 │   │   │   │   ├── orders/
 │   │   │   │   ├── poems/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   └── PoemController.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   ├── create-poem.dto.ts
+│   │   │   │   │   │   ├── review-poem.dto.ts
+│   │   │   │   │   │   └── update-poem.dto.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── routes/
+│   │   │   │   │   │   └── poems.routes.ts
+│   │   │   │   │   │
+│   │   │   │   │   └── services/
+│   │   │   │   │       └── PoemService.ts
+│   │   │   │   │
+│   │   │   │   ├── uploads/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   └── UploadController.ts
+│   │   │   │   │   │
+│   │   │   │   │   └── routes/
+│   │   │   │   │       └── uploads.routes.ts
+│   │   │   │   │
 │   │   │   │   └── users/
+│   │   │   │       ├── controllers/
+│   │   │   │       │   └── UserController.ts
+│   │   │   │       │
+│   │   │   │       ├── dto/
+│   │   │   │       │   ├── create-user.dto.ts
+│   │   │   │       │   └── update-profile.dto.ts
+│   │   │   │       │
+│   │   │   │       ├── routes/
+│   │   │   │       │   └── users.routes.ts
+│   │   │   │       │
+│   │   │   │       └── services/
+│   │   │   │           └── UserService.ts
 │   │   │   │
 │   │   │   ├── shared/
 │   │   │   │   ├── database/
-│   │   │   │   │   └── database/
+│   │   │   │   │   └── prisma.ts
 │   │   │   │   │
 │   │   │   │   ├── errors/
 │   │   │   │   ├── http/
+│   │   │   │   ├── services/
+│   │   │   │   │   └── EmailService.ts
+│   │   │   │   │
 │   │   │   │   └── utils/
 │   │   │   │
 │   │   │   └── server.ts
+│   │   │
+│   │   ├── uploads/
+│   │   │   └── images/
+│   │   │       ├── 1779045948987-120269349.png
+│   │   │       ├── 1779054365952-153320479.png
 │   │   │
 │   │   ├── .env
 │   │   ├── package.json
 │   │   └── tsconfig.json
 │   │
 │   └── frontend/
-│       ├── .next/
-│       ├── node_modules/
 │       ├── public/
 │       │   ├── livros/
 │       │
@@ -179,6 +229,7 @@ guardiana-web
 │       │   │   │   ├── Contato.tsx         # NOVO (home preview)
 │       │   │   │   ├── Hero.tsx
 │       │   │   │   ├── Livro.tsx
+│       │   │   │   ├── PoemaDestaque.tsx
 │       │   │   │   ├── Publicacoes.tsx
 │       │   │   │   └── Sobre.tsx
 │       │   │   │
@@ -200,26 +251,24 @@ guardiana-web
 │       │       ├── publicacoes.service.ts
 │       │       └── sobre.service.ts
 │       │
-│       ├── .editorconfig
-│       ├── .gitignore
+│       ├── .env.local
 │       ├── eslint.config.js
 │       ├── next-env.d.ts
 │       ├── next.config.ts
-│       ├── package-lock.json
 │       ├── package.json
 │       ├── postcss.config.js
 │       ├── postcss.config.mjs
-│       ├── README.md
 │       ├── tailwind.config.js
-│       ├── tsconfig.json
-│       └── tsconfig.tsbuildinfo
+│       └── tsconfig.json
 │    
 │
 ├── docs/
 ├── infra/
+├── node_modules/
 │
 ├── .editorconfig
 ├── .gitignore
+├── package-lock.json
 ├── package.json
 ├── PROJECT_SUMMARY.md
 └── README.md 
