@@ -12,7 +12,11 @@ import { authenticate } from "../../auth/middleware/authenticate.js";
 // ================================
 const storage = multer.diskStorage({
     destination: (_request, _file, callback) => {
-        callback(null, path.resolve("uploads/images"));
+        // Use the Render disk path for production, otherwise use local path
+        const uploadPath = process.env.NODE_ENV === "production" 
+            ? "/var/data/uploads" 
+            : path.resolve("uploads/images");
+        callback(null, uploadPath);
     },
     filename: (_request, file, callback) => {
         const uniqueSuffix = `${Date.now()}-${Math.round(

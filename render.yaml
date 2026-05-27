@@ -1,0 +1,56 @@
+# render.yaml
+# This file configures the services for deploying the Guardiana monorepo on Render.
+
+databases:
+  - name: guardiana-db
+    databaseName: guardiana
+    user: guardiana_user
+    plan: free # You can change this to a paid plan for more resources
+
+services:
+  # Backend Service (Express.js)
+  - type: web
+    name: guardiana-backend
+    env: node
+    rootDir: apps/backend
+    plan: free # You can change this to a paid plan for more resources
+    buildCommand: |
+      npm install
+      npx prisma generate
+      npx prisma migrate deploy
+    startCommand: npm run start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: guardiana-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true # Render will generate a random secret
+      # Add other necessary environment variables here
+      # - key: YOUR_OTHER_ENV_VAR
+      #   value: your_value
+
+    # IMPORTANT: File uploads with multer will not work on Render's ephemeral filesystem.
+    # You need to use a persistent storage solution. The configuration below adds a
+    # Render Disk, which is a simple solution for persistent storage.
+    # You may need to update your multer configuration to use the '/var/data/uploads' path.
+    disks:
+      - name: uploads
+        mountPath: /var/data/uploads
+        sizeGB: 1
+
+  # Frontend Service (Next.js)
+  - type: web
+    name: guardiana-frontend
+    env: node
+    rootDir: apps/frontend
+    plan: free # You can change this to a paid plan for more resources
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: guardiana-backend
+          property: url
+      # Add other necessary environment variables for the frontend here
