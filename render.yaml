@@ -27,7 +27,6 @@ services:
       - key: JWT_SECRET
         generateValue: true
       # Environment variables for Supabase Storage
-      # IMPORTANT: Define these values in the Render Dashboard when syncing the Blueprint.
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_KEY
@@ -45,6 +44,4 @@ services:
     startCommand: npm run start
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          name: guardiana-backend # The "type: web" was removed from here to fix the validation issue.
-          property: url
+        sync: false
