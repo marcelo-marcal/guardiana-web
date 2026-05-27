@@ -5,7 +5,7 @@ databases:
   - name: guardiana-db
     databaseName: guardiana
     user: guardiana_user
-    plan: free # You can change this to a paid plan for more resources
+    plan: free
 
 services:
   # Backend Service (Express.js)
@@ -13,7 +13,7 @@ services:
     name: guardiana-backend
     env: node
     rootDir: apps/backend
-    plan: free # You can change this to a paid plan for more resources
+    plan: free
     buildCommand: |
       npm install
       npx prisma generate
@@ -25,26 +25,22 @@ services:
           name: guardiana-db
           property: connectionString
       - key: JWT_SECRET
-        generateValue: true # Render will generate a random secret
-      # Add other necessary environment variables here
-      # - key: YOUR_OTHER_ENV_VAR
-      #   value: your_value
-
-    # IMPORTANT: File uploads with multer will not work on Render's ephemeral filesystem.
-    # You need to use a persistent storage solution. The configuration below adds a
-    # Render Disk, which is a simple solution for persistent storage.
-    # You may need to update your multer configuration to use the '/var/data/uploads' path.
-    disks:
-      - name: uploads
-        mountPath: /var/data/uploads
-        sizeGB: 1
+        generateValue: true
+      # Environment variables for Supabase Storage
+      # IMPORTANT: Define these values in the Render Dashboard when syncing the Blueprint.
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: SUPABASE_BUCKET_NAME
+        value: "guardiana-uploads"
 
   # Frontend Service (Next.js)
   - type: web
     name: guardiana-frontend
     env: node
     rootDir: apps/frontend
-    plan: free # You can change this to a paid plan for more resources
+    plan: free
     buildCommand: npm install && npm run build
     startCommand: npm run start
     envVars:
@@ -53,4 +49,3 @@ services:
           type: web
           name: guardiana-backend
           property: url
-      # Add other necessary environment variables for the frontend here
