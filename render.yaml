@@ -46,6 +46,5 @@ services:
     envVars:
       - key: NEXT_PUBLIC_API_URL
         fromService:
-          type: web
-          name: guardiana-backend
+          name: guardiana-backend # The "type: web" was removed from here to fix the validation issue.
           property: url
