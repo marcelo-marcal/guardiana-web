@@ -38,12 +38,16 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 // ================================
 // MIDDLEWARES GLOBAIS
 // ================================
-app.use(
-    cors({
-        origin: FRONTEND_URL,
-        credentials: true,
-    }),
-);
+app.use(cors({
+  origin: [
+    'https://www.editoraguardiana.com',
+    'https://editoraguardiana.com',
+    'http://localhost:3000' // Mantém o localhost liberado para quando você testar na sua máquina
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 app.use(express.json({ limit: "10mb" }));
 
