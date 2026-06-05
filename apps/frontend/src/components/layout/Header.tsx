@@ -34,10 +34,9 @@ export default function Header() {
     // ================================
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme");
-        const systemDark = window.matchMedia(
-            "(prefers-color-scheme: dark)",
-        ).matches;
-        const isDark = savedTheme ? savedTheme === "dark" : systemDark;
+
+        // O tema padrão agora é obrigatoriamente light, a menos que "dark" esteja salvo
+        const isDark = savedTheme === "dark";
 
         if (isDark) {
             document.documentElement.classList.add("dark");
