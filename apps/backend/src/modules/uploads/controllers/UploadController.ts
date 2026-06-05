@@ -4,16 +4,40 @@
 import type { Request, Response } from "express";
 import { createClient } from "@supabase/supabase-js";
 import path from "node:path";
+import ws from "ws";
+
+// Extrai o construtor corretamente dependendo de como o TS/Node exporta o módulo "ws"
+const WsConstructor = typeof ws === "function" ? ws : (ws as any).default || (ws as any).WebSocket || ws;
 
 // ================================
 // CLIENTE SUPABASE
 // ================================
-// As variáveis de ambiente serão lidas pelo Render
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_KEY!;
-const supabaseBucket = process.env.SUPABASE_BUCKET_NAME!;
+let supabaseInstance: ReturnType<typeof createClient> | null = null;
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+function getSupabaseClient() {
+    if (!supabaseInstance) {
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
+            throw new Error("SUPABASE_URL e SUPABASE_KEY não estão definidos no arquivo .env");
+        }
+
+        supabaseInstance = createClient(supabaseUrl, supabaseKey, {
+            auth: {
+                persistSession: false, // Desativa a busca por localStorage no Backend
+            },
+            realtime: {
+                transport: WsConstructor as any, // Propriedade correta para injetar o WebSocket
+            },
+        });
+    }
+    return supabaseInstance;
+}
+
+function getSupabaseBucket() {
+    return process.env.SUPABASE_BUCKET || process.env.SUPABASE_BUCKET_NAME || "guardiana-uploads";
+}
 
 // ================================
 // CONTROLLER: UPLOADS
@@ -36,9 +60,12 @@ export class UploadController {
             const extension = path.extname(request.file.originalname).toLowerCase();
             const fileName = `${uniqueSuffix}${extension}`;
 
+            const supabase = getSupabaseClient();
+            const bucket = getSupabaseBucket();
+
             // Faz o upload para o Supabase Storage
             const { data, error } = await supabase.storage
-                .from(supabaseBucket)
+                .from(bucket)
                 .upload(fileName, request.file.buffer, {
                     contentType: request.file.mimetype,
                     upsert: false, // Não sobrescrever se o arquivo já existir
@@ -50,7 +77,7 @@ export class UploadController {
 
             // Obtém a URL pública do arquivo
             const { data: { publicUrl } } = supabase.storage
-                .from(supabaseBucket)
+                .from(bucket)
                 .getPublicUrl(data.path);
 
             return response.status(201).json({

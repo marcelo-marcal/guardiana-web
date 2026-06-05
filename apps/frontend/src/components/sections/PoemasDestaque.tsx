@@ -72,7 +72,8 @@ export default function PoemasDestaque() {
                 setPoems(data.poems);
             }
         } catch (error) {
-            console.error("Erro ao buscar poesias em destaque:", error);
+            // Trocamos para warn para evitar que o Next.js bloqueie a tela inteira em modo Dev
+            console.warn("Aviso: Não foi possível conectar ao backend para carregar os poemas em destaque.");
         } finally {
             setLoading(false);
         }
