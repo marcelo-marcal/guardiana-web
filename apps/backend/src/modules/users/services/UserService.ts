@@ -74,6 +74,20 @@ export class UserService {
         if (data.literaryInterests !== undefined) {
             updateData.literaryInterests = data.literaryInterests;
         }
+        if (data.password) {
+            updateData.passwordHash = await bcrypt.hash(data.password, 10);
+        }
+        
+        if (data.email) {
+            const existingUser = await prisma.user.findUnique({
+                where: { email: data.email }
+            });
+            
+            if (existingUser && existingUser.id !== userId) {
+                throw new Error("Já existe um usuário com este e-mail.");
+            }
+            updateData.email = data.email;
+        }
 
         return prisma.user.update({
             where: {

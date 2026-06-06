@@ -85,7 +85,7 @@ export default function LoginPage() {
             return;
         }
 
-        router.replace("/dashboard");
+        router.replace("/");
     }, [authUser, authLoading, router]);
 
     // ================================
@@ -126,7 +126,7 @@ export default function LoginPage() {
                 localStorage.setItem(USER_KEY, JSON.stringify(data.user));
                 window.dispatchEvent(new Event("auth:updated"));
 
-                router.replace("/dashboard");
+                router.replace("/");
                 return;
             }
 
@@ -179,7 +179,7 @@ export default function LoginPage() {
                 return;
             }
 
-            router.replace("/dashboard");
+            router.replace("/");
         } catch (error) {
             const message = getErrorMessage(
                 error,
@@ -227,7 +227,7 @@ export default function LoginPage() {
             localStorage.setItem(USER_KEY, JSON.stringify(data.user));
             window.dispatchEvent(new Event("auth:updated"));
 
-            router.replace("/dashboard");
+            router.replace("/");
         } catch (error) {
             const message = getErrorMessage(
                 error,
