@@ -4,35 +4,79 @@
 // IMPORTS
 // ================================
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 // ================================
-// REDES SOCIAIS
+// CONFIGURAÇÕES
 // ================================
-const redesSociais = [
-    {
-        nome: "Instagram",
-        usuario: "@guardianaeditora",
-        href: "https://www.instagram.com/guardianaeditora",
-        icone: "◎",
-    },
-    {
-        nome: "Facebook",
-        usuario: "Em breve",
-        href: "#",
-        icone: "f",
-    },
-    {
-        nome: "X",
-        usuario: "@guardiana",
-        href: "#",
-        icone: "𝕏",
-    },
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+
+// ================================
+// TIPAGENS
+// ================================
+type SocialLink = {
+    nome: string;
+    usuario: string;
+    href: string;
+    icone: string;
+};
+
+type SettingResponse = {
+    success: boolean;
+    value?: string;
+    message?: string;
+    error?: string;
+};
 
 // ================================
 // COMPONENTE FOOTER
 // ================================
 export default function Footer() {
+    const [redesSociais, setRedesSociais] = useState<SocialLink[]>([
+        {
+            nome: "Instagram",
+            usuario: "@guardianaeditora",
+            href: "https://www.instagram.com/guardianaeditora",
+            icone: "◎",
+        },
+        {
+            nome: "Facebook",
+            usuario: "Em breve",
+            href: "#",
+            icone: "f",
+        },
+        {
+            nome: "X",
+            usuario: "@guardiana",
+            href: "#",
+            icone: "𝕏",
+        },
+    ]);
+
+    useEffect(() => {
+        const fetchSocialLinks = async () => {
+            try {
+                const response = await fetch(`${API_URL}/auth/settings/social_media_links`);
+                const data = (await response.json()) as SettingResponse;
+
+                if (data.success && data.value && data.value !== "false") {
+                    try {
+                        const links = JSON.parse(data.value) as SocialLink[];
+                        if (Array.isArray(links) && links.length > 0) {
+                            setRedesSociais(links);
+                        }
+                    } catch (e) {
+                        console.error("Erro ao fazer parse das redes sociais:", e);
+                    }
+                }
+            } catch (error) {
+                console.error("Erro ao carregar redes sociais:", error);
+            }
+        };
+
+        void fetchSocialLinks();
+    }, []);
+
     return (
         <footer
             className="
@@ -47,9 +91,9 @@ export default function Footer() {
             REDES SOCIAIS
             ================================ */}
             <div className="grid sm:grid-cols-3 gap-4 mb-6">
-                {redesSociais.map((rede) => (
+                {redesSociais.map((rede, index) => (
                     <Link
-                        key={rede.nome}
+                        key={index}
                         href={rede.href}
                         target={rede.href === "#" ? "_self" : "_blank"}
                         className="
@@ -150,7 +194,9 @@ export default function Footer() {
                         <div className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
                             <p>Email: contato@guardiana.com</p>
                             <p>Passo Fundo / Rio Grande do Sul, Brasil</p>
-                            <p>Instagram: @guardianaeditora</p>
+                            {redesSociais.map((rede, index) => (
+                                <p key={index}>{rede.nome}: {rede.usuario}</p>
+                            ))}
                         </div>
                     </div>
                 </div>
