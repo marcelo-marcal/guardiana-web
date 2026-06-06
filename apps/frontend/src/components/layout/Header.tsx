@@ -208,8 +208,8 @@ export default function Header() {
                         {user ? (
                             <div className="hidden md:flex items-center gap-4 ml-4">
                                 <Link href="/dashboard/perfil" className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer">
-                                    {(user as any).avatarUrl ? (
-                                        <Image src={(user as any).avatarUrl} alt="Avatar" width={32} height={32} className="rounded-full object-cover w-8 h-8" />
+                                    {user.avatarUrl ? (
+                                        <Image src={user.avatarUrl} alt="Avatar" width={32} height={32} className="rounded-full object-cover w-8 h-8" />
                                     ) : (
                                         <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-700 dark:text-gray-300">
                                             {user.name?.charAt(0).toUpperCase()}
@@ -309,8 +309,8 @@ export default function Header() {
                             <div className="relative w-72 h-full bg-white dark:bg-[#020617] shadow-2xl border-r border-gray-200 dark:border-white/10 flex flex-col">
                                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-white/10 flex-shrink-0">
                                     <Link href="/dashboard/perfil" className="flex items-center gap-3" onClick={() => setMenuOpen(false)}>
-                                        {(user as any).avatarUrl ? (
-                                            <Image src={(user as any).avatarUrl} alt="Avatar" width={32} height={32} className="rounded-full object-cover w-8 h-8" />
+                                        {user.avatarUrl ? (
+                                            <Image src={user.avatarUrl} alt="Avatar" width={32} height={32} className="rounded-full object-cover w-8 h-8" />
                                         ) : (
                                             <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-700 dark:text-gray-300">
                                                 {user.name?.charAt(0).toUpperCase()}
