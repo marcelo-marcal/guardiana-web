@@ -12,6 +12,7 @@ import "./globals.css";
 // COMPONENTES GLOBAIS
 // ================================
 import Header from "../components/layout/Header";
+import SignatureLoader from "../components/ui/SignatureLoader";
 
 // ================================
 // METADATA
@@ -48,6 +49,7 @@ export default function RootLayout({
         <html lang="pt-BR">
             <body className="bg-[#F7F7F7] text-[#18384A] antialiased transition-colors duration-300 dark:bg-[#020617] dark:text-white">
                 <Header />
+                <SignatureLoader />
 
                 {/* pt-16 = mesma altura do header h-16 */}
                 <main className="pt-16">{children}</main>
