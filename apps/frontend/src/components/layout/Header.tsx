@@ -143,20 +143,10 @@ export default function Header() {
                                 title="Acessar Painel Administrativo"
                             >
                                 <span>🔧</span>
-                                <span>Painel Admin</span>
+                                <span>Painel Administrativo</span>
                             </Link>
                         )
                         }
-                        {user && user.role === 'USER' &&(
-                            <Link
-                                href="/dashboard"
-                                className="text-[#16B83E] dark:text-[#16B83E] font-semibold hover:text-[#0d9632] dark:hover:text-[#0d9632] transition flex items-center gap-1"
-                                title="Acessar Painel Administrativo"
-                            >
-                                <span>🔧</span>
-                                <span>Painel Administrativo</span>
-                            </Link>
-                        )}                        
                     </nav>
 
                     {/* AÇÕES (Tema + Menu Mobile + Auth) */}
@@ -229,13 +219,25 @@ export default function Header() {
 
                         {/* Botão Auth - Desktop */}
                         {user ? (
-                            <button
-                                onClick={handleLogout}
-                                className="hidden md:block border border-red-300 dark:border-red-900/50 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition min-w-[80px]"
-                                aria-label="Sair da conta"
-                            >
-                                Sair
-                            </button>
+                            <div className="hidden md:flex items-center gap-4 ml-4">
+                                <Link href={user.role === 'USER' ? '/dashboard/perfil' : '/dashboard'} className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer">
+                                    {(user as any).avatarUrl ? (
+                                        <Image src={(user as any).avatarUrl} alt="Avatar" width={32} height={32} className="rounded-full object-cover w-8 h-8" />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-700 dark:text-gray-300">
+                                            {user.name?.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{user.name}</span>
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="border border-red-300 dark:border-red-900/50 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition min-w-[80px]"
+                                    aria-label="Sair da conta"
+                                >
+                                    Sair
+                                </button>
+                            </div>
                         ) : (
                             <Link
                                 href="/login"
@@ -338,9 +340,18 @@ export default function Header() {
                             <div className="relative w-72 h-full bg-white dark:bg-[#020617] shadow-2xl border-r border-gray-200 dark:border-white/10 flex flex-col">
                                 {/* CABEÇALHO */}
                                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-white/10 flex-shrink-0">
-                                    <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        Menu Admin
-                                    </span>
+                                    <div className="flex items-center gap-3">
+                                        {(user as any).avatarUrl ? (
+                                            <Image src={(user as any).avatarUrl} alt="Avatar" width={32} height={32} className="rounded-full object-cover w-8 h-8" />
+                                        ) : (
+                                            <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-700 dark:text-gray-300">
+                                                {user.name?.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
+                                        <span className="text-base font-semibold text-gray-900 dark:text-white truncate max-w-[150px]">
+                                            {user.name}
+                                        </span>
+                                    </div>
 
                                     <button
                                         onClick={() => setMenuOpen(false)}
@@ -403,11 +414,11 @@ export default function Header() {
 
                                     {/* Link Dashboard Mobile - Destaque verde */}
                                     <Link
-                                        href="/dashboard"
+                                        href={user.role === 'USER' ? "/dashboard/perfil" : "/dashboard"}
                                         onClick={() => setMenuOpen(false)}
                                         className="flex py-3 px-4 rounded-lg text-[#16B83E] dark:text-[#16B83E] font-semibold hover:bg-[#16B83E]/10 transition items-center gap-2"
                                     >
-                                        <span>{user.role === 'USER' ? "👤" : "�"}</span>
+                                        <span>{user.role === 'USER' ? "👤" : "🔧"}</span>
                                         <span>
                                             {user.role === 'USER' ? "Meu Perfil" : "Painel Admin"}
                                         </span>

@@ -74,6 +74,9 @@ export class UserService {
         if (data.literaryInterests !== undefined) {
             updateData.literaryInterests = data.literaryInterests;
         }
+        if (data.password) {
+            updateData.passwordHash = await bcrypt.hash(data.password, 10);
+        }
 
         return prisma.user.update({
             where: {

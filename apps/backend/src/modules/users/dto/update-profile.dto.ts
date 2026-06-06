@@ -11,6 +11,7 @@ export const updateProfileSchema = z.object({
     avatarUrl: z.string().optional(),
     bio: z.string().optional(),
     literaryInterests: z.string().optional(),
+    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres.").optional(),
 });
 
 // ================================
