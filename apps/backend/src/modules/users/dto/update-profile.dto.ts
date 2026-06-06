@@ -8,6 +8,7 @@ import { z } from "zod";
 // ================================
 export const updateProfileSchema = z.object({
     name: z.string().min(2, "Nome obrigatório.").optional(),
+    email: z.string().email("E-mail inválido.").optional(),
     avatarUrl: z.string().optional(),
     bio: z.string().optional(),
     literaryInterests: z.string().optional(),

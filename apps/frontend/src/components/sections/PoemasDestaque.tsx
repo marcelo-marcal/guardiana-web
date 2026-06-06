@@ -25,13 +25,6 @@ type Poem = {
     createdAt: string;
 };
 
-type SettingsResponse = {
-    success: boolean;
-    value?: string;
-    message?: string;
-    error?: string;
-};
-
 type HighlightsResponse = {
     success: boolean;
     poems?: Poem[];
@@ -45,34 +38,19 @@ type HighlightsResponse = {
 export default function PoemasDestaque() {
     const [poems, setPoems] = useState<Poem[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isVisible, setIsVisible] = useState(true);
 
     // ================================
     // BUSCAR DESTAQUES
     // ================================
     const fetchHighlights = useCallback(async () => {
         try {
-            const settingsResponse = await fetch(
-                `${API_URL}/auth/settings/show_poems_section`,
-            );
-
-            const settingsData =
-                (await settingsResponse.json()) as SettingsResponse;
-
-            if (settingsData.success && settingsData.value === "false") {
-                setIsVisible(false);
-                setLoading(false);
-                return;
-            }
-
             const response = await fetch(`${API_URL}/poems/highlights`);
             const data = (await response.json()) as HighlightsResponse;
 
             if (data.success && data.poems) {
                 setPoems(data.poems);
             }
-        } catch (error) {
-            // Trocamos para warn para evitar que o Next.js bloqueie a tela inteira em modo Dev
+        } catch (_error) {
             console.warn("Aviso: Não foi possível conectar ao backend para carregar os poemas em destaque.");
         } finally {
             setLoading(false);
@@ -86,7 +64,7 @@ export default function PoemasDestaque() {
         void fetchHighlights();
     }, [fetchHighlights]);
 
-    if (!loading && (!isVisible || poems.length === 0)) {
+    if (!loading && poems.length === 0) {
         return null;
     }
 
