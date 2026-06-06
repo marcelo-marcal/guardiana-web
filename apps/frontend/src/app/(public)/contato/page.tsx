@@ -63,7 +63,7 @@ export default function Contato() {
                     mensagem: "",
                 });
             } else {
-                setFeedback({ type: "error", message: data?.message || "Ocorreu um erro ao enviar sua mensagem. Tente novamente mais tarde." });
+                setFeedback({ type: "error", message: data?.error || data?.message || "Ocorreu um erro ao enviar sua mensagem. Tente novamente mais tarde." });
             }
         } catch (error) {
             console.error("Erro ao enviar contato:", error);
