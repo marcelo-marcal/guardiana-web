@@ -3,7 +3,7 @@
 // ================================
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
+import "dotenv/config";
 import { authRoutes } from "./modules/auth/routes/auth.routes.js";
 import { bookRoutes } from "./modules/books/routes/books.routes.js";
 import { auditRoutes } from "./modules/audit/routes/audit.routes.js";
@@ -12,11 +12,11 @@ import { poemRoutes } from "./modules/poems/routes/poems.routes.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { uploadRoutes } from "./modules/uploads/routes/uploads.routes.js";
+import { contactRoutes } from "./modules/contact/routes/contact.routes.js";
 
 // ================================
 // CONFIGURAÇÕES DE AMBIENTE
 // ================================
-dotenv.config();
 
 // ================================
 // APP EXPRESS
@@ -42,7 +42,9 @@ app.use(cors({
   origin: [
     'https://www.editoraguardiana.com',
     'https://editoraguardiana.com',
-    'http://localhost:3000' // Mantém o localhost liberado para quando você testar na sua máquina
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://192.168.0.10:3000'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -75,10 +77,11 @@ app.use("/audit-logs", auditRoutes);
 app.use("/users", userRoutes);
 app.use("/poems", poemRoutes);
 app.use("/uploads", uploadRoutes);
+app.use("/contact", contactRoutes);
 
 // ================================
 // INICIAR SERVIDOR
 // ================================
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`API Guardiana rodando em http://localhost:${PORT}`);
 });
