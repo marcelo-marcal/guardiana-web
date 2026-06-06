@@ -32,12 +32,12 @@ export function printAppSignature(): void {
   )
 
   console.log(
-    '%c - Natália Kunz - 2026',
+    '%c - Marcelo de Assis Marçal - 2026',
     'font-size: 13px; font-weight: bold; color: #16a34a;',
   )
 
   console.log(
-    '%c - Marcelo de Assis Marçal - 2026',
+    '%c - Natália Kunz - 2026',
     'font-size: 13px; font-weight: bold; color: #16a34a;',
   )
 
