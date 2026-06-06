@@ -50,7 +50,7 @@ export default function PoemasDestaque() {
             if (data.success && data.poems) {
                 setPoems(data.poems);
             }
-        } catch (_error) {
+        } catch {
             console.warn("Aviso: Não foi possível conectar ao backend para carregar os poemas em destaque.");
         } finally {
             setLoading(false);
