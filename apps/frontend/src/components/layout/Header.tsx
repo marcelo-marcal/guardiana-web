@@ -136,7 +136,7 @@ export default function Header() {
                         </Link>
 
                         {/* Painel Admin - Verde, só se logado */}
-                        {user && (
+                        {user && user.role !== 'USER' &&(
                             <Link
                                 href="/dashboard"
                                 className="text-[#16B83E] dark:text-[#16B83E] font-semibold hover:text-[#0d9632] dark:hover:text-[#0d9632] transition flex items-center gap-1"
@@ -145,7 +145,18 @@ export default function Header() {
                                 <span>🔧</span>
                                 <span>Painel Admin</span>
                             </Link>
-                        )}
+                        )
+                        }
+                        {user && user.role === 'USER' &&(
+                            <Link
+                                href="/dashboard"
+                                className="text-[#16B83E] dark:text-[#16B83E] font-semibold hover:text-[#0d9632] dark:hover:text-[#0d9632] transition flex items-center gap-1"
+                                title="Acessar Painel Administrativo"
+                            >
+                                <span>🔧</span>
+                                <span>Painel Administrativo</span>
+                            </Link>
+                        )}                        
                     </nav>
 
                     {/* AÇÕES (Tema + Menu Mobile + Auth) */}
