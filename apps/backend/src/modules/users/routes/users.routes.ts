@@ -42,4 +42,31 @@ userRoutes.get(
     },
 );
 
+userRoutes.post(
+    "/admin",
+    authenticate,
+    authorize(["ADMIN", "SUPER_ADMIN"]),
+    (request, response) => {
+        return userController.adminCreate(request, response);
+    },
+);
+
+userRoutes.put(
+    "/:id",
+    authenticate,
+    authorize(["ADMIN", "SUPER_ADMIN"]),
+    (request, response) => {
+        return userController.adminUpdate(request, response);
+    },
+);
+
+userRoutes.delete(
+    "/:id",
+    authenticate,
+    authorize(["ADMIN", "SUPER_ADMIN"]),
+    (request, response) => {
+        return userController.adminDelete(request, response);
+    },
+);
+
 export { userRoutes };
