@@ -61,6 +61,7 @@ export default function UserDashboard() {
 
     const [activeTab, setActiveTab] = useState<ActiveTab>("poemas");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [viewingPoem, setViewingPoem] = useState<Poem | null>(null);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [submitting, setSubmitting] = useState(false);
@@ -334,6 +335,37 @@ export default function UserDashboard() {
                                                     ? "Recusado"
                                                     : "Em Destaque"}
                                         </span>
+
+                                        {isAdmin && (
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    setViewingPoem(poem)
+                                                }
+                                                className="text-gray-400 hover:text-[#C95F52] transition"
+                                                title="Visualizar Poema"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={1.5}
+                                                    stroke="currentColor"
+                                                    className="w-5 h-5"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.644C3.412 8.081 7.42 5 12 5c4.58 0 8.588 3.081 9.964 6.678.077.202.077.421 0 .623-1.376 3.597-5.384 6.678-12 6.678-4.58 0-8.588-3.081-9.964-6.678Z"
+                                                    />
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
                                     </div>
 
                                     {isAdmin && (
@@ -352,60 +384,6 @@ export default function UserDashboard() {
                                     </p>
                                 </div>
 
-                                {isAdmin && (
-                                    <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-gray-50 dark:border-white/5">
-                                        {poem.status === "PENDING" && (
-                                            <>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        void handleReview(
-                                                            poem.id,
-                                                            "APPROVED",
-                                                        )
-                                                    }
-                                                    className="px-3 py-1.5 bg-green-600 text-white text-[10px] font-bold rounded-lg hover:bg-green-700 transition"
-                                                >
-                                                    Aprovar
-                                                </button>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        void handleReview(
-                                                            poem.id,
-                                                            "REJECTED",
-                                                        )
-                                                    }
-                                                    className="px-3 py-1.5 bg-red-600 text-white text-[10px] font-bold rounded-lg hover:bg-red-700 transition"
-                                                >
-                                                    Rejeitar
-                                                </button>
-                                            </>
-                                        )}
-
-                                        {(poem.status === "APPROVED" ||
-                                            poem.status === "HIGHLIGHTED") && (
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    void handleToggleHighlight(
-                                                        poem.id,
-                                                    )
-                                                }
-                                                className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition ${
-                                                    poem.isHighlighted
-                                                        ? "bg-purple-600 text-white hover:bg-purple-700"
-                                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                                }`}
-                                            >
-                                                {poem.isHighlighted
-                                                    ? "★ Destacado"
-                                                    : "☆ Destacar"}
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
 
                                 <div className="mt-4 pt-4 border-t border-gray-50 dark:border-white/5 text-[10px] text-gray-400">
                                     Enviado em{" "}
@@ -506,6 +484,104 @@ export default function UserDashboard() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {viewingPoem && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white dark:bg-[#0F1720] w-full max-w-2xl rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-white/10 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h2 className="text-2xl font-bold text-[#18384A] dark:text-white leading-tight">
+                                    {viewingPoem.title}
+                                </h2>
+                                <p className="text-sm text-[#C95F52] font-bold uppercase mt-1">
+                                    Autor(a):{" "}
+                                    {viewingPoem.user?.name || "Desconhecido"}
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setViewingPoem(null)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition p-2"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div className="mb-8">
+                            <p className="text-gray-600 dark:text-gray-300 whitespace-pre-wrap italic text-lg leading-relaxed">
+                                &quot;{viewingPoem.content}&quot;
+                            </p>
+                        </div>
+
+                        {isAdmin && (
+                            <div className="flex flex-wrap gap-4 pt-6 border-t border-gray-100 dark:border-white/10">
+                                {viewingPoem.status === "PENDING" && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                await handleReview(
+                                                    viewingPoem.id,
+                                                    "APPROVED",
+                                                );
+                                                setViewingPoem(null);
+                                            }}
+                                            className="flex-1 min-w-[140px] py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition"
+                                        >
+                                            Aprovar
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                await handleReview(
+                                                    viewingPoem.id,
+                                                    "REJECTED",
+                                                );
+                                                setViewingPoem(null);
+                                            }}
+                                            className="flex-1 min-w-[140px] py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition"
+                                        >
+                                            Rejeitar
+                                        </button>
+                                    </>
+                                )}
+
+                                {(viewingPoem.status === "APPROVED" ||
+                                    viewingPoem.status === "HIGHLIGHTED") && (
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            await handleToggleHighlight(
+                                                viewingPoem.id,
+                                            );
+                                            setViewingPoem(null);
+                                        }}
+                                        className={`flex-1 min-w-[140px] py-3 rounded-xl font-bold transition ${
+                                            viewingPoem.isHighlighted
+                                                ? "bg-purple-600 text-white hover:bg-purple-700"
+                                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                        }`}
+                                    >
+                                        {viewingPoem.isHighlighted
+                                            ? "★ Remover Destaque"
+                                            : "☆ Destacar"}
+                                    </button>
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={() => setViewingPoem(null)}
+                                    className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition"
+                                >
+                                    Fechar
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
