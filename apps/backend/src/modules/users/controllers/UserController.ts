@@ -108,12 +108,12 @@ export class UserController {
     }
 
     // ================================
-    // LISTAR USUÁRIOS COMUNS
+    // LISTAR TODOS OS USUÁRIOS
     // Protegido: ADMIN / SUPER_ADMIN
     // ================================
     async index(_request: AuthenticatedRequest, response: Response) {
         try {
-            const users = await this.userService.listCommonUsers();
+            const users = await this.userService.listAllUsers();
 
             return response.json({
                 success: true,
@@ -129,6 +129,59 @@ export class UserController {
                 success: false,
                 message,
             });
+        }
+    }
+
+    // ================================
+    // ADMIN: CRIAR USUÁRIO
+    // ================================
+    async adminCreate(request: AuthenticatedRequest, response: Response) {
+        try {
+            const user = await this.userService.adminCreateUser(request.body);
+
+            return response.status(201).json({
+                success: true,
+                user,
+            });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro ao criar usuário.";
+            return response.status(400).json({ success: false, message });
+        }
+    }
+
+    // ================================
+    // ADMIN: ATUALIZAR USUÁRIO
+    // ================================
+    async adminUpdate(request: AuthenticatedRequest, response: Response) {
+        try {
+            const { id } = request.params;
+            const user = await this.userService.adminUpdateUser(id, request.body);
+
+            return response.json({
+                success: true,
+                user,
+            });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro ao atualizar usuário.";
+            return response.status(400).json({ success: false, message });
+        }
+    }
+
+    // ================================
+    // ADMIN: DELETAR USUÁRIO
+    // ================================
+    async adminDelete(request: AuthenticatedRequest, response: Response) {
+        try {
+            const { id } = request.params;
+            await this.userService.deleteUser(id);
+
+            return response.json({
+                success: true,
+                message: "Usuário removido com sucesso.",
+            });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro ao deletar usuário.";
+            return response.status(400).json({ success: false, message });
         }
     }
 }

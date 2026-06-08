@@ -115,6 +115,84 @@ export class UserService {
     }
 
     // ================================
+    // LISTAR TODOS OS USUÁRIOS
+    // Admin/SuperAdmin
+    // ================================
+    async listAllUsers() {
+        return prisma.user.findMany({
+            orderBy: {
+                createdAt: "desc",
+            },
+            select: this.publicUserSelect(),
+        });
+    }
+
+    // ================================
+    // CRIAR QUALQUER USUÁRIO (ADMIN)
+    // ================================
+    async adminCreateUser(data: CreateUserDTO & { role: UserRole }) {
+        const existingUser = await prisma.user.findUnique({
+            where: { email: data.email },
+        });
+
+        if (existingUser) {
+            throw new Error("Já existe um usuário com este e-mail.");
+        }
+
+        const passwordHash = await bcrypt.hash(data.password, 10);
+
+        return prisma.user.create({
+            data: {
+                name: data.name,
+                email: data.email,
+                passwordHash,
+                role: data.role,
+                status: UserStatus.ACTIVE,
+                avatarUrl: data.avatarUrl ?? null,
+            },
+            select: this.publicUserSelect(),
+        });
+    }
+
+    // ================================
+    // ATUALIZAR QUALQUER USUÁRIO (ADMIN)
+    // ================================
+    async adminUpdateUser(userId: string, data: UpdateProfileDTO & { role?: UserRole }) {
+        const updateData: Prisma.UserUpdateInput = {};
+
+        if (data.name !== undefined) updateData.name = data.name;
+        if (data.email !== undefined) {
+            const existingUser = await prisma.user.findUnique({
+                where: { email: data.email }
+            });
+            if (existingUser && existingUser.id !== userId) {
+                throw new Error("E-mail já está em uso.");
+            }
+            updateData.email = data.email;
+        }
+        if (data.role !== undefined) updateData.role = data.role;
+        if (data.avatarUrl !== undefined) updateData.avatarUrl = data.avatarUrl;
+        if (data.password) {
+            updateData.passwordHash = await bcrypt.hash(data.password, 10);
+        }
+
+        return prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+            select: this.publicUserSelect(),
+        });
+    }
+
+    // ================================
+    // DELETAR USUÁRIO
+    // ================================
+    async deleteUser(userId: string) {
+        return prisma.user.delete({
+            where: { id: userId },
+        });
+    }
+
+    // ================================
     // CAMPOS PÚBLICOS DO USUÁRIO
     // Nunca retorna passwordHash
     // ================================
