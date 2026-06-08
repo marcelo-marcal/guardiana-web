@@ -211,7 +211,7 @@ export default function Publicacoes() {
             {/* ================================
                 DECORAÇÃO - LÂMPADA DIREITA
             ================================ */}
-            <div className="absolute right-0 top-[330px] md:top-[350px] w-36 h-36 md:w-64 md:h-64 opacity-95 pointer-events-none">
+            <div className="absolute right-0 top-[330px] md:top-[350px] w-36 h-36 md:w-64 md:h-64 opacity-65 pointer-events-none">
                 <Image
                     src="/decor-lampada.png"
                     alt="Lâmpada decorativa"
