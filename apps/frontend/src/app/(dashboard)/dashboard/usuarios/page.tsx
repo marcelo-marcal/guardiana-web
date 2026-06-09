@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import Swal from "sweetalert2";
-
+import Image from "next/image";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 const TOKEN_KEY = "guardiana_token";
 
@@ -47,8 +47,8 @@ export default function UsuariosPage() {
             if (data.success) {
                 setUsers(data.users);
             }
-        } catch (error) {
-            console.error("Erro ao carregar usuários:", error);
+        } catch {
+            console.error("Erro ao carregar usuários");
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -86,7 +86,11 @@ export default function UsuariosPage() {
                 ? `${API_URL}/users/${editingUser.id}`
                 : `${API_URL}/users/admin`;
 
-            const body: any = { name, email, role };
+            const body: Record<string, string | UserRole> = {
+                name,
+                email,
+                role,
+            };
             if (password) body.password = password;
 
             const response = await fetch(endpoint, {
@@ -105,7 +109,7 @@ export default function UsuariosPage() {
                 const data = await response.json();
                 alert(data.message || "Erro ao salvar usuário.");
             }
-        } catch (error) {
+        } catch {
             alert("Erro na requisição.");
         } finally {
             setSubmitting(false);
@@ -122,8 +126,12 @@ export default function UsuariosPage() {
             cancelButtonColor: "#526173",
             confirmButtonText: "Sim, excluir!",
             cancelButtonText: "Cancelar",
-            background: document.documentElement.classList.contains("dark") ? "#0F1720" : "#fff",
-            color: document.documentElement.classList.contains("dark") ? "#fff" : "#18384A",
+            background: document.documentElement.classList.contains("dark")
+                ? "#0F1720"
+                : "#fff",
+            color: document.documentElement.classList.contains("dark")
+                ? "#fff"
+                : "#18384A",
         });
 
         if (result.isConfirmed) {
@@ -143,8 +151,16 @@ export default function UsuariosPage() {
                         icon: "success",
                         timer: 2000,
                         showConfirmButton: false,
-                        background: document.documentElement.classList.contains("dark") ? "#0F1720" : "#fff",
-                        color: document.documentElement.classList.contains("dark") ? "#fff" : "#18384A",
+                        background: document.documentElement.classList.contains(
+                            "dark",
+                        )
+                            ? "#0F1720"
+                            : "#fff",
+                        color: document.documentElement.classList.contains(
+                            "dark",
+                        )
+                            ? "#fff"
+                            : "#18384A",
                     });
                 } else {
                     const data = await response.json();
@@ -152,8 +168,16 @@ export default function UsuariosPage() {
                         title: "Erro!",
                         text: data.message || "Erro ao excluir usuário.",
                         icon: "error",
-                        background: document.documentElement.classList.contains("dark") ? "#0F1720" : "#fff",
-                        color: document.documentElement.classList.contains("dark") ? "#fff" : "#18384A",
+                        background: document.documentElement.classList.contains(
+                            "dark",
+                        )
+                            ? "#0F1720"
+                            : "#fff",
+                        color: document.documentElement.classList.contains(
+                            "dark",
+                        )
+                            ? "#fff"
+                            : "#18384A",
                     });
                 }
             } catch (error) {
@@ -161,8 +185,14 @@ export default function UsuariosPage() {
                     title: "Erro!",
                     text: "Erro na requisição.",
                     icon: "error",
-                    background: document.documentElement.classList.contains("dark") ? "#0F1720" : "#fff",
-                    color: document.documentElement.classList.contains("dark") ? "#fff" : "#18384A",
+                    background: document.documentElement.classList.contains(
+                        "dark",
+                    )
+                        ? "#0F1720"
+                        : "#fff",
+                    color: document.documentElement.classList.contains("dark")
+                        ? "#fff"
+                        : "#18384A",
                 });
             } finally {
                 setRefreshing(false);
@@ -185,7 +215,7 @@ export default function UsuariosPage() {
             if (response.ok) {
                 void loadUsers();
             }
-        } catch (error) {
+        } catch {
             alert("Erro ao alterar permissão.");
         }
     };
@@ -195,12 +225,16 @@ export default function UsuariosPage() {
             <header className="flex justify-between items-center mb-8">
                 <div>
                     <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-bold text-[#18384A] dark:text-white">Gerenciamento de Usuários</h1>
+                        <h1 className="text-3xl font-bold text-[#18384A] dark:text-white">
+                            Gerenciamento de Usuários
+                        </h1>
                         {refreshing && (
                             <div className="w-5 h-5 border-2 border-[#C95F52] border-t-transparent rounded-full animate-spin" />
                         )}
                     </div>
-                    <p className="text-gray-500 dark:text-gray-400">Liste e gerencie os usuários da plataforma.</p>
+                    <p className="text-gray-500 dark:text-gray-400">
+                        Liste e gerencie os usuários da plataforma.
+                    </p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
@@ -224,33 +258,60 @@ export default function UsuariosPage() {
                     <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                         {loading ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-10 text-center text-gray-400">Carregando usuários...</td>
+                                <td
+                                    colSpan={5}
+                                    className="px-6 py-10 text-center text-gray-400"
+                                >
+                                    Carregando usuários...
+                                </td>
                             </tr>
                         ) : users.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-10 text-center text-gray-400">Nenhum usuário encontrado.</td>
+                                <td
+                                    colSpan={5}
+                                    className="px-6 py-10 text-center text-gray-400"
+                                >
+                                    Nenhum usuário encontrado.
+                                </td>
                             </tr>
                         ) : (
                             users.map((u) => (
-                                <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition">
+                                <tr
+                                    key={u.id}
+                                    className="hover:bg-gray-50 dark:hover:bg-white/5 transition"
+                                >
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-[#18384A] text-white flex items-center justify-center text-xs font-bold uppercase">
+                                            <div className="w-8 h-8 rounded-full bg-[#18384A] text-white flex items-center justify-center text-xs font-bold uppercase relative overflow-hidden">
                                                 {u.avatarUrl ? (
-                                                    <img src={u.avatarUrl} alt={u.name} className="w-full h-full rounded-full object-cover" />
+                                                    <Image
+                                                        src={u.avatarUrl}
+                                                        alt={u.name}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
                                                 ) : (
                                                     u.name.charAt(0)
                                                 )}
                                             </div>
-                                            <span className="font-semibold text-gray-900 dark:text-white">{u.name}</span>
+                                            <span className="font-semibold text-gray-900 dark:text-white">
+                                                {u.name}
+                                            </span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{u.email}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                        {u.email}
+                                    </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase ${
-                                            u.role === "SUPER_ADMIN" ? "bg-purple-100 text-purple-700" :
-                                            u.role === "ADMIN" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"
-                                        }`}>
+                                        <span
+                                            className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase ${
+                                                u.role === "SUPER_ADMIN"
+                                                    ? "bg-purple-100 text-purple-700"
+                                                    : u.role === "ADMIN"
+                                                      ? "bg-blue-100 text-blue-700"
+                                                      : "bg-gray-100 text-gray-700"
+                                            }`}
+                                        >
                                             {u.role}
                                         </span>
                                     </td>
@@ -265,16 +326,29 @@ export default function UsuariosPage() {
                                             <button
                                                 onClick={() => toggleAdmin(u)}
                                                 className={`p-2 rounded-lg transition ${u.role === "USER" ? "text-blue-600 hover:bg-blue-50" : "text-orange-600 hover:bg-orange-50"}`}
-                                                title={u.role === "USER" ? "Tornar Admin" : "Remover Admin"}
-                                                disabled={u.id === currentUser?.id || u.role === "SUPER_ADMIN"}
+                                                title={
+                                                    u.role === "USER"
+                                                        ? "Tornar Admin"
+                                                        : "Remover Admin"
+                                                }
+                                                disabled={
+                                                    u.id === currentUser?.id ||
+                                                    u.role === "SUPER_ADMIN"
+                                                }
                                             >
                                                 {u.role === "USER" ? "↑" : "↓"}
                                             </button>
                                             <button
-                                                onClick={() => handleOpenModal(u)}
+                                                onClick={() =>
+                                                    handleOpenModal(u)
+                                                }
                                                 className="p-2 text-gray-400 hover:text-[#C95F52] transition disabled:opacity-30"
                                                 title="Editar"
-                                                disabled={currentUser?.role === "ADMIN" && u.role === "SUPER_ADMIN"}
+                                                disabled={
+                                                    currentUser?.role ===
+                                                        "ADMIN" &&
+                                                    u.role === "SUPER_ADMIN"
+                                                }
                                             >
                                                 ✎
                                             </button>
@@ -282,7 +356,14 @@ export default function UsuariosPage() {
                                                 onClick={() => handleDelete(u)}
                                                 className="p-2 text-gray-400 hover:text-red-600 transition"
                                                 title="Excluir"
-                                                disabled={u.id === currentUser?.id || (currentUser?.role === "ADMIN" && u.role === "SUPER_ADMIN") || refreshing}
+                                                disabled={
+                                                    u.id === currentUser?.id ||
+                                                    (currentUser?.role ===
+                                                        "ADMIN" &&
+                                                        u.role ===
+                                                            "SUPER_ADMIN") ||
+                                                    refreshing
+                                                }
                                             >
                                                 🗑
                                             </button>
@@ -300,7 +381,9 @@ export default function UsuariosPage() {
                     <div className="bg-white dark:bg-[#0F1720] w-full max-w-lg rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-white/10">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-[#18384A] dark:text-white">
-                                {editingUser ? "Editar Usuário" : "Novo Usuário"}
+                                {editingUser
+                                    ? "Editar Usuário"
+                                    : "Novo Usuário"}
                             </h2>
                             <button
                                 type="button"
@@ -313,7 +396,9 @@ export default function UsuariosPage() {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Nome</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                    Nome
+                                </label>
                                 <input
                                     required
                                     value={name}
@@ -322,7 +407,9 @@ export default function UsuariosPage() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                    Email
+                                </label>
                                 <input
                                     required
                                     type="email"
@@ -333,27 +420,37 @@ export default function UsuariosPage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                                    {editingUser ? "Nova Senha (opcional)" : "Senha"}
+                                    {editingUser
+                                        ? "Nova Senha (opcional)"
+                                        : "Senha"}
                                 </label>
                                 <input
                                     required={!editingUser}
                                     type="password"
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
                                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#020617] dark:text-white outline-none focus:ring-2 focus:ring-[#C95F52] transition"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Função</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                    Função
+                                </label>
                                 <select
                                     value={role}
-                                    onChange={(e) => setRole(e.target.value as UserRole)}
+                                    onChange={(e) =>
+                                        setRole(e.target.value as UserRole)
+                                    }
                                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#020617] dark:text-white outline-none focus:ring-2 focus:ring-[#C95F52] transition"
                                 >
                                     <option value="USER">Usuário Comum</option>
                                     <option value="ADMIN">Administrador</option>
                                     {currentUser?.role === "SUPER_ADMIN" && (
-                                        <option value="SUPER_ADMIN">Super Administrador</option>
+                                        <option value="SUPER_ADMIN">
+                                            Super Administrador
+                                        </option>
                                     )}
                                 </select>
                             </div>
