@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import Swal from "sweetalert2";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 const TOKEN_KEY = "guardiana_token";
@@ -22,6 +23,7 @@ export default function UsuariosPage() {
     const { user: currentUser } = useAuth();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
 
@@ -32,9 +34,11 @@ export default function UsuariosPage() {
     const [role, setRole] = useState<UserRole>("USER");
     const [submitting, setSubmitting] = useState(false);
 
-    const loadUsers = useCallback(async () => {
+    const loadUsers = useCallback(async (isRefresh = false) => {
         try {
-            setLoading(true);
+            if (isRefresh) setRefreshing(true);
+            else setLoading(true);
+
             const token = localStorage.getItem(TOKEN_KEY);
             const response = await fetch(`${API_URL}/users`, {
                 headers: { Authorization: `Bearer ${token}` },
@@ -47,6 +51,7 @@ export default function UsuariosPage() {
             console.error("Erro ao carregar usuários:", error);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }, []);
 
@@ -107,19 +112,61 @@ export default function UsuariosPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
-        try {
-            const token = localStorage.getItem(TOKEN_KEY);
-            const response = await fetch(`${API_URL}/users/${id}`, {
-                method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (response.ok) {
-                void loadUsers();
+    const handleDelete = async (user: User) => {
+        const result = await Swal.fire({
+            title: "Tem certeza?",
+            text: `Você está prestes a excluir o usuário ${user.name}. Esta ação não pode ser desfeita!`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#C95F52",
+            cancelButtonColor: "#526173",
+            confirmButtonText: "Sim, excluir!",
+            cancelButtonText: "Cancelar",
+            background: document.documentElement.classList.contains("dark") ? "#0F1720" : "#fff",
+            color: document.documentElement.classList.contains("dark") ? "#fff" : "#18384A",
+        });
+
+        if (result.isConfirmed) {
+            try {
+                setRefreshing(true);
+                const token = localStorage.getItem(TOKEN_KEY);
+                const response = await fetch(`${API_URL}/users/${user.id}`, {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+
+                if (response.ok) {
+                    await loadUsers(true);
+                    Swal.fire({
+                        title: "Excluído!",
+                        text: "O usuário foi removido com sucesso.",
+                        icon: "success",
+                        timer: 2000,
+                        showConfirmButton: false,
+                        background: document.documentElement.classList.contains("dark") ? "#0F1720" : "#fff",
+                        color: document.documentElement.classList.contains("dark") ? "#fff" : "#18384A",
+                    });
+                } else {
+                    const data = await response.json();
+                    Swal.fire({
+                        title: "Erro!",
+                        text: data.message || "Erro ao excluir usuário.",
+                        icon: "error",
+                        background: document.documentElement.classList.contains("dark") ? "#0F1720" : "#fff",
+                        color: document.documentElement.classList.contains("dark") ? "#fff" : "#18384A",
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: "Erro!",
+                    text: "Erro na requisição.",
+                    icon: "error",
+                    background: document.documentElement.classList.contains("dark") ? "#0F1720" : "#fff",
+                    color: document.documentElement.classList.contains("dark") ? "#fff" : "#18384A",
+                });
+            } finally {
+                setRefreshing(false);
             }
-        } catch (error) {
-            alert("Erro ao excluir usuário.");
         }
     };
 
@@ -147,7 +194,12 @@ export default function UsuariosPage() {
         <div className="p-8">
             <header className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-[#18384A] dark:text-white">Gerenciamento de Usuários</h1>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-3xl font-bold text-[#18384A] dark:text-white">Gerenciamento de Usuários</h1>
+                        {refreshing && (
+                            <div className="w-5 h-5 border-2 border-[#C95F52] border-t-transparent rounded-full animate-spin" />
+                        )}
+                    </div>
                     <p className="text-gray-500 dark:text-gray-400">Liste e gerencie os usuários da plataforma.</p>
                 </div>
                 <button
@@ -227,10 +279,10 @@ export default function UsuariosPage() {
                                                 ✎
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(u.id)}
+                                                onClick={() => handleDelete(u)}
                                                 className="p-2 text-gray-400 hover:text-red-600 transition"
                                                 title="Excluir"
-                                                disabled={u.id === currentUser?.id || (currentUser?.role === "ADMIN" && u.role === "SUPER_ADMIN")}
+                                                disabled={u.id === currentUser?.id || (currentUser?.role === "ADMIN" && u.role === "SUPER_ADMIN") || refreshing}
                                             >
                                                 🗑
                                             </button>
