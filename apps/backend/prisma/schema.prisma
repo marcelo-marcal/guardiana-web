@@ -260,3 +260,16 @@ model Founder {
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
 }
+
+// ================================
+// COUNCIL MEMBERS
+// ================================
+model CouncilMember {
+    id        String   @id @default(uuid())
+    name      String
+    country   String
+    imageUrl  String?
+    order     Int      @default(0)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

@@ -88,6 +88,12 @@ export default function DashboardLayout({
                                 >
                                     Fundadoras
                                 </Link>
+                                <Link
+                                    href="/dashboard/conselho"
+                                    className="hover:text-[#D4AF37] transition"
+                                >
+                                    Conselho
+                                </Link>
                             </>
                         )}
                         
@@ -189,6 +195,13 @@ export default function DashboardLayout({
                                             className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
                                         >
                                             Fundadoras
+                                        </Link>
+                                        <Link
+                                            href="/dashboard/conselho"
+                                            onClick={() => setOpen(false)}
+                                            className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        >
+                                            Conselho
                                         </Link>
                                     </>
                                 )}

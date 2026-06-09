@@ -4,6 +4,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { conteudoInicial } from "../../../data/sobre";
+import ConselhoEditorial from "@/components/sections/ConselhoEditorial";
 
 // ================================
 // DADOS DA EQUIPE
@@ -238,6 +239,11 @@ export default function GuardianaPage() {
                     </div>
                 </div>
             </section>
+
+            {/* ================================
+                CONSELHO EDITORIAL
+            ================================ */}
+            <ConselhoEditorial />
 
             {/* ================================
                 CTA FINAL

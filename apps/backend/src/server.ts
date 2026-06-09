@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import { uploadRoutes } from "./modules/uploads/routes/uploads.routes.js";
 import { contactRoutes } from "./modules/contact/routes/contact.routes.js";
 import { founderRoutes } from "./modules/founders/routes/founders.routes.js";
+import { councilRoutes } from "./modules/council/routes/council.routes.js";
 
 // ================================
 // CONFIGURAÇÕES DE AMBIENTE
@@ -81,6 +82,7 @@ app.use("/poems", poemRoutes);
 app.use("/uploads", uploadRoutes);
 app.use("/contact", contactRoutes);
 app.use("/founders", founderRoutes);
+app.use("/council", councilRoutes);
 
 // ================================
 // INICIAR SERVIDOR
