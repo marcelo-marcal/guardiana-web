@@ -17,14 +17,12 @@ export default function Hero() {
     // ================================
     // ESTADO (SEGURO PARA SSR)
     // ================================
-    const [conteudo, setConteudo] = useState<Conteudo | null>(null);
+    const [conteudo, setConteudo] = useState<Conteudo>(getConteudo());
 
     // ================================
     // CARREGA CONTEÚDO DINÂMICO DO ADMIN
     // ================================
     useEffect(() => {
-        setConteudo(getConteudo());
-
         const atualizar = () => {
             setConteudo(getConteudo());
         };
@@ -35,11 +33,6 @@ export default function Hero() {
             window.removeEventListener("conteudoAtualizado", atualizar);
         };
     }, []);
-
-    // ================================
-    // EVITA ERRO DE HIDRATAÇÃO
-    // ================================
-    if (!conteudo) return null;
 
     return (
         <section className="w-full bg-[#F7F7F7] dark:bg-[#020617] transition-colors">
