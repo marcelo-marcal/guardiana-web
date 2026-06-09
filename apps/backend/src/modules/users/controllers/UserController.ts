@@ -2,6 +2,7 @@
 // IMPORTS
 // ================================
 import type { Response } from "express";
+import { UserRole } from "@prisma/client";
 import { createUserSchema } from "../dto/create-user.dto.js";
 import { updateProfileSchema } from "../dto/update-profile.dto.js";
 import { UserService } from "../services/UserService.js";
@@ -137,7 +138,8 @@ export class UserController {
     // ================================
     async adminCreate(request: AuthenticatedRequest, response: Response) {
         try {
-            const user = await this.userService.adminCreateUser(request.body);
+            const actorRole = request.user?.role as UserRole;
+            const user = await this.userService.adminCreateUser(actorRole, request.body);
 
             return response.status(201).json({
                 success: true,
@@ -155,7 +157,8 @@ export class UserController {
     async adminUpdate(request: AuthenticatedRequest, response: Response) {
         try {
             const { id } = request.params;
-            const user = await this.userService.adminUpdateUser(id, request.body);
+            const actorRole = request.user?.role as UserRole;
+            const user = await this.userService.adminUpdateUser(actorRole, id, request.body);
 
             return response.json({
                 success: true,
@@ -173,7 +176,8 @@ export class UserController {
     async adminDelete(request: AuthenticatedRequest, response: Response) {
         try {
             const { id } = request.params;
-            await this.userService.deleteUser(id);
+            const actorRole = request.user?.role as UserRole;
+            await this.userService.deleteUser(actorRole, id);
 
             return response.json({
                 success: true,
