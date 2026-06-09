@@ -245,3 +245,18 @@ model SystemSetting {
     key   String @id
     value String
 }
+
+// ================================
+// FOUNDERS
+// ================================
+model Founder {
+    id          String   @id @default(uuid())
+    name        String
+    role        String
+    description String
+    imageUrl    String?
+    position    String?  @default("object-[center_20%]")
+    order       Int      @default(0)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+}
