@@ -18,7 +18,6 @@ type Founder = {
 };
 
 export default function FundadorasDashboard() {
-    const { user } = useAuth();
     const [founders, setFounders] = useState<Founder[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,8 +41,8 @@ export default function FundadorasDashboard() {
             if (data.success) {
                 setFounders(data.founders);
             }
-        } catch (error) {
-            console.error("Erro ao carregar fundadoras:", error);
+        } catch {
+            console.error("Erro ao carregar fundadoras");
         } finally {
             setLoading(false);
         }
@@ -122,7 +121,7 @@ export default function FundadorasDashboard() {
                 setIsModalOpen(false);
                 void loadFounders();
             }
-        } catch (error) {
+        } catch {
             alert("Erro ao salvar.");
         } finally {
             setSubmitting(false);
@@ -138,7 +137,7 @@ export default function FundadorasDashboard() {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) void loadFounders();
-        } catch (error) {
+        } catch {
             alert("Erro ao deletar.");
         }
     };
@@ -171,7 +170,7 @@ export default function FundadorasDashboard() {
                         <div className="p-6">
                             <h3 className="text-xl font-bold text-[#18384A] dark:text-white">{f.name}</h3>
                             <p className="text-[#C95F52] font-bold text-xs uppercase mb-3">{f.role}</p>
-                            <p className="text-gray-500 text-sm line-clamp-3 mb-6 italic">"{f.description}"</p>
+                            <p className="text-gray-500 text-sm line-clamp-3 mb-6 italic">&quot;{f.description}&quot;</p>
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => handleOpenModal(f)}
