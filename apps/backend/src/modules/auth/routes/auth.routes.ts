@@ -4,6 +4,7 @@ import { AuthController } from "../controllers/AuthController.js";
 const router = Router();
 const controller = new AuthController();
 
+router.post("/login", controller.login);
 router.post("/request-code", controller.request);
 router.post("/verify-code", controller.verify);
 router.get("/me", controller.me); // Rota GET para validar o token/sessão

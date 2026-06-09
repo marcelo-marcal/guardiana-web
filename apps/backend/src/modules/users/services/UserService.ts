@@ -130,7 +130,14 @@ export class UserService {
     // ================================
     // CRIAR QUALQUER USUÁRIO (ADMIN)
     // ================================
-    async adminCreateUser(data: CreateUserDTO & { role: UserRole }) {
+    async adminCreateUser(actorRole: UserRole, data: CreateUserDTO & { role: UserRole }) {
+        const isActorSuper = String(actorRole) === "SUPER_ADMIN";
+        const isNewRoleSuper = String(data.role) === "SUPER_ADMIN";
+
+        if (isNewRoleSuper && !isActorSuper) {
+            throw new Error("Apenas um SUPER_ADMIN pode criar outros SUPER_ADMINS.");
+        }
+
         const existingUser = await prisma.user.findUnique({
             where: { email: data.email },
         });
@@ -157,7 +164,27 @@ export class UserService {
     // ================================
     // ATUALIZAR QUALQUER USUÁRIO (ADMIN)
     // ================================
-    async adminUpdateUser(userId: string, data: UpdateProfileDTO & { role?: UserRole }) {
+    async adminUpdateUser(actorRole: UserRole, userId: string, data: UpdateProfileDTO & { role?: UserRole }) {
+        const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+
+        if (!targetUser) {
+            throw new Error("Usuário não encontrado.");
+        }
+
+        const isActorSuper = String(actorRole) === "SUPER_ADMIN";
+        const isTargetSuper = String(targetUser.role) === "SUPER_ADMIN";
+        const isNewRoleSuper = String(data.role) === "SUPER_ADMIN";
+
+        // Se o alvo é SUPER_ADMIN, o ator PRECISA ser SUPER_ADMIN
+        if (isTargetSuper && !isActorSuper) {
+            throw new Error("Você não tem permissão para alterar um usuário SUPER_ADMIN.");
+        }
+
+        // Se quer promover para SUPER_ADMIN, o ator PRECISA ser SUPER_ADMIN
+        if (isNewRoleSuper && !isActorSuper) {
+            throw new Error("Você não tem permissão para promover usuários a SUPER_ADMIN.");
+        }
+
         const updateData: Prisma.UserUpdateInput = {};
 
         if (data.name !== undefined) updateData.name = data.name;
@@ -186,7 +213,20 @@ export class UserService {
     // ================================
     // DELETAR USUÁRIO
     // ================================
-    async deleteUser(userId: string) {
+    async deleteUser(actorRole: UserRole, userId: string) {
+        const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+
+        if (!targetUser) {
+            throw new Error("Usuário não encontrado.");
+        }
+
+        const isActorSuper = String(actorRole) === "SUPER_ADMIN";
+        const isTargetSuper = String(targetUser.role) === "SUPER_ADMIN";
+
+        if (isTargetSuper && !isActorSuper) {
+            throw new Error("Você não tem permissão para remover um usuário SUPER_ADMIN.");
+        }
+
         return prisma.user.delete({
             where: { id: userId },
         });
