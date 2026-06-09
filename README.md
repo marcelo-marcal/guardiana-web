@@ -1,3 +1,7 @@
+<h1 align="center">
+    <img src="./public/logo.svg" style="width: 30%;" />
+</h1>
+
 # guardiana-web
 Guardiana Editora
 
@@ -14,7 +18,7 @@ npm run dev
 # or
 yarn dev
 # or
-pnpm dev
+npm dev
 # or
 bun dev
 ```
@@ -42,70 +46,284 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 
 Estrutura de Pasta e Arquivos (Profissional e Escalável)
-```bach
+
+Light / Dark
+
+```bash
 guardiana-web
 ├── node_modules
-├── public
-├── src/
-│   ├── app/
-│   │   ├── (public)/                👈 agrupar rotas públicas
-│   │   │   ├── page.tsx
-│   │   │   ├── sobre/
-│   │   │   ├── autores/
-│   │   │   ├── publicacoes/
-│   │   │   └── contato/
+├── apps/
+│   ├── backend/
+│   │   ├── prisma/
+│   │   │   ├── migratios/
+│   │   │   │
+│   │   │   ├── schema.prisma
+│   │   │   └── seed.ts
 │   │   │
-│   │   ├── (auth)/                  👈 login separado
-│   │   │   └── login/
-│   │   │       └── page.tsx
+│   │   ├── src/
+│   │   │   ├── modules/
+│   │   │   │   ├── audit/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   └── AuditController.ts
+│   │   │   │   │   ├── routes/
+│   │   │   │   │   │   └── audit.routes.ts
+│   │   │   │   │   └── services/
+│   │   │   │   │       └── AuditService.ts
+│   │   │   │   │
+│   │   │   │   ├── auth/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   ├── AuthController.ts
+│   │   │   │   │   │   └── MeController.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   └── login.dto.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── middleware/
+│   │   │   │   │   │   ├── authenticate.ts
+│   │   │   │   │   │   └── authorize.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── routes/
+│   │   │   │   │   │   └── auth.routes.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── services/
+│   │   │   │   │   │   └── AuthService.ts
+│   │   │   │   │   │
+│   │   │   │   │   └── utils/
+│   │   │   │   │
+│   │   │   │   ├── books/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   └── BookController.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   ├── create-book.dto.ts
+│   │   │   │   │   │   └── update-book.dto.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── routes/
+│   │   │   │   │   │   └── books.routes.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── services/
+│   │   │   │   │       └── BookService.ts
+│   │   │   │   │
+│   │   │   │   ├── orders/
+│   │   │   │   ├── poems/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   └── PoemController.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   ├── create-poem.dto.ts
+│   │   │   │   │   │   ├── review-poem.dto.ts
+│   │   │   │   │   │   └── update-poem.dto.ts
+│   │   │   │   │   │
+│   │   │   │   │   ├── routes/
+│   │   │   │   │   │   └── poems.routes.ts
+│   │   │   │   │   │
+│   │   │   │   │   └── services/
+│   │   │   │   │       └── PoemService.ts
+│   │   │   │   │
+│   │   │   │   ├── uploads/
+│   │   │   │   │   ├── controllers/
+│   │   │   │   │   │   └── UploadController.ts
+│   │   │   │   │   │
+│   │   │   │   │   └── routes/
+│   │   │   │   │       └── uploads.routes.ts
+│   │   │   │   │
+│   │   │   │   └── users/
+│   │   │   │       ├── controllers/
+│   │   │   │       │   └── UserController.ts
+│   │   │   │       │
+│   │   │   │       ├── dto/
+│   │   │   │       │   ├── create-user.dto.ts
+│   │   │   │       │   └── update-profile.dto.ts
+│   │   │   │       │
+│   │   │   │       ├── routes/
+│   │   │   │       │   └── users.routes.ts
+│   │   │   │       │
+│   │   │   │       └── services/
+│   │   │   │           └── UserService.ts
+│   │   │   │
+│   │   │   ├── shared/
+│   │   │   │   ├── database/
+│   │   │   │   │   └── prisma.ts
+│   │   │   │   │
+│   │   │   │   ├── errors/
+│   │   │   │   ├── http/
+│   │   │   │   ├── services/
+│   │   │   │   │   └── EmailService.ts
+│   │   │   │   │
+│   │   │   │   └── utils/
+│   │   │   │
+│   │   │   └── server.ts
 │   │   │
-│   │   ├── (dashboard)/             👈 área protegida
-│   │   │   └── dashboard/
-│   │   │       ├── page.tsx
-│   │   │       ├── editar/
-│   │   │       ├── uploads/
-│   │   │       └── configuracoes/
+│   │   ├── uploads/
+│   │   │   └── images/
+│   │   │       ├── 1779045948987-120269349.png
+│   │   │       ├── 1779054365952-153320479.png
 │   │   │
-│   │   ├── layout.tsx
-│   │   └── globals.css
+│   │   ├── .env
+│   │   ├── package.json
+│   │   └── tsconfig.json
 │   │
-│   ├── components/
-│   │   ├── ui/                      👈 shadcn
-│   │   ├── layout/
-│   │   │   ├── Header.tsx
-│   │   │   ├── Footer.tsx
-│   │   │   └── Navbar.tsx
-│   │   │
-│   │   ├── sections/                👈 blocos da home
-│   │   │   ├── Hero.tsx
-│   │   │   ├── Sobre.tsx
-│   │   │   ├── Publicacoes.tsx
-│   │   │   ├── Autores.tsx
-│   │   │   └── Contato.tsx
-│   │   │
-│   │   └── shared/                  👈 componentes reutilizáveis
-│   │       ├── Button.tsx
-│   │       ├── Card.tsx
-│   │       └── Container.tsx
-│   │
-│   ├── lib/
-│   │   ├── auth.ts
-│   │   ├── api.ts
-│   │   └── utils.ts
-│   │
-│   ├── hooks/
-│   ├── store/
-│   ├── styles/
-│   └── types/
-|
+│   └── frontend/
+│       ├── public/
+│       │   ├── livros/
+│       │
+│       ├── src/
+│       │   ├── app/
+│       │   │   ├── (auth)/                 # LOGIN (futuro)
+│       │   │   │   └── login/
+│       │   │   │       └── page.tsx
+│       │   │   │
+│       │   │   ├── (dashboard)/            # ADMIN (futuro)
+│       │   │   │   └── dashboard/
+│       │   │   │       ├── configuraçoes
+│       │   │   │       │   └── page.tsx
+│       │   │   │       │
+│       │   │   │       ├── livros/
+│       │   │   │       │   └── page.tsx
+│       │   │   │       │
+│       │   │   │       ├── publicacoes/
+│       │   │   │       │   └── page.tsx
+│       │   │   │       │
+│       │   │   │       ├── sobre/
+│       │   │   │       │   └── page.tsx
+│       │   │   │       │
+│       │   │   │       ├── layout.tsx
+│       │   │   │       └── page.tsx
+│       │   │   │
+│       │   │   ├── (public)/               # SITE
+│       │   │   │   ├── contato/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   ├── fundadoras/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   ├── guardiana/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   ├── livros/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   ├── servicos-editoriais/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   ├── sobre/
+│       │   │   │   │   └── page.tsx
+│       │   │   │   │
+│       │   │   │   └── page.tsx
+│       │   │   │
+│       │   │   ├── favicon.ico
+│       │   │   ├── globals.css
+│       │   │   └── layout.tsx              # layout global
+│       │   │
+│       │   ├── components/
+│       │   │   │
+│       │   │   ├── auth/
+│       │   │   │   └── WithAuth.tsx
+│       │   │   │
+│       │   │   ├── layout/
+│       │   │   │   ├── Header.tsx
+│       │   │   │   └── Footer.tsx
+│       │   │   │
+│       │   │   ├── sections/               # HOME
+│       │   │   │   ├── Autores.tsx         # NOVO (home preview)
+│       │   │   │   ├── Contato.tsx         # NOVO (home preview)
+│       │   │   │   ├── Hero.tsx
+│       │   │   │   ├── Livro.tsx
+│       │   │   │   ├── PoemaDestaque.tsx
+│       │   │   │   ├── Publicacoes.tsx
+│       │   │   │   └── Sobre.tsx
+│       │   │   │
+│       │   │   └── ui/
+│       │   │       └── PublicacaoCard.tsx
+│       │   │
+│       │   ├── data/                       # MOCK (simula API)
+│       │   │   ├── conteudo.ts             # NOVO (textos editáveis)
+│       │   │   ├── publicacaoConfig.ts
+│       │   │   ├── publicacoes.ts
+│       │   │   └── sobre.ts
+│       │   │
+│       │   ├── hooks/
+│       │   │   └── useAuth.ts
+│       │   │
+│       │   └── services/                   # SIMULA API
+│       │       ├── conteudo.service.ts
+│       │       ├── livros.service.ts
+│       │       ├── publicacoes.service.ts
+│       │       └── sobre.service.ts
+│       │
+│       ├── .env.local
+│       ├── eslint.config.js
+│       ├── next-env.d.ts
+│       ├── next.config.ts
+│       ├── package.json
+│       ├── postcss.config.js
+│       ├── postcss.config.mjs
+│       ├── tailwind.config.js
+│       └── tsconfig.json
+│    
+│
+├── docs/
+├── infra/
+├── node_modules/
+│
 ├── .editorconfig
 ├── .gitignore
-├── eslint.config.js
-├── next-env.d.ts
-├── next.config.ts
 ├── package-lock.json
 ├── package.json
-├── postcss.config.mjs
-├── README.md
-└── tsconfig.json    
+├── PROJECT_SUMMARY.md
+└── README.md 
 ```
+
+## LOGIN
+
+✔ Login: admin@guardiana.com
+✔ Senha: 123456
+
+
+
+## COMANDOS GitHub
+main    -   Branch principal, código em produção
+staging -   Branch de homologação ou pré-produção.
+develop -   Branch de desenvolvimento
+
+### Atualizar a Branch:
+git pull origin develop
+
+git checkout develop   --> Troca de branch
+
+git merge origin/develop
+
+npm install
+
+### Subir Projeto:
+git add .
+
+git commit -m "DESCRIÇÃO :construction:" 
+
+git push origin develop
+
+
+## Monorepo
+
+## Rode na Rais da pasta guardiana-web
+
+`npm install`
+
+`npm run dev:frontend`
+
+`npm run dev:backend`
+
+Busca erros nos arquivos do Back-End:
+
+`npm run typecheck --workspace=@guardiana/backend`
+
+
+Conetctado Back e Front
+
+apps/frontend/.env.local
+
+NEXT_PUBLIC_API_URL=http://localhost:3333
+
+
+superadmin@guardiana.com
+Super@123456

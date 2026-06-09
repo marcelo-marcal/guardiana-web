@@ -1,0 +1,328 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+const TOKEN_KEY = "guardiana_token";
+
+type UserRole = "USER" | "ADMIN" | "SUPER_ADMIN";
+
+type User = {
+    id: string;
+    name: string;
+    email: string;
+    role: UserRole;
+    status: string;
+    avatarUrl: string | null;
+    createdAt: string;
+};
+
+export default function UsuariosPage() {
+    const { user: currentUser } = useAuth();
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
+
+    // Form states
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [role, setRole] = useState<UserRole>("USER");
+    const [submitting, setSubmitting] = useState(false);
+
+    const loadUsers = useCallback(async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem(TOKEN_KEY);
+            const response = await fetch(`${API_URL}/users`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await response.json();
+            if (data.success) {
+                setUsers(data.users);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar usuários:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        void loadUsers();
+    }, [loadUsers]);
+
+    const handleOpenModal = (user: User | null = null) => {
+        if (user) {
+            setEditingUser(user);
+            setName(user.name);
+            setEmail(user.email);
+            setRole(user.role);
+            setPassword("");
+        } else {
+            setEditingUser(null);
+            setName("");
+            setEmail("");
+            setRole("USER");
+            setPassword("");
+        }
+        setIsModalOpen(true);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            const token = localStorage.getItem(TOKEN_KEY);
+            const method = editingUser ? "PUT" : "POST";
+            const endpoint = editingUser
+                ? `${API_URL}/users/${editingUser.id}`
+                : `${API_URL}/users/admin`;
+
+            const body: any = { name, email, role };
+            if (password) body.password = password;
+
+            const response = await fetch(endpoint, {
+                method,
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (response.ok) {
+                setIsModalOpen(false);
+                void loadUsers();
+            } else {
+                const data = await response.json();
+                alert(data.message || "Erro ao salvar usuário.");
+            }
+        } catch (error) {
+            alert("Erro na requisição.");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
+        try {
+            const token = localStorage.getItem(TOKEN_KEY);
+            const response = await fetch(`${API_URL}/users/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (response.ok) {
+                void loadUsers();
+            }
+        } catch (error) {
+            alert("Erro ao excluir usuário.");
+        }
+    };
+
+    const toggleAdmin = async (user: User) => {
+        const newRole: UserRole = user.role === "USER" ? "ADMIN" : "USER";
+        try {
+            const token = localStorage.getItem(TOKEN_KEY);
+            const response = await fetch(`${API_URL}/users/${user.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ role: newRole }),
+            });
+            if (response.ok) {
+                void loadUsers();
+            }
+        } catch (error) {
+            alert("Erro ao alterar permissão.");
+        }
+    };
+
+    return (
+        <div className="p-8">
+            <header className="flex justify-between items-center mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold text-[#18384A] dark:text-white">Gerenciamento de Usuários</h1>
+                    <p className="text-gray-500 dark:text-gray-400">Liste e gerencie os usuários da plataforma.</p>
+                </div>
+                <button
+                    onClick={() => handleOpenModal()}
+                    className="bg-[#C95F52] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#A84A3F] transition shadow-lg shadow-[#C95F52]/20"
+                >
+                    + Novo Usuário
+                </button>
+            </header>
+
+            <div className="bg-white dark:bg-[#0F1720] rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                    <thead>
+                        <tr className="bg-gray-50 dark:bg-white/5 text-gray-400 text-[10px] uppercase font-bold tracking-wider">
+                            <th className="px-6 py-4">Usuário</th>
+                            <th className="px-6 py-4">Email</th>
+                            <th className="px-6 py-4">Função</th>
+                            <th className="px-6 py-4">Status</th>
+                            <th className="px-6 py-4 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+                        {loading ? (
+                            <tr>
+                                <td colSpan={5} className="px-6 py-10 text-center text-gray-400">Carregando usuários...</td>
+                            </tr>
+                        ) : users.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="px-6 py-10 text-center text-gray-400">Nenhum usuário encontrado.</td>
+                            </tr>
+                        ) : (
+                            users.map((u) => (
+                                <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-[#18384A] text-white flex items-center justify-center text-xs font-bold uppercase">
+                                                {u.avatarUrl ? (
+                                                    <img src={u.avatarUrl} alt={u.name} className="w-full h-full rounded-full object-cover" />
+                                                ) : (
+                                                    u.name.charAt(0)
+                                                )}
+                                            </div>
+                                            <span className="font-semibold text-gray-900 dark:text-white">{u.name}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{u.email}</td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase ${
+                                            u.role === "SUPER_ADMIN" ? "bg-purple-100 text-purple-700" :
+                                            u.role === "ADMIN" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-700"
+                                        }`}>
+                                            {u.role}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
+                                            <span className="w-2 h-2 rounded-full bg-green-500" />
+                                            {u.status || "Ativo"}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                onClick={() => toggleAdmin(u)}
+                                                className={`p-2 rounded-lg transition ${u.role === "USER" ? "text-blue-600 hover:bg-blue-50" : "text-orange-600 hover:bg-orange-50"}`}
+                                                title={u.role === "USER" ? "Tornar Admin" : "Remover Admin"}
+                                                disabled={u.id === currentUser?.id || u.role === "SUPER_ADMIN"}
+                                            >
+                                                {u.role === "USER" ? "↑" : "↓"}
+                                            </button>
+                                            <button
+                                                onClick={() => handleOpenModal(u)}
+                                                className="p-2 text-gray-400 hover:text-[#C95F52] transition"
+                                                title="Editar"
+                                            >
+                                                ✎
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(u.id)}
+                                                className="p-2 text-gray-400 hover:text-red-600 transition"
+                                                title="Excluir"
+                                                disabled={u.id === currentUser?.id || u.role === "SUPER_ADMIN"}
+                                            >
+                                                🗑
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {isModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white dark:bg-[#0F1720] w-full max-w-lg rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-white/10">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-[#18384A] dark:text-white">
+                                {editingUser ? "Editar Usuário" : "Novo Usuário"}
+                            </h2>
+                            <button
+                                type="button"
+                                onClick={() => setIsModalOpen(false)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition p-2"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Nome</label>
+                                <input
+                                    required
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#020617] dark:text-white outline-none focus:ring-2 focus:ring-[#C95F52] transition"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+                                <input
+                                    required
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#020617] dark:text-white outline-none focus:ring-2 focus:ring-[#C95F52] transition"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                    {editingUser ? "Nova Senha (opcional)" : "Senha"}
+                                </label>
+                                <input
+                                    required={!editingUser}
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#020617] dark:text-white outline-none focus:ring-2 focus:ring-[#C95F52] transition"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Função</label>
+                                <select
+                                    value={role}
+                                    onChange={(e) => setRole(e.target.value as UserRole)}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#020617] dark:text-white outline-none focus:ring-2 focus:ring-[#C95F52] transition"
+                                >
+                                    <option value="USER">Usuário Comum</option>
+                                    <option value="ADMIN">Administrador</option>
+                                    <option value="SUPER_ADMIN">Super Administrador</option>
+                                </select>
+                            </div>
+
+                            <div className="flex gap-4 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="flex-1 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="flex-1 bg-[#C95F52] text-white py-3 rounded-xl font-bold hover:bg-[#A84A3F] transition shadow-lg shadow-[#C95F52]/20 disabled:opacity-50"
+                                >
+                                    {submitting ? "Salvando..." : "Salvar"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
