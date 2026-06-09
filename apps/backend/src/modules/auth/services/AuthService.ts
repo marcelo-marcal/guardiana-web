@@ -3,8 +3,7 @@ import { AuditAction, UserRole } from "@prisma/client"; // Import UserRole
 import crypto from "node:crypto";
 import { EmailService } from "../../../shared/services/EmailService.js";
 import jwt from "jsonwebtoken";
-
-// import bcrypt from "bcrypt"; // Descomente e instale 'bcrypt' para senhas seguras
+import bcrypt from "bcryptjs";
 
 export class AuthService {
     private emailService = new EmailService();
@@ -104,11 +103,13 @@ export class AuthService {
     // CONCLUIR CADASTRO
     // ================================
     async completeRegistration(email: string, name: string, password?: string, literaryInterests?: string) {
+        const passwordHash = password ? await bcrypt.hash(password, 10) : undefined;
+
         const user = await prisma.user.update({
             where: { email },
             data: {
                 name,
-                passwordHash: password ?? undefined, // Idealmente usar hashing aqui
+                passwordHash,
                 literaryInterests: literaryInterests ?? null,
             }
         });
@@ -139,8 +140,13 @@ export class AuthService {
             throw new Error("Sua conta está inativa ou bloqueada.");
         }
 
-        // TODO: Implementar comparação de senha segura usando hashing (ex: bcrypt)
-        if (!user.passwordHash || user.passwordHash !== password) {
+        if (!user.passwordHash) {
+            throw new Error("Usuário não possui senha definida. Acesse via código.");
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+
+        if (!passwordMatch) {
             throw new Error("Credenciais inválidas.");
         }
 
@@ -175,15 +181,13 @@ export class AuthService {
             throw new Error("Acesso não autorizado para este perfil.");
         }
 
-        // TODO: Implementar comparação de senha segura usando hashing (ex: bcrypt)
-        // Exemplo com bcrypt (após instalar e importar):
-        // const passwordMatch = await bcrypt.compare(password, user.passwordHash || '');
-        // if (!passwordMatch) {
-        //     throw new Error("Credenciais inválidas.");
-        // }
-        // AVISO: A comparação abaixo é INSEGURA e APENAS para fins de teste.
-        // Substitua por hashing de senha em produção!
-        if (!user.passwordHash || user.passwordHash !== password) {
+        if (!user.passwordHash) {
+            throw new Error("Usuário não possui senha definida.");
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+
+        if (!passwordMatch) {
             throw new Error("Credenciais inválidas.");
         }
 
