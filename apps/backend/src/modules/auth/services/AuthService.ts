@@ -103,15 +103,18 @@ export class AuthService {
     // CONCLUIR CADASTRO
     // ================================
     async completeRegistration(email: string, name: string, password?: string, literaryInterests?: string) {
-        const passwordHash = password ? await bcrypt.hash(password, 10) : undefined;
+        const updateData: any = {
+            name,
+            literaryInterests: literaryInterests ?? null,
+        };
+
+        if (password) {
+            updateData.passwordHash = await bcrypt.hash(password, 10);
+        }
 
         const user = await prisma.user.update({
             where: { email },
-            data: {
-                name,
-                passwordHash,
-                literaryInterests: literaryInterests ?? null,
-            }
+            data: updateData
         });
 
         return {
