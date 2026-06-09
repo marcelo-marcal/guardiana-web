@@ -133,7 +133,6 @@ export class PoemService {
 
     // ================================
     // ATUALIZAR MEU POEMA
-    // Só pode editar se ainda não foi aprovado/publicado
     // ================================
     async updateMyPoem(poemId: string, userId: string, data: UpdatePoemDTO) {
         const poem = await prisma.poem.findUnique({
@@ -144,10 +143,6 @@ export class PoemService {
 
         if (!poem || poem.userId !== userId) {
             throw new Error("Poema não encontrado.");
-        }
-
-        if (poem.status !== PoemStatus.PENDING) {
-            throw new Error("Somente poemas pendentes podem ser editados.");
         }
 
         const updateData: Prisma.PoemUpdateInput = {};
