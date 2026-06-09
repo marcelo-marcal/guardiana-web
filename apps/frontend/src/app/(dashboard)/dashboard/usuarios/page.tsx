@@ -169,9 +169,6 @@ export default function UsuariosPage() {
             } finally {
                 setRefreshing(false);
             }
-        } catch {
-            alert("Erro ao excluir usuário.");
-        }
     };
 
     const toggleAdmin = async (user: User) => {
@@ -389,4 +386,4 @@ export default function UsuariosPage() {
             )}
         </div>
     );
-}
+}}
