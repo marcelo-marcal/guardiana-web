@@ -157,9 +157,10 @@ export default function UsuariosPage() {
                     });
                 }
             } catch (error) {
+                console.error("Erro ao excluir usuário:", error);
                 Swal.fire({
                     title: "Erro!",
-                    text: "Erro na requisição.",
+                    text: "Erro ao excluir usuário.",
                     icon: "error",
                     background: document.documentElement.classList.contains("dark") ? "#0F1720" : "#fff",
                     color: document.documentElement.classList.contains("dark") ? "#fff" : "#18384A",
