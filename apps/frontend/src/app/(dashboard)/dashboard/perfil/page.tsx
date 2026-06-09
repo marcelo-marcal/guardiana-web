@@ -317,52 +317,6 @@ export default function PerfilPage() {
                         </button>
                     </form>
                 </div>
-
-                {user?.role === 'USER' && (
-                    <div className="lg:col-span-2">
-                        <h2 className="text-xl font-bold text-[#18384A] dark:text-white mb-6">Meus Poemas</h2>
-                        <div className="grid gap-6 md:grid-cols-2">
-                            <button
-                                type="button"
-                                onClick={() => setIsModalOpen(true)}
-                                className="h-64 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-[#C95F52] hover:bg-gray-50 dark:hover:bg-white/5 transition group"
-                            >
-                                <span className="text-4xl text-gray-300 group-hover:text-[#C95F52]">+</span>
-                                <span className="font-semibold text-gray-500 group-hover:text-[#C95F52]">Escrever Poesia</span>
-                            </button>
-                            {loadingPoems ? (
-                                <div className="col-span-full py-10 text-center text-gray-400">Carregando seus poemas...</div>
-                            ) : (
-                                poems.map((poem) => (
-                                    <div key={poem.id} className="p-6 bg-white dark:bg-[#0F1720] rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm flex flex-col justify-between">
-                                        <div>
-                                            <div className="flex justify-between items-start mb-4">
-                                                <span className={`px-3 py-1 text-[10px] font-bold rounded-full uppercase ${
-                                                    poem.status === "APPROVED" ? "bg-green-100 text-green-700"
-                                                    : poem.status === "REJECTED" ? "bg-red-100 text-red-700"
-                                                    : poem.status === "HIGHLIGHTED" ? "bg-purple-100 text-purple-700"
-                                                    : "bg-yellow-100 text-yellow-700"
-                                                }`}>
-                                                    {poem.status === "PENDING" ? "Em Revisão"
-                                                     : poem.status === "APPROVED" ? "Aprovado"
-                                                     : poem.status === "REJECTED" ? "Recusado"
-                                                     : "Em Destaque"}
-                                                </span>
-                                            </div>
-                                            <h3 className="text-lg font-bold text-[#18384A] dark:text-white mb-2 leading-tight">{poem.title}</h3>
-                                            <p className="text-gray-500 dark:text-gray-400 line-clamp-4 text-sm italic">
-                                                &quot;{poem.content}&quot;
-                                            </p>
-                                        </div>
-                                        <div className="mt-4 pt-4 border-t border-gray-50 dark:border-white/5 text-[10px] text-gray-400">
-                                            Enviado em {new Date(poem.createdAt).toLocaleDateString("pt-BR")}
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                )}
             </div>
 
             {isModalOpen && (

@@ -25,10 +25,10 @@ export default function DashboardLayout({
     const pathname = usePathname();
 
     const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
-    const dashboardTitle = isAdmin ? "Admin" : "Meu Perfil";
+    const dashboardTitle = isAdmin ? "Admin" : "Escritor";
     const isProfilePage = pathname === "/dashboard/perfil";
 
-    const showSidebar = !isProfilePage || isAdmin;
+    const showSidebar = true;
 
     return (
         <div className="min-h-screen flex bg-gray-50 dark:bg-[#020617] transition-colors">
@@ -41,14 +41,13 @@ export default function DashboardLayout({
                         {dashboardTitle}
                     </h2>
                     <nav className="flex flex-col gap-4 text-gray-700 dark:text-gray-300">
-                        {isAdmin && (
-                            <Link
-                                href="/dashboard/perfil"
-                                className="hover:text-[#D4AF37] transition"
-                            >
-                                Perfil
-                            </Link>
-                        )}
+                        <Link
+                            href="/dashboard/perfil"
+                            className="hover:text-[#D4AF37] transition"
+                        >
+                            Perfil
+                        </Link>
+
                         <Link
                             href="/dashboard"
                             className="hover:text-[#D4AF37] transition"
@@ -151,6 +150,14 @@ export default function DashboardLayout({
                             </div>
 
                             <nav className="flex-1 overflow-y-auto p-6 space-y-2">
+                                <Link
+                                    href="/dashboard/perfil"
+                                    onClick={() => setOpen(false)}
+                                    className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                >
+                                    Perfil
+                                </Link>
+
                                 <Link
                                     href="/dashboard"
                                     onClick={() => setOpen(false)}
