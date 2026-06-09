@@ -31,14 +31,7 @@ export default function Home() {
         if ("scrollRestoration" in window.history) {
             window.history.scrollRestoration = "manual";
         }
-
-        window.requestAnimationFrame(() => {
-            window.scrollTo({
-                top: 0,
-                left: 0,
-                behavior: "instant",
-            });
-        });
+        window.scrollTo(0, 0);
     }, []);
 
     return (

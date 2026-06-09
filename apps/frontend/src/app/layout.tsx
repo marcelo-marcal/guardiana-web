@@ -47,6 +47,17 @@ export default function RootLayout({
 }) {
     return (
         <html lang="pt-BR">
+            <head>
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
+                            if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+                                window.history.scrollRestoration = 'manual';
+                            }
+                        `,
+                    }}
+                />
+            </head>
             <body className="bg-[#F7F7F7] text-[#18384A] antialiased transition-colors duration-300 dark:bg-[#020617] dark:text-white">
                 <Header />
                 <SignatureLoader />
