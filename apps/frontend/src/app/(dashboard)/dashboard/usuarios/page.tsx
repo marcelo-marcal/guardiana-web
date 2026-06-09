@@ -226,8 +226,9 @@ export default function UsuariosPage() {
                                             </button>
                                             <button
                                                 onClick={() => handleOpenModal(u)}
-                                                className="p-2 text-gray-400 hover:text-[#C95F52] transition"
+                                                className="p-2 text-gray-400 hover:text-[#C95F52] transition disabled:opacity-30"
                                                 title="Editar"
+                                                disabled={currentUser?.role === "ADMIN" && u.role === "SUPER_ADMIN"}
                                             >
                                                 ✎
                                             </button>
@@ -235,7 +236,7 @@ export default function UsuariosPage() {
                                                 onClick={() => handleDelete(u.id)}
                                                 className="p-2 text-gray-400 hover:text-red-600 transition"
                                                 title="Excluir"
-                                                disabled={u.id === currentUser?.id || u.role === "SUPER_ADMIN"}
+                                                disabled={u.id === currentUser?.id || (currentUser?.role === "ADMIN" && u.role === "SUPER_ADMIN")}
                                             >
                                                 🗑
                                             </button>
@@ -305,7 +306,9 @@ export default function UsuariosPage() {
                                 >
                                     <option value="USER">Usuário Comum</option>
                                     <option value="ADMIN">Administrador</option>
-                                    <option value="SUPER_ADMIN">Super Administrador</option>
+                                    {currentUser?.role === "SUPER_ADMIN" && (
+                                        <option value="SUPER_ADMIN">Super Administrador</option>
+                                    )}
                                 </select>
                             </div>
 
