@@ -73,7 +73,7 @@ export function useAuth() {
     // ================================
     // FUNÇÃO INTERNA: verificar sessão real
     // ================================
-    const checkAuth = useCallback(async () => {
+    const fetchUser = useCallback(async () => {
         if (typeof window === "undefined") {
             setLoading(false);
             return;
@@ -114,10 +114,10 @@ export function useAuth() {
     // EFEITO: Verifica ao montar + Escuta evento de sync
     // ================================
     useEffect(() => {
-        void checkAuth();
+        void fetchUser();
 
         const handleAuthUpdate = () => {
-            void checkAuth();
+            void fetchUser();
         };
 
         window.addEventListener("auth:updated", handleAuthUpdate);
@@ -125,7 +125,7 @@ export function useAuth() {
         return () => {
             window.removeEventListener("auth:updated", handleAuthUpdate);
         };
-    }, [checkAuth]);
+    }, [fetchUser]);
 
     // ================================
     // LOGIN REAL COM BACKEND
@@ -170,5 +170,5 @@ export function useAuth() {
         window.dispatchEvent(new Event("auth:updated"));
     };
 
-    return { user, login, logout, loading };
+    return { user, login, logout, loading, fetchUser };
 }

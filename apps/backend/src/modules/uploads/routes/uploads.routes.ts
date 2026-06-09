@@ -8,22 +8,10 @@ import { UploadController } from "../controllers/UploadController.js";
 import { authenticate } from "../../auth/middleware/authenticate.js";
 
 // ================================
-// CONFIGURAÇÃO DO STORAGE
+// CONFIGURAÇÃO DO STORAGE (MEMÓRIA)
 // ================================
-const storage = multer.diskStorage({
-    destination: (_request, _file, callback) => {
-        callback(null, path.resolve("uploads/images"));
-    },
-    filename: (_request, file, callback) => {
-        const uniqueSuffix = `${Date.now()}-${Math.round(
-            Math.random() * 1_000_000_000,
-        )}`;
-
-        const extension = path.extname(file.originalname).toLowerCase();
-
-        callback(null, `${uniqueSuffix}${extension}`);
-    },
-});
+// Alterado para memoryStorage para podermos enviar o buffer do arquivo para o Supabase
+const storage = multer.memoryStorage();
 
 // ================================
 // FILTRO DE ARQUIVOS

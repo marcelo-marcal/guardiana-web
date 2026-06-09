@@ -4,7 +4,8 @@
 // IMPORTS
 // ================================
 import { useState } from "react";
-import Link from "next/link";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 
 // ================================
 // COMPONENTE CONTATO
@@ -18,6 +19,8 @@ export default function Contato() {
         email: "",
         mensagem: "",
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [feedback, setFeedback] = useState<{ type: "success" | "error" | null; message: string }>({ type: null, message: "" });
 
     // ================================
     // ATUALIZA CAMPOS
@@ -34,20 +37,39 @@ export default function Contato() {
     // ================================
     // SUBMIT (SIMULADO POR ENQUANTO)
     // ================================
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
+        setFeedback({ type: null, message: "" });
 
-        console.log("Dados enviados:", form);
+        try {
+            const response = await fetch(`${API_URL}/contact`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(form),
+            });
 
-        // Futuramente aqui entra API
-        alert("Mensagem enviada com sucesso!");
- 
-        // limpa formulário
-        setForm({
-            nome: "",
-            email: "",
-            mensagem: "",
-        });
+            const data = await response.json().catch(() => null);
+
+            if (response.ok) {
+                setFeedback({ type: "success", message: "Mensagem enviada com sucesso! Em breve entraremos em contato." });
+                // limpa formulário
+                setForm({
+                    nome: "",
+                    email: "",
+                    mensagem: "",
+                });
+            } else {
+                setFeedback({ type: "error", message: data?.error || data?.message || "Ocorreu um erro ao enviar sua mensagem. Tente novamente mais tarde." });
+            }
+        } catch (error) {
+            console.error("Erro ao enviar contato:", error);
+            setFeedback({ type: "error", message: "Erro de conexão. Verifique sua internet e tente novamente." });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -242,59 +264,47 @@ export default function Contato() {
                             />
                         </div>
 
+                        {/* FEEDBACK DE STATUS */}
+                        {feedback.type && (
+                            <div
+                                className={`p-4 rounded-lg text-sm font-medium text-center ${
+                                    feedback.type === "success"
+                                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                }`}
+                            >
+                                {feedback.message}
+                            </div>
+                        )}
+
                         {/* BOTÃO */}
                         <button
                             type="submit"
+                            disabled={isSubmitting}
                             className="
                                 w-full py-3 rounded-full
                                 bg-[#C8A92F]
                                 text-white
                                 font-bold
-                                hover:scale-[1.02]
-                                hover:brightness-110
+                                hover:bg-[#b59828]
                                 transition-all duration-300
+                                disabled:opacity-70 disabled:cursor-not-allowed
+                                flex items-center justify-center gap-2
                             "
                         >
-                            Enviar mensagem
+                            {isSubmitting ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Enviando...
+                                </>
+                            ) : (
+                                "Enviar mensagem"
+                            )}
                         </button>
                     </form>
                 </div>
             </div>
         </section>
-
-        {/* ================================
-                CTA FINAL
-            ================================ */}
-            <section className="relative overflow-hidden px-6 py-20 bg-[#C95F52] dark:bg-[#7E342D]">
-                <div className="max-w-7xl mx-auto text-center">
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-white">
-                        Tem uma história para publicar?
-                    </h2>
-
-                    <p className="mt-5 text-white text-lg max-w-3xl mx-auto leading-relaxed">
-                        Entre em contato com a Guardiana e converse conosco
-                        sobre sua ideia, seu livro ou seu projeto editorial.
-                    </p>
-
-                    <Link
-                        href="/contato"
-                        className="
-                            inline-flex
-                            mt-8
-                            px-8 py-3
-                            rounded-full
-                            border border-white
-                            text-white
-                            font-bold
-                            hover:bg-white
-                            hover:text-[#C95F52]
-                            transition-all duration-300
-                        "
-                    >
-                        Fale conosco →
-                    </Link>
-                </div>
-            </section>
-            </main>
+    </main>
     );
 }

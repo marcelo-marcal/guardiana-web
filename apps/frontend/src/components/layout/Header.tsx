@@ -34,10 +34,9 @@ export default function Header() {
     // ================================
     useEffect(() => {
         const savedTheme = localStorage.getItem("theme");
-        const systemDark = window.matchMedia(
-            "(prefers-color-scheme: dark)",
-        ).matches;
-        const isDark = savedTheme ? savedTheme === "dark" : systemDark;
+
+        // O tema padrão agora é obrigatoriamente light, a menos que "dark" esteja salvo
+        const isDark = savedTheme === "dark";
 
         if (isDark) {
             document.documentElement.classList.add("dark");
@@ -135,18 +134,6 @@ export default function Header() {
                         >
                             Contato
                         </Link>
-
-                        {/* Painel Admin - Verde, só se logado */}
-                        {user && (
-                            <Link
-                                href="/dashboard"
-                                className="text-[#16B83E] dark:text-[#16B83E] font-semibold hover:text-[#0d9632] dark:hover:text-[#0d9632] transition flex items-center gap-1"
-                                title="Acessar Painel Administrativo"
-                            >
-                                <span>🔧</span>
-                                <span>Painel Admin</span>
-                            </Link>
-                        )}
                     </nav>
 
                     {/* AÇÕES (Tema + Menu Mobile + Auth) */}
@@ -219,13 +206,25 @@ export default function Header() {
 
                         {/* Botão Auth - Desktop */}
                         {user ? (
-                            <button
-                                onClick={handleLogout}
-                                className="hidden md:block border border-red-300 dark:border-red-900/50 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition min-w-[80px]"
-                                aria-label="Sair da conta"
-                            >
-                                Sair
-                            </button>
+                            <div className="hidden md:flex items-center gap-4 ml-4">
+                                <Link href="/dashboard/perfil" className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer">
+                                    {user.avatarUrl ? (
+                                        <Image src={user.avatarUrl} alt="Avatar" width={32} height={32} className="rounded-full object-cover w-8 h-8" />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-700 dark:text-gray-300">
+                                            {user.name?.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{user.name}</span>
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="border border-red-300 dark:border-red-900/50 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition min-w-[80px]"
+                                    aria-label="Sair da conta"
+                                >
+                                    Sair
+                                </button>
+                            </div>
                         ) : (
                             <Link
                                 href="/login"
@@ -240,14 +239,9 @@ export default function Header() {
 
             {/* ================================
                 MENU MOBILE - COMPORTAMENTO CONDICIONAL
-                - NÃO LOGADO: Dropdown centralizado (top-down)
-                - LOGADO (admin): Sidebar lateral esquerda
             ================================ */}
             {menuOpen && (
                 <>
-                    {/* ================================
-                        CASO 1: NÃO LOGADO → DROPDOWN CENTRALIZADO
-                    ================================ */}
                     {!user && (
                         <div className="md:hidden fixed top-16 left-0 right-0 z-50 bg-white dark:bg-[#020617] border-b border-gray-200 dark:border-white/10 shadow-lg animate-fade-in">
                             <nav className="flex flex-col items-center py-4 space-y-2 px-6">
@@ -258,7 +252,6 @@ export default function Header() {
                                 >
                                     Início
                                 </Link>
-
                                 <Link
                                     href="/guardiana"
                                     onClick={() => setMenuOpen(false)}
@@ -266,7 +259,6 @@ export default function Header() {
                                 >
                                     Guardiana
                                 </Link>
-
                                 <Link
                                     href="/servicos-editoriais"
                                     onClick={() => setMenuOpen(false)}
@@ -274,7 +266,6 @@ export default function Header() {
                                 >
                                     Serviços Editoriais
                                 </Link>
-
                                 <Link
                                     href="/livros"
                                     onClick={() => setMenuOpen(false)}
@@ -282,7 +273,6 @@ export default function Header() {
                                 >
                                     Livros
                                 </Link>
-
                                 <Link
                                     href="/fundadoras"
                                     onClick={() => setMenuOpen(false)}
@@ -290,7 +280,6 @@ export default function Header() {
                                 >
                                     Fundadoras
                                 </Link>
-
                                 <Link
                                     href="/contato"
                                     onClick={() => setMenuOpen(false)}
@@ -299,7 +288,6 @@ export default function Header() {
                                     Contato
                                 </Link>
                             </nav>
-
                             <div className="p-4 border-t border-gray-200 dark:border-white/10">
                                 <Link
                                     href="/login"
@@ -311,27 +299,27 @@ export default function Header() {
                             </div>
                         </div>
                     )}
-
-                    {/* ================================
-                        CASO 2: LOGADO (ADMIN) → SIDEBAR LATERAL ESQUERDA
-                    ================================ */}
                     {user && (
                         <div className="md:hidden fixed inset-0 z-50 flex justify-start">
-                            {/* FUNDO ESCURO */}
                             <div
                                 className="absolute inset-0 bg-black/50"
                                 onClick={() => setMenuOpen(false)}
                                 aria-hidden="true"
                             />
-
-                            {/* PAINEL LATERAL ESQUERDO */}
                             <div className="relative w-72 h-full bg-white dark:bg-[#020617] shadow-2xl border-r border-gray-200 dark:border-white/10 flex flex-col">
-                                {/* CABEÇALHO */}
                                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-white/10 flex-shrink-0">
-                                    <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        Menu Admin
-                                    </span>
-
+                                    <Link href="/dashboard/perfil" className="flex items-center gap-3" onClick={() => setMenuOpen(false)}>
+                                        {user.avatarUrl ? (
+                                            <Image src={user.avatarUrl} alt="Avatar" width={32} height={32} className="rounded-full object-cover w-8 h-8" />
+                                        ) : (
+                                            <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-sm font-bold text-gray-700 dark:text-gray-300">
+                                                {user.name?.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
+                                        <span className="text-base font-semibold text-gray-900 dark:text-white truncate max-w-[150px]">
+                                            {user.name}
+                                        </span>
+                                    </Link>
                                     <button
                                         onClick={() => setMenuOpen(false)}
                                         className="p-2 rounded-lg text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition"
@@ -340,8 +328,6 @@ export default function Header() {
                                         ✕
                                     </button>
                                 </div>
-
-                                {/* LINKS */}
                                 <nav className="flex-1 overflow-y-auto p-6 space-y-2">
                                     <Link
                                         href="/"
@@ -350,7 +336,13 @@ export default function Header() {
                                     >
                                         Início
                                     </Link>
-
+                                    <Link
+                                        href="/dashboard"
+                                        onClick={() => setMenuOpen(false)}
+                                        className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                    >
+                                        Dashboard
+                                    </Link>
                                     <Link
                                         href="/guardiana"
                                         onClick={() => setMenuOpen(false)}
@@ -358,7 +350,6 @@ export default function Header() {
                                     >
                                         Guardiana
                                     </Link>
-
                                     <Link
                                         href="/servicos-editoriais"
                                         onClick={() => setMenuOpen(false)}
@@ -366,7 +357,6 @@ export default function Header() {
                                     >
                                         Serviços Editoriais
                                     </Link>
-
                                     <Link
                                         href="/livros"
                                         onClick={() => setMenuOpen(false)}
@@ -374,7 +364,6 @@ export default function Header() {
                                     >
                                         Livros
                                     </Link>
-
                                     <Link
                                         href="/fundadoras"
                                         onClick={() => setMenuOpen(false)}
@@ -382,7 +371,6 @@ export default function Header() {
                                     >
                                         Fundadoras
                                     </Link>
-
                                     <Link
                                         href="/contato"
                                         onClick={() => setMenuOpen(false)}
@@ -390,21 +378,7 @@ export default function Header() {
                                     >
                                         Contato
                                     </Link>
-
-                                    {/* Link Dashboard Mobile - Destaque verde */}
-                                    <Link
-                                        href="/dashboard"
-                                        onClick={() => setMenuOpen(false)}
-                                        className="flex py-3 px-4 rounded-lg text-[#16B83E] dark:text-[#16B83E] font-semibold hover:bg-[#16B83E]/10 transition items-center gap-2"
-                                    >
-                                        <span>{user.role === 'USER' ? "👤" : "�"}</span>
-                                        <span>
-                                            {user.role === 'USER' ? "Meu Perfil" : "Painel Admin"}
-                                        </span>
-                                    </Link>
                                 </nav>
-
-                                {/* BOTÃO SAIR */}
                                 <div className="p-6 border-t border-gray-200 dark:border-white/10 flex-shrink-0">
                                     <button
                                         onClick={handleLogout}
