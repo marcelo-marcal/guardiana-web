@@ -16,7 +16,6 @@ type CouncilMember = {
 };
 
 export default function ConselhoDashboard() {
-    const { user } = useAuth();
     const [members, setMembers] = useState<CouncilMember[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,8 +37,8 @@ export default function ConselhoDashboard() {
             if (data.success) {
                 setMembers(data.members);
             }
-        } catch (error) {
-            console.error("Erro ao carregar membros do conselho:", error);
+        } catch {
+            console.error("Erro ao carregar membros do conselho");
         } finally {
             setLoading(false);
         }
@@ -114,7 +113,7 @@ export default function ConselhoDashboard() {
                 setIsModalOpen(false);
                 void loadMembers();
             }
-        } catch (error) {
+        } catch {
             alert("Erro ao salvar.");
         } finally {
             setSubmitting(false);
@@ -130,7 +129,7 @@ export default function ConselhoDashboard() {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (response.ok) void loadMembers();
-        } catch (error) {
+        } catch {
             alert("Erro ao deletar.");
         }
     };

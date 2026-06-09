@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import Swal from "sweetalert2";
+import Image from "next/image";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 const TOKEN_KEY = "guardiana_token";
@@ -47,8 +48,8 @@ export default function UsuariosPage() {
             if (data.success) {
                 setUsers(data.users);
             }
-        } catch (error) {
-            console.error("Erro ao carregar usuários:", error);
+        } catch {
+            console.error("Erro ao carregar usuários");
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -86,7 +87,7 @@ export default function UsuariosPage() {
                 ? `${API_URL}/users/${editingUser.id}`
                 : `${API_URL}/users/admin`;
 
-            const body: any = { name, email, role };
+            const body: Record<string, string | UserRole> = { name, email, role };
             if (password) body.password = password;
 
             const response = await fetch(endpoint, {
@@ -105,7 +106,7 @@ export default function UsuariosPage() {
                 const data = await response.json();
                 alert(data.message || "Erro ao salvar usuário.");
             }
-        } catch (error) {
+        } catch {
             alert("Erro na requisição.");
         } finally {
             setSubmitting(false);
@@ -168,7 +169,6 @@ export default function UsuariosPage() {
             } finally {
                 setRefreshing(false);
             }
-        }
     };
 
     const toggleAdmin = async (user: User) => {
@@ -186,7 +186,7 @@ export default function UsuariosPage() {
             if (response.ok) {
                 void loadUsers();
             }
-        } catch (error) {
+        } catch {
             alert("Erro ao alterar permissão.");
         }
     };
@@ -236,9 +236,14 @@ export default function UsuariosPage() {
                                 <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-white/5 transition">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-[#18384A] text-white flex items-center justify-center text-xs font-bold uppercase">
+                                            <div className="w-8 h-8 rounded-full bg-[#18384A] text-white flex items-center justify-center text-xs font-bold uppercase relative overflow-hidden">
                                                 {u.avatarUrl ? (
-                                                    <img src={u.avatarUrl} alt={u.name} className="w-full h-full rounded-full object-cover" />
+                                                    <Image
+                                                        src={u.avatarUrl}
+                                                        alt={u.name}
+                                                        fill
+                                                        className="object-cover"
+                                                    />
                                                 ) : (
                                                     u.name.charAt(0)
                                                 )}
@@ -381,4 +386,4 @@ export default function UsuariosPage() {
             )}
         </div>
     );
-}
+}}
