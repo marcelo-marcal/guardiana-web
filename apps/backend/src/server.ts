@@ -13,6 +13,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { uploadRoutes } from "./modules/uploads/routes/uploads.routes.js";
 import { contactRoutes } from "./modules/contact/routes/contact.routes.js";
+import { founderRoutes } from "./modules/founders/routes/founders.routes.js";
 
 // ================================
 // CONFIGURAÇÕES DE AMBIENTE
@@ -44,7 +45,8 @@ app.use(cors({
     'https://editoraguardiana.com',
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'http://192.168.0.10:3000'
+    'http://192.168.0.10:3000',
+    'http://192.168.0.14:3000'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -78,6 +80,7 @@ app.use("/users", userRoutes);
 app.use("/poems", poemRoutes);
 app.use("/uploads", uploadRoutes);
 app.use("/contact", contactRoutes);
+app.use("/founders", founderRoutes);
 
 // ================================
 // INICIAR SERVIDOR
