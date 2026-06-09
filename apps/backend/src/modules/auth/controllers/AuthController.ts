@@ -83,6 +83,37 @@ export class AuthController {
     }
 
     // ================================
+    // LOGIN TRADICIONAL
+    // ================================
+    async login(req: Request, res: Response) {
+        try {
+            const { email, password } = req.body as {
+                email?: string;
+                password?: string;
+            };
+
+            if (!email || !password) {
+                return res.status(400).json({
+                    error: "E-mail e senha são obrigatórios",
+                });
+            }
+
+            const result = await authService.login(email, password);
+
+            return res.json(result);
+        } catch (error) {
+            const message = getErrorMessage(
+                error,
+                "Credenciais inválidas.",
+            );
+
+            return res.status(401).json({
+                error: message,
+            });
+        }
+    }
+
+    // ================================
     // LOGIN ADMINISTRATIVO
     // ================================
     async adminLogin(req: Request, res: Response) {
@@ -118,9 +149,10 @@ export class AuthController {
     // ================================
     async completeRegistration(req: Request, res: Response) {
         try {
-            const { email, name, literaryInterests } = req.body as {
+            const { email, name, password, literaryInterests } = req.body as {
                 email?: string;
                 name?: string;
+                password?: string;
                 literaryInterests?: string;
             };
 
@@ -133,6 +165,7 @@ export class AuthController {
             const result = await authService.completeRegistration(
                 email,
                 name,
+                password,
                 literaryInterests,
             );
 

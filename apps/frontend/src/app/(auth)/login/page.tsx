@@ -64,6 +64,7 @@ export default function LoginPage() {
 
     const [loginMode, setLoginMode] = useState<LoginMode>("email");
     const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [code, setCode] = useState("");
     const [name, setName] = useState("");
     const [interests, setInterests] = useState("");
@@ -89,10 +90,61 @@ export default function LoginPage() {
     }, [authUser, authLoading, router]);
 
     // ================================
-    // SOLICITAR CÓDIGO / LOGIN DIRETO
+    // LOGIN COM SENHA
     // ================================
-    const handleRequestCode = async (event: React.FormEvent) => {
+    const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
+
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await fetch(`${API_URL}/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                }),
+            });
+
+            const data = (await response.json()) as {
+                token?: string;
+                user?: LoginUser;
+                error?: string;
+            };
+
+            if (!response.ok) {
+                throw new Error(data.error || "E-mail ou senha incorretos.");
+            }
+
+            if (!data.token || !data.user) {
+                throw new Error("Resposta de login inválida.");
+            }
+
+            localStorage.setItem(TOKEN_KEY, data.token);
+            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            window.dispatchEvent(new Event("auth:updated"));
+
+            router.replace("/");
+        } catch (error) {
+            const message = getErrorMessage(error, "Erro ao fazer login.");
+            setError(message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ================================
+    // SOLICITAR CÓDIGO (BACKUP)
+    // ================================
+    const handleRequestCode = async () => {
+        if (!email) {
+            setError("Digite seu e-mail primeiro.");
+            return;
+        }
 
         setLoading(true);
         setError("");
@@ -113,21 +165,8 @@ export default function LoginPage() {
 
             if (!response.ok) {
                 throw new Error(
-                    data.error || "Não foi possível iniciar o acesso.",
+                    data.error || "Não foi possível enviar o código.",
                 );
-            }
-
-            if (data.action === "LOGGED_IN") {
-                if (!data.token || !data.user) {
-                    throw new Error("Resposta de login inválida.");
-                }
-
-                localStorage.setItem(TOKEN_KEY, data.token);
-                localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-                window.dispatchEvent(new Event("auth:updated"));
-
-                router.replace("/");
-                return;
             }
 
             setLoginMode("code");
@@ -212,6 +251,7 @@ export default function LoginPage() {
                     body: JSON.stringify({
                         email,
                         name,
+                        password,
                         literaryInterests: interests,
                     }),
                 },
@@ -337,7 +377,7 @@ export default function LoginPage() {
 
                         {loginMode === "email" && (
                             <form
-                                onSubmit={handleRequestCode}
+                                onSubmit={handleLogin}
                                 className="mt-8 space-y-5"
                             >
                                 <div>
@@ -357,19 +397,54 @@ export default function LoginPage() {
                                     />
                                 </div>
 
+                                <div>
+                                    <label className="block text-sm font-semibold text-[#18384A] dark:text-gray-200">
+                                        Senha
+                                    </label>
+
+                                    <input
+                                        type="password"
+                                        required
+                                        value={password}
+                                        onChange={(event) =>
+                                            setPassword(event.target.value)
+                                        }
+                                        placeholder="••••••••"
+                                        className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-sm text-[#18384A] outline-none transition placeholder:text-gray-400 focus:border-[#C95F52] focus:ring-4 focus:ring-[#C95F52]/10 dark:border-white/10 dark:bg-[#020617] dark:text-white"
+                                    />
+                                </div>
+
                                 <button
                                     type="submit"
                                     disabled={loading}
                                     className="w-full rounded-2xl bg-[#C95F52] px-5 py-4 text-sm font-bold text-white shadow-lg shadow-[#C95F52]/20 transition hover:-translate-y-0.5 hover:bg-[#B95045] disabled:opacity-60"
                                 >
-                                    {loading
-                                        ? "Enviando código..."
-                                        : "Continuar"}
+                                    {loading ? "Entrando..." : "Entrar"}
+                                </button>
+
+                                <div className="relative py-2">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-gray-200 dark:border-white/10"></div>
+                                    </div>
+                                    <div className="relative flex justify-center text-xs uppercase">
+                                        <span className="bg-white dark:bg-[#0F1720] px-2 text-gray-500">
+                                            Ou
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={handleRequestCode}
+                                    disabled={loading}
+                                    className="w-full rounded-2xl border border-gray-200 dark:border-white/10 bg-transparent px-5 py-4 text-sm font-bold text-[#18384A] dark:text-white transition hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-60"
+                                >
+                                    Entrar com código por e-mail
                                 </button>
 
                                 <p className="text-center text-xs leading-relaxed text-gray-500 dark:text-gray-400">
-                                    Usaremos seu e-mail apenas para confirmar
-                                    seu acesso com segurança.
+                                    Acesse com sua senha ou solicite um código
+                                    temporário via e-mail.
                                 </p>
                             </form>
                         )}
@@ -437,6 +512,23 @@ export default function LoginPage() {
                                             setName(event.target.value)
                                         }
                                         placeholder="Como deseja ser chamado(a)?"
+                                        className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-sm text-[#18384A] outline-none transition placeholder:text-gray-400 focus:border-[#C95F52] focus:ring-4 focus:ring-[#C95F52]/10 dark:border-white/10 dark:bg-[#020617] dark:text-white"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-[#18384A] dark:text-gray-200">
+                                        Defina uma senha
+                                    </label>
+
+                                    <input
+                                        type="password"
+                                        required
+                                        value={password}
+                                        onChange={(event) =>
+                                            setPassword(event.target.value)
+                                        }
+                                        placeholder="••••••••"
                                         className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-sm text-[#18384A] outline-none transition placeholder:text-gray-400 focus:border-[#C95F52] focus:ring-4 focus:ring-[#C95F52]/10 dark:border-white/10 dark:bg-[#020617] dark:text-white"
                                     />
                                 </div>
