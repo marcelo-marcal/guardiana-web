@@ -15,8 +15,34 @@ type User = {
     role: UserRole;
     status: string;
     avatarUrl: string | null;
+    lastLoginAt: string | null;
+    lastActivityAt: string | null;
     createdAt: string;
 };
+
+// ================================
+// HELPER: FORMATAR TEMPO RELATIVO
+// ================================
+function formatTimeAgo(dateString: string | null) {
+    if (!dateString) return "Nunca";
+
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "Agora mesmo";
+    if (diffInSeconds < 3600) return `Há ${Math.floor(diffInSeconds / 60)} min`;
+    if (diffInSeconds < 86400) return `Há ${Math.floor(diffInSeconds / 3600)}h`;
+    return date.toLocaleDateString("pt-BR");
+}
+
+function isOnline(lastActivity: string | null) {
+    if (!lastActivity) return false;
+    const activityDate = new Date(lastActivity);
+    const now = new Date();
+    // Considera online se teve atividade nos últimos 3 minutos
+    return (now.getTime() - activityDate.getTime()) < 3 * 60 * 1000;
+}
 
 export default function UsuariosPage() {
     const { user: currentUser, loading: authLoading } = useAuth();
@@ -75,6 +101,13 @@ export default function UsuariosPage() {
     useEffect(() => {
         if (!authLoading) {
             void loadUsers();
+
+            // Atualiza a lista a cada 60 segundos para manter o status online atualizado
+            const interval = setInterval(() => {
+                void loadUsers(true);
+            }, 60000);
+
+            return () => clearInterval(interval);
         }
     }, [loadUsers, authLoading]);
 
@@ -237,6 +270,7 @@ export default function UsuariosPage() {
                             <th className="px-6 py-4">Usuário</th>
                             <th className="px-6 py-4">Email</th>
                             <th className="px-6 py-4">Função</th>
+                            <th className="px-6 py-4">Último Acesso</th>
                             <th className="px-6 py-4">Status</th>
                             <th className="px-6 py-4 text-right">Ações</th>
                         </tr>
@@ -284,10 +318,29 @@ export default function UsuariosPage() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
-                                            <span className="w-2 h-2 rounded-full bg-green-500" />
-                                            {u.status || "Ativo"}
-                                        </span>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                                {formatTimeAgo(u.lastLoginAt)}
+                                            </span>
+                                            {u.lastActivityAt && (
+                                                <span className="text-[10px] text-gray-400">
+                                                    Ativo {formatTimeAgo(u.lastActivityAt)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {isOnline(u.lastActivityAt) ? (
+                                            <span className="flex items-center gap-1.5 text-xs text-green-600 font-bold animate-pulse">
+                                                <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                                                Online
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                                                <span className="w-2 h-2 rounded-full bg-gray-300" />
+                                                {u.status || "Inativo"}
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-2">
