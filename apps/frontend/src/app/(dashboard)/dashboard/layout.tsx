@@ -26,7 +26,19 @@ export default function DashboardLayout({
 
     const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
     const dashboardTitle = isAdmin ? "Admin" : "Escritor";
-    const isProfilePage = pathname === "/dashboard/perfil";
+
+    const isActive = (path: string) => {
+        if (path === "/dashboard" && pathname !== "/dashboard") return false;
+        return pathname?.startsWith(path);
+    };
+
+    const getLinkClass = (path: string) => {
+        return `px-4 py-2 rounded-xl transition font-medium flex items-center gap-3 ${
+            isActive(path)
+                ? "bg-[#C95F52] text-white shadow-lg shadow-[#C95F52]/20"
+                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-[#C95F52]"
+        }`;
+    };
 
     const showSidebar = true;
 
@@ -36,73 +48,83 @@ export default function DashboardLayout({
                 SIDEBAR DESKTOP
             ================================ */}
             {showSidebar && (
-                <aside className="hidden md:flex w-64 flex-col bg-white dark:bg-[#020617] border-r border-gray-200 dark:border-white/10 p-6">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                        {dashboardTitle}
-                    </h2>
-                    <nav className="flex flex-col gap-4 text-gray-700 dark:text-gray-300">
+                <aside className="hidden md:flex w-64 flex-col bg-white dark:bg-[#0F1720] border-r border-gray-200 dark:border-white/10 p-6">
+                    <div className="mb-10 px-4">
+                        <span className="text-[10px] font-bold text-[#C95F52] uppercase tracking-[0.2em]">Painel</span>
+                        <h2 className="text-2xl font-black text-[#18384A] dark:text-white">
+                            {dashboardTitle}
+                        </h2>
+                    </div>
+
+                    <nav className="flex flex-col gap-2">
                         <Link
                             href="/dashboard/perfil"
-                            className="hover:text-[#D4AF37] transition"
+                            className={getLinkClass("/dashboard/perfil")}
                         >
-                            Perfil
+                            <span>👤</span> Perfil
                         </Link>
 
                         <Link
                             href="/dashboard"
-                            className="hover:text-[#D4AF37] transition"
+                            className={getLinkClass("/dashboard")}
                         >
-                            {isAdmin ? "Dashboard" : "Meus Poemas"}
+                            <span>📝</span> {isAdmin ? "Dashboard" : "Meus Poemas"}
                         </Link>
                         
                         {isAdmin && (
                             <>
+                                <div className="my-4 border-t border-gray-100 dark:border-white/5" />
+                                <span className="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Gestão</span>
+
                                 <Link
                                     href="/dashboard/sobre"
-                                    className="hover:text-[#D4AF37] transition"
+                                    className={getLinkClass("/dashboard/sobre")}
                                 >
-                                    Sobre
+                                    <span>📄</span> Sobre
                                 </Link>
                                 <Link
                                     href="/dashboard/livros"
-                                    className="hover:text-[#D4AF37] transition"
+                                    className={getLinkClass("/dashboard/livros")}
                                 >
-                                    Livros
+                                    <span>📚</span> Livros
                                 </Link>
                                 <Link
                                     href="/dashboard/publicacoes"
-                                    className="hover:text-[#D4AF37] transition"
+                                    className={getLinkClass("/dashboard/publicacoes")}
                                 >
-                                    Publicações
+                                    <span>📰</span> Publicações
                                 </Link>
                                 <Link
                                     href="/dashboard/usuarios"
-                                    className="hover:text-[#D4AF37] transition"
+                                    className={getLinkClass("/dashboard/usuarios")}
                                 >
-                                    Usuários
+                                    <span>👥</span> Usuários
                                 </Link>
                                 <Link
                                     href="/dashboard/fundadoras"
-                                    className="hover:text-[#D4AF37] transition"
+                                    className={getLinkClass("/dashboard/fundadoras")}
                                 >
-                                    Fundadoras
+                                    <span>🏛️</span> Fundadoras
                                 </Link>
                                 <Link
                                     href="/dashboard/conselho"
-                                    className="hover:text-[#D4AF37] transition"
+                                    className={getLinkClass("/dashboard/conselho")}
                                 >
-                                    Conselho
+                                    <span>⚖️</span> Conselho
                                 </Link>
                             </>
                         )}
                         
                         {isAdmin && (
-                            <Link
-                                href="/dashboard/configuracoes"
-                                className="hover:text-[#D4AF37] transition"
-                            >
-                                Configurações
-                            </Link>
+                            <>
+                                <div className="my-4 border-t border-gray-100 dark:border-white/5" />
+                                <Link
+                                    href="/dashboard/configuracoes"
+                                    className={getLinkClass("/dashboard/configuracoes")}
+                                >
+                                    <span>⚙️</span> Configurações
+                                </Link>
+                            </>
                         )}
                     </nav>
                 </aside>

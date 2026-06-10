@@ -6,7 +6,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../../hooks/useAuth";
 
 // ================================
@@ -18,6 +18,7 @@ export default function Header() {
     // ================================
     const { user, logout } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
 
     // ================================
     // ESTADO: TEMA (Light/Dark)
@@ -28,6 +29,22 @@ export default function Header() {
     // ESTADO: MENU MOBILE
     // ================================
     const [menuOpen, setMenuOpen] = useState(false);
+
+    // ================================
+    // HELPER: VERIFICAR LINK ATIVO
+    // ================================
+    const isActive = (path: string) => {
+        if (path === "/" && pathname !== "/") return false;
+        return pathname?.startsWith(path);
+    };
+
+    const getLinkClass = (path: string) => {
+        return `transition font-medium ${
+            isActive(path)
+                ? "text-[#C95F52] dark:text-[#C95F52]"
+                : "text-gray-800 dark:text-white hover:text-[#D4AF37]"
+        }`;
+    };
 
     // ================================
     // INICIALIZAÇÃO DO TEMA
@@ -92,45 +109,52 @@ export default function Header() {
                     </div>
 
                     {/* MENU DESKTOP */}
-                    <nav className="hidden md:flex gap-6 text-lg text-gray-800 dark:text-white items-center">
+                    <nav className="hidden md:flex gap-6 text-lg items-center">
                         <Link
                             href="/"
-                            className="hover:text-[#D4AF37] transition"
+                            className={getLinkClass("/")}
                         >
                             Início
                         </Link>
 
                         <Link
                             href="/guardiana"
-                            className="hover:text-[#D4AF37] transition"
+                            className={getLinkClass("/guardiana")}
                         >
                             Guardiana
                         </Link>
 
                         <Link
                             href="/servicos-editoriais"
-                            className="hover:text-[#D4AF37] transition"
+                            className={getLinkClass("/servicos-editoriais")}
                         >
                             Serviços Editoriais
                         </Link>
 
                         <Link
                             href="/livros"
-                            className="hover:text-[#D4AF37] transition"
+                            className={getLinkClass("/livros")}
                         >
                             Livros
                         </Link>
 
                         <Link
+                            href="/poemas"
+                            className={getLinkClass("/poemas")}
+                        >
+                            Poemas
+                        </Link>
+
+                        <Link
                             href="/fundadoras"
-                            className="hover:text-[#D4AF37] transition"
+                            className={getLinkClass("/fundadoras")}
                         >
                             Fundadoras
                         </Link>
 
                         <Link
                             href="/contato"
-                            className="hover:text-[#D4AF37] transition"
+                            className={getLinkClass("/contato")}
                         >
                             Contato
                         </Link>
@@ -248,42 +272,63 @@ export default function Header() {
                                 <Link
                                     href="/"
                                     onClick={() => setMenuOpen(false)}
-                                    className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
+                                    className={`w-full py-3 text-center transition border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                                        isActive("/") ? "text-[#C95F52] font-bold" : "text-gray-800 dark:text-white"
+                                    }`}
                                 >
                                     Início
                                 </Link>
                                 <Link
                                     href="/guardiana"
                                     onClick={() => setMenuOpen(false)}
-                                    className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
+                                    className={`w-full py-3 text-center transition border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                                        isActive("/guardiana") ? "text-[#C95F52] font-bold" : "text-gray-800 dark:text-white"
+                                    }`}
                                 >
                                     Guardiana
                                 </Link>
                                 <Link
                                     href="/servicos-editoriais"
                                     onClick={() => setMenuOpen(false)}
-                                    className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
+                                    className={`w-full py-3 text-center transition border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                                        isActive("/servicos-editoriais") ? "text-[#C95F52] font-bold" : "text-gray-800 dark:text-white"
+                                    }`}
                                 >
                                     Serviços Editoriais
                                 </Link>
                                 <Link
                                     href="/livros"
                                     onClick={() => setMenuOpen(false)}
-                                    className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
+                                    className={`w-full py-3 text-center transition border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                                        isActive("/livros") ? "text-[#C95F52] font-bold" : "text-gray-800 dark:text-white"
+                                    }`}
                                 >
                                     Livros
                                 </Link>
                                 <Link
+                                    href="/poemas"
+                                    onClick={() => setMenuOpen(false)}
+                                    className={`w-full py-3 text-center transition border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                                        isActive("/poemas") ? "text-[#C95F52] font-bold" : "text-gray-800 dark:text-white"
+                                    }`}
+                                >
+                                    Poemas
+                                </Link>
+                                <Link
                                     href="/fundadoras"
                                     onClick={() => setMenuOpen(false)}
-                                    className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
+                                    className={`w-full py-3 text-center transition border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                                        isActive("/fundadoras") ? "text-[#C95F52] font-bold" : "text-gray-800 dark:text-white"
+                                    }`}
                                 >
                                     Fundadoras
                                 </Link>
                                 <Link
                                     href="/contato"
                                     onClick={() => setMenuOpen(false)}
-                                    className="w-full py-3 text-center text-gray-800 dark:text-white hover:text-[#D4AF37] transition border-b border-gray-100 dark:border-white/5 last:border-0"
+                                    className={`w-full py-3 text-center transition border-b border-gray-100 dark:border-white/5 last:border-0 ${
+                                        isActive("/contato") ? "text-[#C95F52] font-bold" : "text-gray-800 dark:text-white"
+                                    }`}
                                 >
                                     Contato
                                 </Link>
@@ -332,49 +377,72 @@ export default function Header() {
                                     <Link
                                         href="/"
                                         onClick={() => setMenuOpen(false)}
-                                        className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        className={`flex py-3 px-4 rounded-lg transition ${
+                                            isActive("/") && pathname === "/" ? "bg-[#C95F52]/10 text-[#C95F52] font-bold" : "text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                                        }`}
                                     >
                                         Início
                                     </Link>
                                     <Link
                                         href="/dashboard"
                                         onClick={() => setMenuOpen(false)}
-                                        className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        className={`flex py-3 px-4 rounded-lg transition ${
+                                            isActive("/dashboard") ? "bg-[#C95F52]/10 text-[#C95F52] font-bold" : "text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                                        }`}
                                     >
                                         Dashboard
                                     </Link>
                                     <Link
                                         href="/guardiana"
                                         onClick={() => setMenuOpen(false)}
-                                        className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        className={`flex py-3 px-4 rounded-lg transition ${
+                                            isActive("/guardiana") ? "bg-[#C95F52]/10 text-[#C95F52] font-bold" : "text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                                        }`}
                                     >
                                         Guardiana
                                     </Link>
                                     <Link
                                         href="/servicos-editoriais"
                                         onClick={() => setMenuOpen(false)}
-                                        className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        className={`flex py-3 px-4 rounded-lg transition ${
+                                            isActive("/servicos-editoriais") ? "bg-[#C95F52]/10 text-[#C95F52] font-bold" : "text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                                        }`}
                                     >
                                         Serviços Editoriais
                                     </Link>
                                     <Link
                                         href="/livros"
                                         onClick={() => setMenuOpen(false)}
-                                        className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        className={`flex py-3 px-4 rounded-lg transition ${
+                                            isActive("/livros") ? "bg-[#C95F52]/10 text-[#C95F52] font-bold" : "text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                                        }`}
                                     >
                                         Livros
                                     </Link>
                                     <Link
+                                        href="/poemas"
+                                        onClick={() => setMenuOpen(false)}
+                                        className={`flex py-3 px-4 rounded-lg transition ${
+                                            isActive("/poemas") ? "bg-[#C95F52]/10 text-[#C95F52] font-bold" : "text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                                        }`}
+                                    >
+                                        Poemas
+                                    </Link>
+                                    <Link
                                         href="/fundadoras"
                                         onClick={() => setMenuOpen(false)}
-                                        className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        className={`flex py-3 px-4 rounded-lg transition ${
+                                            isActive("/fundadoras") ? "bg-[#C95F52]/10 text-[#C95F52] font-bold" : "text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                                        }`}
                                     >
                                         Fundadoras
                                     </Link>
                                     <Link
                                         href="/contato"
                                         onClick={() => setMenuOpen(false)}
-                                        className="flex py-3 px-4 rounded-lg text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        className={`flex py-3 px-4 rounded-lg transition ${
+                                            isActive("/contato") ? "bg-[#C95F52]/10 text-[#C95F52] font-bold" : "text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                                        }`}
                                     >
                                         Contato
                                     </Link>
