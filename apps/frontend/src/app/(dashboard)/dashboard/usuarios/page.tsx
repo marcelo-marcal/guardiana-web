@@ -34,12 +34,14 @@ export default function UsuariosPage() {
     const [submitting, setSubmitting] = useState(false);
 
     const loadUsers = useCallback(async (isRefresh = false) => {
+        console.log("Iniciando carga de usuários...");
         try {
             if (isRefresh) setRefreshing(true);
             else setLoading(true);
 
             const token = getAuthToken();
             if (!token) {
+                console.warn("Nenhum token encontrado ao carregar usuários.");
                 return;
             }
 
@@ -47,13 +49,20 @@ export default function UsuariosPage() {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
+            console.log("Status da resposta:", response.status);
+
             if (!response.ok) {
                 throw new Error(`Erro HTTP: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log("Dados recebidos da API:", data);
+
             if (data.success && data.users) {
+                console.log("Atualizando estado 'users' com", data.users.length, "itens");
                 setUsers(data.users);
+            } else {
+                console.warn("API retornou sucesso mas sem lista de usuários:", data);
             }
         } catch (error) {
             console.error("Erro ao carregar usuários:", error);
@@ -178,6 +187,7 @@ export default function UsuariosPage() {
             } finally {
                 setRefreshing(false);
             }
+        }
     };
 
     const toggleAdmin = async (user: User) => {
@@ -234,7 +244,12 @@ export default function UsuariosPage() {
                     <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                         {loading ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-10 text-center text-gray-400">Carregando usuários...</td>
+                                <td colSpan={5} className="px-6 py-10 text-center text-gray-400 font-medium">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="w-6 h-6 border-2 border-[#C95F52] border-t-transparent rounded-full animate-spin" />
+                                        Carregando usuários...
+                                    </div>
+                                </td>
                             </tr>
                         ) : users.length === 0 ? (
                             <tr>
@@ -394,4 +409,4 @@ export default function UsuariosPage() {
             )}
         </div>
     );
-}}
+}
