@@ -3,7 +3,6 @@
 // ================================
 // IMPORTS
 // ================================
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getLivros, type Livro } from "../../../../services/livros.service";
 import { getAuthToken } from "@/hooks/useAuth";
@@ -11,7 +10,7 @@ import { getAuthToken } from "@/hooks/useAuth";
 // ================================
 // CONFIGURAÇÃO DA API
 // ================================
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3333";
 
 // ================================
 // FORMULÁRIO INICIAL
@@ -430,15 +429,14 @@ export default function LivrosAdmin() {
 
                 {form.imagem && (
                     <div className="mt-4 relative w-36 h-48 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10">
-                        <Image
+                        <img
                             src={
                                 form.imagem.startsWith("/uploads")
                                     ? `${API_URL}${form.imagem}`
                                     : form.imagem
                             }
                             alt="Prévia da capa"
-                            fill
-                            className="object-cover"
+                            className="w-full h-full object-cover"
                         />
                     </div>
                 )}
@@ -479,11 +477,10 @@ export default function LivrosAdmin() {
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="relative w-16 h-24 rounded-md overflow-hidden bg-gray-100">
-                                        <Image
+                                        <img
                                             src={livro.imagem}
                                             alt={livro.titulo}
-                                            fill
-                                            className="object-cover"
+                                            className="w-full h-full object-cover"
                                         />
                                     </div>
 

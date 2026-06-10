@@ -5,12 +5,11 @@
 // ================================
 import { useCallback, useEffect, useState } from "react";
 import { useAuth, getAuthToken } from "@/hooks/useAuth";
-import Image from "next/image";
 
 // ================================
 // CONFIGURAÇÕES
 // ================================
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3333";
 
 // ================================
 // TIPAGENS
@@ -263,7 +262,11 @@ export default function PerfilPage() {
                         <div className="flex flex-col items-center gap-4">
                             <div className="relative w-24 h-24">
                                 {avatarPreview ? (
-                                    <Image src={avatarPreview} alt="Avatar" layout="fill" className="rounded-full object-cover" />
+                                    <img
+                                        src={avatarPreview}
+                                        alt="Avatar"
+                                        className="w-full h-full rounded-full object-cover"
+                                    />
                                 ) : (
                                     <div className="w-full h-full rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center text-3xl font-bold text-gray-700 dark:text-gray-300">
                                         {name?.charAt(0).toUpperCase()}
