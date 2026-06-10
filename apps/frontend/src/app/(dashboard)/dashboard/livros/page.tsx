@@ -6,6 +6,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getLivros, type Livro } from "../../../../services/livros.service";
+import { getAuthToken } from "@/hooks/useAuth";
 
 // ================================
 // CONFIGURAÇÃO DA API
@@ -60,23 +61,6 @@ export default function LivrosAdmin() {
     const [erro, setErro] = useState("");
 
     // ================================
-    // BUSCAR TOKEN
-    // Observação:
-    // - Enquanto o login do frontend ainda não foi integrado
-    //   ao backend, buscamos possíveis chaves de token.
-    // - Depois vamos padronizar isso no useAuth real.
-    // ================================
-    const getToken = () => {
-        if (typeof window === "undefined") return null;
-
-        return (
-            localStorage.getItem("guardiana_token") ||
-            localStorage.getItem("token") ||
-            localStorage.getItem("auth_token")
-        );
-    };
-
-    // ================================
     // CARREGAR LIVROS DO BACKEND
     // ================================
     const carregarLivros = async () => {
@@ -121,7 +105,7 @@ export default function LivrosAdmin() {
     // ================================
     const carregarImagem = async (arquivo: File) => {
         try {
-            const token = getToken();
+            const token = getAuthToken();
 
             if (!token) {
                 alert("Faça login novamente para enviar imagens.");
@@ -171,7 +155,7 @@ export default function LivrosAdmin() {
                 return;
             }
 
-            const token = getToken();
+            const token = getAuthToken();
 
             if (!token) {
                 alert("Faça login novamente para cadastrar livros.");
@@ -235,7 +219,7 @@ export default function LivrosAdmin() {
 
             if (!confirmar) return;
 
-            const token = getToken();
+            const token = getAuthToken();
 
             if (!token) {
                 alert("Faça login novamente para remover livros.");
@@ -276,7 +260,7 @@ export default function LivrosAdmin() {
     // ================================
     const alternarDestaque = async (livro: Livro) => {
         try {
-            const token = getToken();
+            const token = getAuthToken();
 
             if (!token) {
                 alert("Faça login novamente para alterar destaques.");
