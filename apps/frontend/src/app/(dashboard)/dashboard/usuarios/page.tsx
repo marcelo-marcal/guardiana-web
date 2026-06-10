@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import { useAuth, getAuthToken } from "@/hooks/useAuth";
 import Swal from "sweetalert2";
-import Image from "next/image";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 
 type UserRole = "USER" | "ADMIN" | "SUPER_ADMIN";
@@ -19,7 +20,7 @@ type User = {
 };
 
 export default function UsuariosPage() {
-    const { user: currentUser } = useAuth();
+    const { user: currentUser, loading: authLoading } = useAuth();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -39,15 +40,24 @@ export default function UsuariosPage() {
             else setLoading(true);
 
             const token = getAuthToken();
+            if (!token) {
+                return;
+            }
+
             const response = await fetch(`${API_URL}/users`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+
             const data = await response.json();
-            if (data.success) {
+            if (data.success && data.users) {
                 setUsers(data.users);
             }
-        } catch {
-            console.error("Erro ao carregar usuários");
+        } catch (error) {
+            console.error("Erro ao carregar usuários:", error);
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -55,8 +65,10 @@ export default function UsuariosPage() {
     }, []);
 
     useEffect(() => {
-        void loadUsers();
-    }, [loadUsers]);
+        if (!authLoading) {
+            void loadUsers();
+        }
+    }, [loadUsers, authLoading]);
 
     const handleOpenModal = (user: User | null = null) => {
         if (user) {
@@ -284,11 +296,10 @@ export default function UsuariosPage() {
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-[#18384A] text-white flex items-center justify-center text-xs font-bold uppercase relative overflow-hidden">
                                                 {u.avatarUrl ? (
-                                                    <Image
+                                                    <img
                                                         src={u.avatarUrl}
                                                         alt={u.name}
-                                                        fill
-                                                        className="object-cover"
+                                                        className="w-full h-full object-cover"
                                                     />
                                                 ) : (
                                                     u.name.charAt(0)

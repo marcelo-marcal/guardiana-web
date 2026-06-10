@@ -7,7 +7,7 @@ import type { NextConfig } from "next";
 // CONFIGURAÇÃO DO NEXT
 // ================================
 const nextConfig: NextConfig = {
-    output: 'export',
+    output: "export",
     images: {
         unoptimized: true,
     },

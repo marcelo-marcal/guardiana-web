@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAuth, getAuthToken } from "@/hooks/useAuth";
-import Image from "next/image";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3333";
 
 type Founder = {
     id: string;
@@ -163,7 +162,7 @@ export default function FundadorasDashboard() {
                     <div key={f.id} className="bg-white dark:bg-[#0F1720] rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden shadow-sm hover:shadow-md transition">
                         <div className="relative h-48 w-full bg-gray-100 dark:bg-white/5">
                             {f.imageUrl && (
-                                <Image src={f.imageUrl} alt={f.name} fill className={`object-cover ${f.position}`} />
+                                <img src={f.imageUrl} alt={f.name} className={`w-full h-full object-cover ${f.position}`} />
                             )}
                         </div>
                         <div className="p-6">
@@ -203,7 +202,7 @@ export default function FundadorasDashboard() {
                             <div className="flex justify-center mb-6">
                                 <div className="relative w-32 h-32 rounded-2xl overflow-hidden border-2 border-dashed border-gray-300 dark:border-white/10">
                                     {avatarPreview ? (
-                                        <Image src={avatarPreview} alt="Preview" fill className={`object-cover ${position}`} />
+                                        <img src={avatarPreview} alt="Preview" className={`w-full h-full object-cover ${position}`} />
                                     ) : (
                                         <div className="flex items-center justify-center h-full text-gray-400">Sem foto</div>
                                     )}
