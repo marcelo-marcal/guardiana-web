@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAuth, getAuthToken } from "@/hooks/useAuth";
-import Image from "next/image";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3333";
 
@@ -157,7 +156,7 @@ export default function ConselhoDashboard() {
                     <div key={m.id} className="bg-white dark:bg-[#0F1720] rounded-2xl border border-gray-100 dark:border-white/10 overflow-hidden shadow-sm hover:shadow-md transition">
                         <div className="relative h-48 w-full bg-gray-100 dark:bg-white/5">
                             {m.imageUrl && (
-                                <Image src={m.imageUrl} alt={m.name} fill className="object-cover" />
+                                <img src={m.imageUrl} alt={m.name} className="w-full h-full object-cover" />
                             )}
                         </div>
                         <div className="p-5">
@@ -196,7 +195,7 @@ export default function ConselhoDashboard() {
                             <div className="flex justify-center mb-6">
                                 <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-dashed border-gray-300 dark:border-white/10">
                                     {avatarPreview ? (
-                                        <Image src={avatarPreview} alt="Preview" fill className="object-cover" />
+                                        <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="flex items-center justify-center h-full text-gray-400">Sem foto</div>
                                     )}
