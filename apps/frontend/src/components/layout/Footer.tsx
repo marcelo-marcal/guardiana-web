@@ -170,6 +170,13 @@ export default function Footer() {
                             </Link>
 
                             <Link
+                                href="/poemas"
+                                className="hover:text-[#D4AF37] transition"
+                            >
+                                Poemas
+                            </Link>
+
+                            <Link
                                 href="/fundadoras"
                                 className="hover:text-[#D4AF37] transition"
                             >
