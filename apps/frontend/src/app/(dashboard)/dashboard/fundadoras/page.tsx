@@ -1,11 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, getAuthToken } from "@/hooks/useAuth";
 import Image from "next/image";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
-const TOKEN_KEY = "guardiana_token";
 
 type Founder = {
     id: string;
@@ -86,7 +85,7 @@ export default function FundadorasDashboard() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             let imageUrl = avatarPreview;
 
             if (avatarFile) {
@@ -131,7 +130,7 @@ export default function FundadorasDashboard() {
     const handleDelete = async (id: string) => {
         if (!confirm("Excluir fundadora?")) return;
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             const response = await fetch(`${API_URL}/founders/${id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },

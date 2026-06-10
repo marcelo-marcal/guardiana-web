@@ -1,11 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, getAuthToken } from "@/hooks/useAuth";
 import Image from "next/image";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3333";
-const TOKEN_KEY = "guardiana_token";
 
 type CouncilMember = {
     id: string;
@@ -78,7 +77,7 @@ export default function ConselhoDashboard() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             let imageUrl = avatarPreview;
 
             if (avatarFile) {
@@ -123,7 +122,7 @@ export default function ConselhoDashboard() {
     const handleDelete = async (id: string) => {
         if (!confirm("Excluir membro do conselho?")) return;
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             const response = await fetch(`${API_URL}/council/${id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` },
