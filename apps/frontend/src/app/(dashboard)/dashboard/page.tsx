@@ -4,13 +4,12 @@
 // IMPORTS
 // ================================
 import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, getAuthToken } from "@/hooks/useAuth";
 
 // ================================
 // CONFIGURAÇÕES
 // ================================
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
-const TOKEN_KEY = "guardiana_token";
 
 // ================================
 // TIPAGENS
@@ -78,7 +77,7 @@ export default function UserDashboard() {
         try {
             setLoadingPoems(true);
 
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
 
             if (!token) {
                 setPoems([]);
@@ -136,7 +135,7 @@ export default function UserDashboard() {
                 if (!rejectionReason) return;
             }
 
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
 
             const response = await fetch(`${API_URL}/poems/${poemId}/review`, {
                 method: "PATCH",
@@ -170,7 +169,7 @@ export default function UserDashboard() {
     // ================================
     const handleToggleHighlight = async (poemId: string) => {
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
 
             const response = await fetch(
                 `${API_URL}/poems/${poemId}/highlight`,
@@ -207,7 +206,7 @@ export default function UserDashboard() {
         try {
             setSubmitting(true);
 
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             const method = editingPoem ? "PUT" : "POST";
             const endpoint = editingPoem
                 ? `${API_URL}/poems/${editingPoem.id}`
@@ -255,7 +254,7 @@ export default function UserDashboard() {
         if (!confirm("Tem certeza que deseja excluir esta poesia?")) return;
 
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
 
             const response = await fetch(`${API_URL}/poems/${poemId}`, {
                 method: "DELETE",

@@ -4,14 +4,13 @@
 // IMPORTS
 // ================================
 import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, getAuthToken } from "@/hooks/useAuth";
 import Image from "next/image";
 
 // ================================
 // CONFIGURAÇÕES
 // ================================
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
-const TOKEN_KEY = "guardiana_token";
 
 // ================================
 // TIPAGENS
@@ -81,7 +80,7 @@ export default function PerfilPage() {
         }
         try {
             setLoadingPoems(true);
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             if (!token) return;
 
             const response = await fetch(`${API_URL}/poems/my-poems`, {
@@ -123,7 +122,7 @@ export default function PerfilPage() {
         setSubmitting(true);
 
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             if (!token) throw new Error("Usuário não autenticado.");
 
             let avatarUrl = user?.avatarUrl;
@@ -187,7 +186,7 @@ export default function PerfilPage() {
         try {
             setSubmitting(true);
 
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
 
             const response = await fetch(`${API_URL}/poems`, {
                 method: "POST",

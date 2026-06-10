@@ -1,12 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, getAuthToken } from "@/hooks/useAuth";
 import Swal from "sweetalert2";
 import Image from "next/image";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
-const TOKEN_KEY = "guardiana_token";
 
 type UserRole = "USER" | "ADMIN" | "SUPER_ADMIN";
 
@@ -40,7 +39,7 @@ export default function UsuariosPage() {
             if (isRefresh) setRefreshing(true);
             else setLoading(true);
 
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             const response = await fetch(`${API_URL}/users`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
@@ -81,7 +80,7 @@ export default function UsuariosPage() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             const method = editingUser ? "PUT" : "POST";
             const endpoint = editingUser
                 ? `${API_URL}/users/${editingUser.id}`
@@ -130,7 +129,7 @@ export default function UsuariosPage() {
         if (result.isConfirmed) {
             try {
                 setRefreshing(true);
-                const token = localStorage.getItem(TOKEN_KEY);
+                const token = getAuthToken();
                 const response = await fetch(`${API_URL}/users/${user.id}`, {
                     method: "DELETE",
                     headers: { Authorization: `Bearer ${token}` },
@@ -174,7 +173,7 @@ export default function UsuariosPage() {
     const toggleAdmin = async (user: User) => {
         const newRole: UserRole = user.role === "USER" ? "ADMIN" : "USER";
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             const response = await fetch(`${API_URL}/users/${user.id}`, {
                 method: "PUT",
                 headers: {
