@@ -246,6 +246,8 @@ export class UserService {
             avatarUrl: true,
             bio: true,
             literaryInterests: true,
+            lastLoginAt: true,
+            lastActivityAt: true,
             createdAt: true,
             updatedAt: true,
         };
