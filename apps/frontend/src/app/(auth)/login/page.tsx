@@ -7,13 +7,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth, TOKEN_KEY, USER_KEY } from "@/hooks/useAuth";
 
 // ================================
 // CONFIGURAÇÕES
 // ================================
-const TOKEN_KEY = "guardiana_token";
-const USER_KEY = "guardiana_user";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
 
 // ================================
@@ -70,6 +68,7 @@ export default function LoginPage() {
     const [interests, setInterests] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [rememberMe, setRememberMe] = useState(false);
 
     // ================================
     // REDIRECIONAR USUÁRIO JÁ LOGADO
@@ -124,8 +123,9 @@ export default function LoginPage() {
                 throw new Error("Resposta de login inválida.");
             }
 
-            localStorage.setItem(TOKEN_KEY, data.token);
-            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            const storage = rememberMe ? localStorage : sessionStorage;
+            storage.setItem(TOKEN_KEY, data.token);
+            storage.setItem(USER_KEY, JSON.stringify(data.user));
             window.dispatchEvent(new Event("auth:updated"));
 
             router.replace("/");
@@ -209,8 +209,9 @@ export default function LoginPage() {
                 throw new Error(data.error || "Código inválido ou expirado.");
             }
 
-            localStorage.setItem(TOKEN_KEY, data.token);
-            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            const storage = rememberMe ? localStorage : sessionStorage;
+            storage.setItem(TOKEN_KEY, data.token);
+            storage.setItem(USER_KEY, JSON.stringify(data.user));
             window.dispatchEvent(new Event("auth:updated"));
 
             if (data.requiresRegistration) {
@@ -264,7 +265,8 @@ export default function LoginPage() {
                 throw new Error(data.error || "Erro ao completar cadastro.");
             }
 
-            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            const storage = rememberMe ? localStorage : sessionStorage;
+            storage.setItem(USER_KEY, JSON.stringify(data.user));
             window.dispatchEvent(new Event("auth:updated"));
 
             router.replace("/");
@@ -414,6 +416,34 @@ export default function LoginPage() {
                                     />
                                 </div>
 
+                                <div className="flex items-center">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative flex items-center justify-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={rememberMe}
+                                                onChange={(e) => setRememberMe(e.target.checked)}
+                                                className="peer appearance-none w-5 h-5 rounded-md border-2 border-gray-200 dark:border-white/10 checked:border-[#C95F52] checked:bg-[#C95F52] transition-all cursor-pointer"
+                                            />
+                                            <svg
+                                                className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            >
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                        <span className="text-sm font-medium text-[#526173] dark:text-gray-400 group-hover:text-[#18384A] dark:group-hover:text-white transition-colors">
+                                            Manter-se conectado
+                                        </span>
+                                    </label>
+                                </div>
+
                                 <button
                                     type="submit"
                                     disabled={loading}
@@ -470,6 +500,34 @@ export default function LoginPage() {
                                         placeholder="000000"
                                         className="mt-2 w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-center text-2xl tracking-[0.4em] text-[#18384A] outline-none transition placeholder:text-gray-300 focus:border-[#C95F52] focus:ring-4 focus:ring-[#C95F52]/10 dark:border-white/10 dark:bg-[#020617] dark:text-white"
                                     />
+                                </div>
+
+                                <div className="flex items-center">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative flex items-center justify-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={rememberMe}
+                                                onChange={(e) => setRememberMe(e.target.checked)}
+                                                className="peer appearance-none w-5 h-5 rounded-md border-2 border-gray-200 dark:border-white/10 checked:border-[#C95F52] checked:bg-[#C95F52] transition-all cursor-pointer"
+                                            />
+                                            <svg
+                                                className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            >
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                        <span className="text-sm font-medium text-[#526173] dark:text-gray-400 group-hover:text-[#18384A] dark:group-hover:text-white transition-colors">
+                                            Manter-se conectado
+                                        </span>
+                                    </label>
                                 </div>
 
                                 <button
@@ -547,6 +605,34 @@ export default function LoginPage() {
                                         placeholder="Poesia, contos, crônicas..."
                                         className="mt-2 w-full resize-none rounded-2xl border border-gray-200 bg-white px-4 py-4 text-sm text-[#18384A] outline-none transition placeholder:text-gray-400 focus:border-[#C95F52] focus:ring-4 focus:ring-[#C95F52]/10 dark:border-white/10 dark:bg-[#020617] dark:text-white"
                                     />
+                                </div>
+
+                                <div className="flex items-center">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative flex items-center justify-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={rememberMe}
+                                                onChange={(e) => setRememberMe(e.target.checked)}
+                                                className="peer appearance-none w-5 h-5 rounded-md border-2 border-gray-200 dark:border-white/10 checked:border-[#C95F52] checked:bg-[#C95F52] transition-all cursor-pointer"
+                                            />
+                                            <svg
+                                                className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            >
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                        <span className="text-sm font-medium text-[#526173] dark:text-gray-400 group-hover:text-[#18384A] dark:group-hover:text-white transition-colors">
+                                            Manter-se conectado
+                                        </span>
+                                    </label>
                                 </div>
 
                                 <button
