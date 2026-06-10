@@ -82,7 +82,23 @@ export class AuthService {
         // Limpa o código após o uso
         await prisma.user.update({
             where: { id: user.id },
-            data: { verificationCode: null, verificationExpires: null }
+            data: {
+                verificationCode: null,
+                verificationExpires: null,
+                lastLoginAt: new Date(),
+                lastActivityAt: new Date(),
+            }
+        });
+
+        // Cria log de auditoria
+        await prisma.auditLog.create({
+            data: {
+                actorUserId: user.id,
+                action: AuditAction.LOGIN,
+                entity: "User",
+                entityId: user.id,
+                description: `Usuário ${user.email} logou via código.`,
+            },
         });
 
         const token = this.generateToken(user);
@@ -155,6 +171,15 @@ export class AuthService {
 
         const token = this.generateToken(user);
 
+        // Atualiza campos de login
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                lastLoginAt: new Date(),
+                lastActivityAt: new Date(),
+            }
+        });
+
         // Cria log de auditoria
         await prisma.auditLog.create({
             data: {
@@ -195,6 +220,15 @@ export class AuthService {
         }
 
         const token = this.generateToken(user);
+
+        // Atualiza campos de login
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                lastLoginAt: new Date(),
+                lastActivityAt: new Date(),
+            }
+        });
 
         // Cria log de auditoria para o login do administrador
         await prisma.auditLog.create({

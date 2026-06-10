@@ -3,9 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth, getAuthToken } from "@/hooks/useAuth";
 import Swal from "sweetalert2";
-import Image from "next/image";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3333";
 
 type UserRole = "USER" | "ADMIN" | "SUPER_ADMIN";
 
@@ -16,11 +15,37 @@ type User = {
     role: UserRole;
     status: string;
     avatarUrl: string | null;
+    lastLoginAt: string | null;
+    lastActivityAt: string | null;
     createdAt: string;
 };
 
+// ================================
+// HELPER: FORMATAR TEMPO RELATIVO
+// ================================
+function formatTimeAgo(dateString: string | null) {
+    if (!dateString) return "Nunca";
+
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "Agora mesmo";
+    if (diffInSeconds < 3600) return `Há ${Math.floor(diffInSeconds / 60)} min`;
+    if (diffInSeconds < 86400) return `Há ${Math.floor(diffInSeconds / 3600)}h`;
+    return date.toLocaleDateString("pt-BR");
+}
+
+function isOnline(lastActivity: string | null) {
+    if (!lastActivity) return false;
+    const activityDate = new Date(lastActivity);
+    const now = new Date();
+    // Considera online se teve atividade nos últimos 3 minutos
+    return (now.getTime() - activityDate.getTime()) < 3 * 60 * 1000;
+}
+
 export default function UsuariosPage() {
-    const { user: currentUser } = useAuth();
+    const { user: currentUser, loading: authLoading } = useAuth();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -35,20 +60,38 @@ export default function UsuariosPage() {
     const [submitting, setSubmitting] = useState(false);
 
     const loadUsers = useCallback(async (isRefresh = false) => {
+        console.log("Iniciando carga de usuários...");
         try {
             if (isRefresh) setRefreshing(true);
             else setLoading(true);
 
             const token = getAuthToken();
+            if (!token) {
+                console.warn("Nenhum token encontrado ao carregar usuários.");
+                return;
+            }
+
             const response = await fetch(`${API_URL}/users`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            const data = await response.json();
-            if (data.success) {
-                setUsers(data.users);
+
+            console.log("Status da resposta:", response.status);
+
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
             }
-        } catch {
-            console.error("Erro ao carregar usuários");
+
+            const data = await response.json();
+            console.log("Dados recebidos da API:", data);
+
+            if (data.success && data.users) {
+                console.log("Atualizando estado 'users' com", data.users.length, "itens");
+                setUsers(data.users);
+            } else {
+                console.warn("API retornou sucesso mas sem lista de usuários:", data);
+            }
+        } catch (error) {
+            console.error("Erro ao carregar usuários:", error);
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -56,8 +99,17 @@ export default function UsuariosPage() {
     }, []);
 
     useEffect(() => {
-        void loadUsers();
-    }, [loadUsers]);
+        if (!authLoading) {
+            void loadUsers();
+
+            // Atualiza a lista a cada 60 segundos para manter o status online atualizado
+            const interval = setInterval(() => {
+                void loadUsers(true);
+            }, 60000);
+
+            return () => clearInterval(interval);
+        }
+    }, [loadUsers, authLoading]);
 
     const handleOpenModal = (user: User | null = null) => {
         if (user) {
@@ -168,6 +220,7 @@ export default function UsuariosPage() {
             } finally {
                 setRefreshing(false);
             }
+        }
     };
 
     const toggleAdmin = async (user: User) => {
@@ -217,6 +270,7 @@ export default function UsuariosPage() {
                             <th className="px-6 py-4">Usuário</th>
                             <th className="px-6 py-4">Email</th>
                             <th className="px-6 py-4">Função</th>
+                            <th className="px-6 py-4">Último Acesso</th>
                             <th className="px-6 py-4">Status</th>
                             <th className="px-6 py-4 text-right">Ações</th>
                         </tr>
@@ -224,7 +278,12 @@ export default function UsuariosPage() {
                     <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                         {loading ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-10 text-center text-gray-400">Carregando usuários...</td>
+                                <td colSpan={5} className="px-6 py-10 text-center text-gray-400 font-medium">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="w-6 h-6 border-2 border-[#C95F52] border-t-transparent rounded-full animate-spin" />
+                                        Carregando usuários...
+                                    </div>
+                                </td>
                             </tr>
                         ) : users.length === 0 ? (
                             <tr>
@@ -237,11 +296,10 @@ export default function UsuariosPage() {
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-[#18384A] text-white flex items-center justify-center text-xs font-bold uppercase relative overflow-hidden">
                                                 {u.avatarUrl ? (
-                                                    <Image
+                                                    <img
                                                         src={u.avatarUrl}
                                                         alt={u.name}
-                                                        fill
-                                                        className="object-cover"
+                                                        className="w-full h-full object-cover"
                                                     />
                                                 ) : (
                                                     u.name.charAt(0)
@@ -260,10 +318,29 @@ export default function UsuariosPage() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
-                                            <span className="w-2 h-2 rounded-full bg-green-500" />
-                                            {u.status || "Ativo"}
-                                        </span>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                                {formatTimeAgo(u.lastLoginAt)}
+                                            </span>
+                                            {u.lastActivityAt && (
+                                                <span className="text-[10px] text-gray-400">
+                                                    Ativo {formatTimeAgo(u.lastActivityAt)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        {isOnline(u.lastActivityAt) ? (
+                                            <span className="flex items-center gap-1.5 text-xs text-green-600 font-bold animate-pulse">
+                                                <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                                                Online
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                                                <span className="w-2 h-2 rounded-full bg-gray-300" />
+                                                {u.status || "Inativo"}
+                                            </span>
+                                        )}
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-2">
@@ -385,4 +462,4 @@ export default function UsuariosPage() {
             )}
         </div>
     );
-}}
+}

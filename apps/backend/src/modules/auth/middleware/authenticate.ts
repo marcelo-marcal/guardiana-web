@@ -116,6 +116,14 @@ export async function authenticate(
             status: user.status,
         };
 
+        // ================================
+        // ATUALIZAR ÚLTIMA ATIVIDADE (ASYNC)
+        // ================================
+        void prisma.user.update({
+            where: { id: user.id },
+            data: { lastActivityAt: new Date() }
+        }).catch(err => console.error("Erro ao atualizar atividade:", err));
+
         return next();
     } catch {
         return response.status(401).json({
