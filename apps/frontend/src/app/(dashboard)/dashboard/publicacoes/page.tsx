@@ -8,30 +8,7 @@ import {
     getConteudoConfig,
     setConteudoConfig,
 } from "../../../../services/publicacoes.services";
-
-const initialCategorias = [
-    { id: 1, categoria: "Categoria 1" },
-    { id: 2, categoria: "Categoria 2" },
-];
-
-const initialPublicacoes = [
-    {
-        id: 1,
-        categoria: "Categoria 1",
-        titulo: "Publicação 1",
-        descricao: "Descrição 1",
-        autor: "Autor 1",
-        data: "05/04/2026",
-    },
-    {
-        id: 2,
-        categoria: "Categoria 2",
-        titulo: "Publicação 2",
-        descricao: "Descrição 2",
-        autor: "Autor 2",
-        data: "05/04/2026",
-    },
-];
+import { publicacoes as initialPublicacoes, categorias as initialCategorias } from "../../../../data/publicacoes";
 
 // ================================
 // DASHBOARD HOME (AGORA EDITÁVEL)
@@ -48,11 +25,7 @@ export default function PublicacoesAdmin() {
     const [dataPublicacao, setDataPublicacao] = useState("");
     const [publicacao, setPublicacao] = useState<typeof initialPublicacoes>([]);
 
-    // ================================
-    // CARREGAR DADOS
-    // ================================
     useEffect(() => {
-        const data = getConteudoConfig();
         const dataCategoria = localStorage.getItem("categorias");
         const dataPublicacao = localStorage.getItem("publicacoes");
 
@@ -68,6 +41,7 @@ export default function PublicacoesAdmin() {
             setPublicacao(initialPublicacoes);
         }
 
+        const data = getConteudoConfig();
         setTitulo(data.titulo);
         setSubtitulo(data.subtitulo);
     }, []);
@@ -75,13 +49,14 @@ export default function PublicacoesAdmin() {
     useEffect(() => {
         if (categoria.length > 0) {
             localStorage.setItem("categorias", JSON.stringify(categoria));
+            window.dispatchEvent(new Event("publicacoesAtualizadas"));
         }
     }, [categoria]);
 
     useEffect(() => {
-        if (publicacao.length > 0) {
-            localStorage.setItem("publicacoes", JSON.stringify(publicacao));
-        }
+        // Removemos o if (publicacao.length > 0) para permitir deletar tudo
+        localStorage.setItem("publicacoes", JSON.stringify(publicacao));
+        window.dispatchEvent(new Event("publicacoesAtualizadas"));
     }, [publicacao]);
 
     // ================================
@@ -94,6 +69,7 @@ export default function PublicacoesAdmin() {
         });
         // AVISA O SITE
         window.dispatchEvent(new Event("conteudoAtualizado"));
+        window.dispatchEvent(new Event("publicacoesAtualizadas"));
 
         alert("Conteúdo salvo!");
     };

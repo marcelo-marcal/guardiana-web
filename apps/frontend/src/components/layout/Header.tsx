@@ -149,7 +149,7 @@ export default function Header() {
                             href="/fundadoras"
                             className={getLinkClass("/fundadoras")}
                         >
-                            Fundadoras
+                            Assessoramento
                         </Link>
 
                         <Link
