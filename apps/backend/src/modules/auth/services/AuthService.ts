@@ -1,5 +1,4 @@
-import { prisma } from "../../../shared/database/prisma.js";
-import { AuditAction, UserRole } from "@prisma/client"; // Import UserRole
+import { prisma, AuditAction, UserRole } from "../../../shared/database/prisma.js";
 import crypto from "node:crypto";
 import { EmailService } from "../../../shared/services/EmailService.js";
 import jwt from "jsonwebtoken";

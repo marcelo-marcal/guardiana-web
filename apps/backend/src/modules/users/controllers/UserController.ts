@@ -2,7 +2,7 @@
 // IMPORTS
 // ================================
 import type { Response } from "express";
-import { UserRole } from "@prisma/client";
+import { prisma, UserRole } from "../../../shared/database/prisma.js";
 import { createUserSchema } from "../dto/create-user.dto.js";
 import { updateProfileSchema } from "../dto/update-profile.dto.js";
 import { UserService } from "../services/UserService.js";
