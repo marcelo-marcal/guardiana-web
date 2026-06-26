@@ -56,8 +56,8 @@ export default function Livros() {
             ================================ */}
             <div
                 className="
-                    absolute inset-x-0 top-24
-                    h-[420px] md:h-[460px]
+                    absolute inset-x-0 top-16 md:top-20
+                    h-[480px] md:h-[500px]
                     bg-[#C4AA35] dark:bg-[#8F7A22]
                     [clip-path:polygon(0_18%,100%_0,100%_100%,0_82%)]
                 "
@@ -90,7 +90,7 @@ export default function Livros() {
             {/* ================================
                 CONTEÚDO PRINCIPAL
             ================================ */}
-            <div className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-28">
+            <div className="relative z-10 max-w-7xl mx-auto px-6 pt-40 md:pt-44 pb-28">
                 {/* ================================
                     CABEÇALHO
                 ================================ */}
