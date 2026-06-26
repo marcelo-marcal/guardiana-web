@@ -2,8 +2,7 @@
 // IMPORTS
 // ================================
 import bcrypt from "bcryptjs";
-import { UserRole, UserStatus, type Prisma } from "@prisma/client";
-import { prisma } from "../../../shared/database/prisma.js";
+import { prisma, UserRole, UserStatus, type Prisma } from "../../../shared/database/prisma.js";
 import type { CreateUserDTO } from "../dto/create-user.dto.js";
 import type { UpdateProfileDTO } from "../dto/update-profile.dto.js";
 

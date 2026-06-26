@@ -1,7 +1,7 @@
 // ================================
 // IMPORTS
 // ================================
-import { PoemStatus } from "@prisma/client";
+import { PoemStatus } from "../../../shared/database/prisma.js";
 import { z } from "zod";
 
 // ================================

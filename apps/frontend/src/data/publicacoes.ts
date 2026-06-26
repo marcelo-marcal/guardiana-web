@@ -13,6 +13,17 @@ export type Publicacao = {
 };
 
 // ================================
+// Lista de categorias (mock)
+// ================================
+export const categorias = [
+    { id: 1, categoria: "Todas" },
+    { id: 2, categoria: "Sociedade" },
+    { id: 3, categoria: "Cultura" },
+    { id: 4, categoria: "Saúde" },
+    { id: 5, categoria: "Relacionamentos" },
+];
+
+// ================================
 // Lista de publicações (mock)
 // Isso simula um banco de dados por enquanto
 // ================================

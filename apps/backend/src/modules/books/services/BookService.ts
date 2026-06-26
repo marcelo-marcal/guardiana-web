@@ -1,8 +1,7 @@
 // ================================
 // IMPORTS
 // ================================
-import { AuditAction, BookFormat, type Prisma } from "@prisma/client";
-import { prisma } from "../../../shared/database/prisma.js";
+import { prisma, AuditAction, BookFormat, type Prisma } from "../../../shared/database/prisma.js";
 import type { CreateBookDTO } from "../dto/create-book.dto.js";
 import type { UpdateBookDTO } from "../dto/update-book.dto.js";
 

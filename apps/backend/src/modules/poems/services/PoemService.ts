@@ -1,8 +1,7 @@
 // ================================
 // IMPORTS
 // ================================
-import { AuditAction, PoemStatus, UserRole, type Prisma } from "@prisma/client";
-import { prisma } from "../../../shared/database/prisma.js";
+import { prisma, AuditAction, PoemStatus, UserRole, type Prisma } from "../../../shared/database/prisma.js";
 import type { CreatePoemDTO } from "../dto/create-poem.dto.js";
 import type { ReviewPoemDTO } from "../dto/review-poem.dto.js";
 import type { UpdatePoemDTO } from "../dto/update-poem.dto.js";
