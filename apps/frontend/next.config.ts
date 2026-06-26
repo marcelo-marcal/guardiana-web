@@ -9,14 +9,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
     output: 'export',
     images: {
-        remotePatterns: [
-            {
-                protocol: "http",
-                hostname: "localhost",
-                port: "3333",
-                pathname: "/uploads/**",
-            },
-        ],
+        unoptimized: true,
     },
 };
 
