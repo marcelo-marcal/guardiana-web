@@ -20,70 +20,7 @@ import { useEffect, useState } from "react";
 // ================================
 import { PublicacaoConfig } from "../../data/publicacaoConfig";
 import { getConteudoConfig } from "../../services/publicacoes.services";
-
-// ================================
-// MOCK INICIAL DE CATEGORIAS
-// Futuramente será substituído pelo backend
-// ================================
-const initialCategorias = [
-    { id: 1, categoria: "Todas" },
-    { id: 2, categoria: "Sociedade" },
-    { id: 3, categoria: "Cultura" },
-    { id: 4, categoria: "Saúde" },
-    { id: 5, categoria: "Relacionamentos" },
-];
-
-// ================================
-// MOCK INICIAL DE PUBLICAÇÕES
-// Futuramente será substituído pelo backend
-// ================================
-const initialPublicacoes = [
-    {
-        id: 1,
-        categoria: "Sociedade",
-        titulo: "O poder das palavras na transformação social",
-        descricao:
-            "Como a escrita pode impactar comunidades e gerar mudanças reais no mundo.",
-        autor: "Ana Silva",
-        data: "2024-03-01",
-    },
-    {
-        id: 2,
-        categoria: "Cultura",
-        titulo: "Literatura feminina e protagonismo",
-        descricao:
-            "A importância da voz feminina na construção de narrativas contemporâneas.",
-        autor: "Mariana Costa",
-        data: "2024-02-20",
-    },
-    {
-        id: 3,
-        categoria: "Saúde",
-        titulo: "Escrever para curar",
-        descricao:
-            "A escrita como ferramenta terapêutica no desenvolvimento pessoal.",
-        autor: "Juliana Rocha",
-        data: "2024-02-10",
-    },
-    {
-        id: 4,
-        categoria: "Relacionamentos",
-        titulo: "Narrativas que conectam pessoas",
-        descricao:
-            "Histórias reais que criam empatia e fortalecem relações humanas.",
-        autor: "Fernanda Alves",
-        data: "2024-01-28",
-    },
-    {
-        id: 5,
-        categoria: "Sociedade",
-        titulo: "Narrativas que conectam pessoas",
-        descricao:
-            "Histórias reais que criam empatia e fortalecem relações humanas.",
-        autor: "Alves Fernandes",
-        data: "2024-01-28",
-    },
-];
+import { publicacoes as initialPublicacoes, categorias as initialCategorias } from "../../data/publicacoes";
 
 // ================================
 // Seção de Publicações
@@ -151,13 +88,18 @@ export default function Publicacoes() {
     // Caso ainda não exista, usa o mock inicial
     // ================================
     useEffect(() => {
-        const data = localStorage.getItem("categorias");
+        const carregarCategorias = () => {
+            const data = localStorage.getItem("categorias");
+            if (data) {
+                setCategorias(JSON.parse(data));
+            } else {
+                setCategorias(initialCategorias);
+            }
+        };
 
-        if (data) {
-            setCategorias(JSON.parse(data));
-        } else {
-            setCategorias(initialCategorias);
-        }
+        carregarCategorias();
+        window.addEventListener("publicacoesAtualizadas", carregarCategorias);
+        return () => window.removeEventListener("publicacoesAtualizadas", carregarCategorias);
     }, []);
 
     // ================================
@@ -165,13 +107,18 @@ export default function Publicacoes() {
     // Caso ainda não exista, usa o mock inicial
     // ================================
     useEffect(() => {
-        const data = localStorage.getItem("publicacoes");
+        const carregarPublicacoes = () => {
+            const data = localStorage.getItem("publicacoes");
+            if (data) {
+                setPublicacao(JSON.parse(data));
+            } else {
+                setPublicacao(initialPublicacoes);
+            }
+        };
 
-        if (data) {
-            setPublicacao(JSON.parse(data));
-        } else {
-            setPublicacao(initialPublicacoes);
-        }
+        carregarPublicacoes();
+        window.addEventListener("publicacoesAtualizadas", carregarPublicacoes);
+        return () => window.removeEventListener("publicacoesAtualizadas", carregarPublicacoes);
     }, []);
 
     // ================================
