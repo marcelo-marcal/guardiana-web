@@ -50,7 +50,7 @@ export default async function Fundadoras() {
                         Guardiana Editora
                     </span>
                     <h1 className="mt-4 text-4xl md:text-6xl font-extrabold text-[#18384A] dark:text-white leading-tight">
-                        Fundadoras
+                        Assessoramento
                     </h1>
                 </div>
             </section>
