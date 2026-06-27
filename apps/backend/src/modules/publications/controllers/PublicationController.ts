@@ -101,8 +101,11 @@ export class PublicationController {
                 });
             }
 
+            const categoryData =
+                typeof order === "number" ? { name, order } : { name };
+
             const category = await this.service.createCategory(
-                { name, order },
+                categoryData,
                 request.user.id,
             );
 
@@ -145,9 +148,12 @@ export class PublicationController {
                 });
             }
 
+            const categoryData =
+                typeof order === "number" ? { name, order } : { name };
+
             const category = await this.service.updateCategory(
                 id,
-                { name, order },
+                categoryData,
                 request.user.id,
             );
 
@@ -243,13 +249,7 @@ export class PublicationController {
             }
 
             const publication = await this.service.createPublication(
-                {
-                    categoryId,
-                    title,
-                    description,
-                    author,
-                    date,
-                },
+                { categoryId, title, description, author, date },
                 request.user.id,
             );
 
@@ -299,13 +299,7 @@ export class PublicationController {
 
             const publication = await this.service.updatePublication(
                 id,
-                {
-                    categoryId,
-                    title,
-                    description,
-                    author,
-                    date,
-                },
+                { categoryId, title, description, author, date },
                 request.user.id,
             );
 
