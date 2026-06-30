@@ -309,9 +309,10 @@ git push origin develop
 
 `npm install`
 
+`npm run dev:backend`
+
 `npm run dev:frontend`
 
-`npm run dev:backend`
 
 Busca erros nos arquivos do Back-End:
 

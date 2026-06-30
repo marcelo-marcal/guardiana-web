@@ -15,6 +15,7 @@ export class FounderController {
             const founders = await this.founderService.listAll();
             return response.json({ success: true, founders });
         } catch (error) {
+            console.error("Erro no FounderController (index):", error);
             return response.status(500).json({
                 success: false,
                 message: "Erro ao listar fundadoras.",
