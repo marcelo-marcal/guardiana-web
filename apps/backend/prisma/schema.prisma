@@ -1,280 +1,259 @@
-// ================================
-// GENERATOR
-// ================================
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
-// ================================
-// DATABASE
-// ================================
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-// ================================
-// ENUMS
-// ================================
-enum UserRole {
-    USER
-    ADMIN
-    SUPER_ADMIN
-}
-
-enum UserStatus {
-    ACTIVE
-    INACTIVE
-    BLOCKED
-}
-
-enum PoemStatus {
-    PENDING
-    APPROVED
-    REJECTED
-    HIGHLIGHTED
-}
-
-enum BookFormat {
-    PHYSICAL
-    EBOOK
-    BOTH
-}
-
-enum OrderStatus {
-    PENDING
-    PAID
-    CANCELED
-    REFUNDED
-}
-
-enum AuditAction {
-    CREATE
-    UPDATE
-    DELETE
-    APPROVE
-    REJECT
-    HIGHLIGHT
-    LOGIN
-    LOGOUT
-}
-
-// ================================
-// USERS
-// ================================
 model User {
-    id           String     @id @default(uuid())
-    name         String
-    email        String     @unique
-    passwordHash String?    // Opcional agora que usamos código por e-mail
+  id                  String     @id @default(uuid())
+  name                String
+  email               String     @unique
+  passwordHash        String?
+  role                UserRole   @default(USER)
+  status              UserStatus @default(ACTIVE)
+  avatarUrl           String?
+  bio                 String?
+  literaryInterests   String?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  verificationCode    String?
+  verificationExpires DateTime?
+  lastActivityAt      DateTime?
+  lastLoginAt         DateTime?
+  auditLogs           AuditLog[] @relation("AuditActor")
+  bookViews           BookView[]
+  orders              Order[]
+  reviewedPoems       Poem[]     @relation("PoemReviewedBy")
+  poems               Poem[]
 
-    verificationCode    String?
-    verificationExpires DateTime?
-
-    role         UserRole   @default(USER)
-    status       UserStatus @default(ACTIVE)
-
-    avatarUrl    String?
-    bio          String?
-    literaryInterests String?
-
-    lastLoginAt  DateTime?
-    lastActivityAt DateTime?
-
-    createdAt    DateTime   @default(now())
-    updatedAt    DateTime   @updatedAt
-
-    poems        Poem[]
-    reviewedPoems Poem[] @relation("PoemReviewedBy")
-    bookViews    BookView[]
-    orders       Order[]
-    auditLogs    AuditLog[] @relation("AuditActor")
-
-    @@index([email])
-    @@index([role])
-    @@index([status])
+  @@index([email])
+  @@index([role])
+  @@index([status])
 }
 
-// ================================
-// BOOKS
-// ================================
 model Book {
-    id            String     @id @default(uuid())
-    title         String
-    author        String
-    description   String
-    coverUrl      String?
+  id            String      @id @default(uuid())
+  title         String
+  author        String
+  description   String
+  coverUrl      String?
+  year          String?
+  isbn          String?
+  pages         String?
+  price         Decimal?    @db.Decimal(10, 2)
+  dimensions    String?
+  language      String?     @default("Português")
+  format        BookFormat  @default(PHYSICAL)
+  ebookFileUrl  String?
+  physicalStock Int         @default(0)
+  isActive      Boolean     @default(true)
+  isHomeFeature Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  views         BookView[]
+  orderItems    OrderItem[]
 
-    year          String?
-    isbn          String?
-    pages         String?
-    price         Decimal?   @db.Decimal(10, 2)
-    dimensions    String?
-    language      String?    @default("Português")
-
-    format        BookFormat @default(PHYSICAL)
-    ebookFileUrl  String?
-    physicalStock Int        @default(0)
-
-    isActive      Boolean    @default(true)
-    isHomeFeature Boolean    @default(false)
-
-    createdAt     DateTime   @default(now())
-    updatedAt     DateTime   @updatedAt
-
-    views         BookView[]
-    orderItems    OrderItem[]
-
-    @@index([isActive])
-    @@index([isHomeFeature])
-    @@index([format])
+  @@index([isActive])
+  @@index([isHomeFeature])
+  @@index([format])
 }
 
-// ================================
-// BOOK VIEWS
-// ================================
 model BookView {
-    id        String   @id @default(uuid())
-    userId    String?
-    bookId    String
-    viewedAt  DateTime @default(now())
+  id       String   @id @default(uuid())
+  userId   String?
+  bookId   String
+  viewedAt DateTime @default(now())
+  book     Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user     User?    @relation(fields: [userId], references: [id])
 
-    user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-    book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
-
-    @@index([userId])
-    @@index([bookId])
-    @@index([viewedAt])
+  @@index([userId])
+  @@index([bookId])
+  @@index([viewedAt])
 }
 
-// ================================
-// POEMS
-// ================================
 model Poem {
-    id          String     @id @default(uuid())
-    userId      String
-    title       String
-    content     String
-    authorName  String?
-    authorPhotoUrl String?
+  id              String     @id @default(uuid())
+  userId          String
+  title           String
+  content         String
+  authorName      String?
+  authorPhotoUrl  String?
+  status          PoemStatus @default(PENDING)
+  rejectionReason String?
+  isPublic        Boolean    @default(false)
+  isHighlighted   Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  reviewedAt      DateTime?
+  reviewedById    String?
+  reviewedBy      User?      @relation("PoemReviewedBy", fields: [reviewedById], references: [id])
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    status      PoemStatus @default(PENDING)
-    rejectionReason String?
-
-    isPublic    Boolean    @default(false)
-    isHighlighted Boolean  @default(false)
-
-    createdAt   DateTime   @default(now())
-    updatedAt   DateTime   @updatedAt
-    reviewedAt  DateTime?
-
-    reviewedById String?
-    reviewedBy   User?     @relation("PoemReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
-
-    user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@index([userId])
-    @@index([status])
-    @@index([isPublic])
-    @@index([isHighlighted])
+  @@index([userId])
+  @@index([status])
+  @@index([isPublic])
+  @@index([isHighlighted])
 }
 
-// ================================
-// ORDERS
-// ================================
 model Order {
-    id        String      @id @default(uuid())
-    userId    String
-    status    OrderStatus @default(PENDING)
+  id        String      @id @default(uuid())
+  userId    String
+  status    OrderStatus @default(PENDING)
+  total     Decimal     @default(0) @db.Decimal(10, 2)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     OrderItem[]
 
-    total     Decimal     @default(0) @db.Decimal(10, 2)
-
-    createdAt DateTime    @default(now())
-    updatedAt DateTime    @updatedAt
-
-    user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    items     OrderItem[]
-
-    @@index([userId])
-    @@index([status])
+  @@index([userId])
+  @@index([status])
 }
 
-// ================================
-// ORDER ITEMS
-// ================================
 model OrderItem {
-    id        String  @id @default(uuid())
-    orderId   String
-    bookId    String
-    quantity  Int     @default(1)
-    unitPrice Decimal @db.Decimal(10, 2)
+  id        String  @id @default(uuid())
+  orderId   String
+  bookId    String
+  quantity  Int     @default(1)
+  unitPrice Decimal @db.Decimal(10, 2)
+  book      Book    @relation(fields: [bookId], references: [id])
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-    order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-    book      Book    @relation(fields: [bookId], references: [id], onDelete: Restrict)
-
-    @@index([orderId])
-    @@index([bookId])
+  @@index([orderId])
+  @@index([bookId])
 }
 
-// ================================
-// AUDIT LOGS
-// ================================
 model AuditLog {
-    id          String      @id @default(uuid())
-    actorUserId String?
-    action      AuditAction
-    entity      String
-    entityId    String?
-    fieldName   String?
-    oldValue    String?
-    newValue    String?
-    description String?
+  id          String      @id @default(uuid())
+  actorUserId String?
+  action      AuditAction
+  entity      String
+  entityId    String?
+  fieldName   String?
+  oldValue    String?
+  newValue    String?
+  description String?
+  createdAt   DateTime    @default(now())
+  actor       User?       @relation("AuditActor", fields: [actorUserId], references: [id])
 
-    createdAt   DateTime    @default(now())
-
-    actor        User?       @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
-
-    @@index([actorUserId])
-    @@index([entity])
-    @@index([entityId])
-    @@index([action])
-    @@index([createdAt])
+  @@index([actorUserId])
+  @@index([entity])
+  @@index([entityId])
+  @@index([action])
+  @@index([createdAt])
 }
 
-// ================================
-// SYSTEM SETTINGS
-// ================================
 model SystemSetting {
-    key   String @id
-    value String
+  key   String @id
+  value String
 }
 
-// ================================
-// FOUNDERS
-// ================================
 model Founder {
+  id          String   @id @default(uuid())
+  name        String
+  role        String
+  description String
+  imageUrl    String?
+  position    String?  @default("object-[center_20%]")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CouncilMember {
+  id        String   @id @default(uuid())
+  name      String
+  country   String
+  imageUrl  String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Publication {
+  id                  String              @id
+  categoryId          String
+  title               String
+  description         String
+  author              String
+  date                DateTime
+  isActive            Boolean             @default(true)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime
+  PublicationCategory PublicationCategory @relation(fields: [categoryId], references: [id])
+
+  @@index([categoryId])
+  @@index([date])
+  @@index([isActive])
+}
+
+model PublicationCategory {
+  id          String        @id
+  name        String        @unique
+  order       Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  Publication Publication[]
+
+  @@index([isActive])
+  @@index([order])
+}
+
+model Advisory {
     id          String   @id @default(uuid())
-    name        String
-    role        String
+    title       String
     description String
-    imageUrl    String?
-    position    String?  @default("object-[center_20%]")
+    items       String[]
+    isActive    Boolean  @default(true)
     order       Int      @default(0)
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
 }
 
-// ================================
-// COUNCIL MEMBERS
-// ================================
-model CouncilMember {
-    id        String   @id @default(uuid())
-    name      String
-    country   String
-    imageUrl  String?
-    order     Int      @default(0)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum PoemStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  HIGHLIGHTED
+}
+
+enum BookFormat {
+  PHYSICAL
+  EBOOK
+  BOTH
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELED
+  REFUNDED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  APPROVE
+  REJECT
+  HIGHLIGHT
+  LOGIN
+  LOGOUT
 }
 
 // ================================
