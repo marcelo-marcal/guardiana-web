@@ -165,21 +165,15 @@ export class PublicationService {
     }
 
     async createPublication(data: SavePublicationData, actorUserId: string) {
-        const createData: Prisma.PublicationCreateInput = {
-            title: data.title,
-            description: data.description,
-            author: data.author,
-            date: new Date(data.date),
-            isActive: true,
-            category: {
-                connect: {
-                    id: data.categoryId,
-                },
-            },
-        };
-
         const publication = await prisma.publication.create({
-            data: createData,
+            data: {
+                title: data.title,
+                description: data.description,
+                author: data.author,
+                date: new Date(data.date),
+                isActive: true,
+                categoryId: data.categoryId,
+            },
             include: {
                 category: true,
             },
@@ -208,11 +202,7 @@ export class PublicationService {
                 description: data.description,
                 author: data.author,
                 date: new Date(data.date),
-                category: {
-                    connect: {
-                        id: data.categoryId,
-                    },
-                },
+                categoryId: data.categoryId,
             },
             include: {
                 category: true,
