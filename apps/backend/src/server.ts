@@ -17,6 +17,11 @@ import { contactRoutes } from "./modules/contact/routes/contact.routes.js";
 import { founderRoutes } from "./modules/founders/routes/founders.routes.js";
 import { councilRoutes } from "./modules/council/routes/council.routes.js";
 import { publicationRoutes } from "./modules/publications/routes/publications.routes.js";
+import { advisoryRoutes } from "./modules/advisory/routes/advisory.routes.js";
+
+// ================================
+// CONFIGURAÇÕES DE AMBIENTE
+// ================================
 
 // ================================
 // APP EXPRESS
@@ -80,6 +85,7 @@ app.use("/contact", contactRoutes);
 app.use("/founders", founderRoutes);
 app.use("/council", councilRoutes);
 app.use("/publications", publicationRoutes);
+app.use("/advisories", advisoryRoutes);
 
 // ================================
 // INICIAR SERVIDOR
