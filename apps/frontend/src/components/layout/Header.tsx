@@ -146,10 +146,10 @@ export default function Header() {
                         </Link>
 
                         <Link
-                            href="/fundadoras"
-                            className={getLinkClass("/fundadoras")}
+                            href="/assessorias"
+                            className={getLinkClass("/assessorias")}
                         >
-                            Assessoramento
+                            Assessorias
                         </Link>
 
                         <Link
@@ -315,13 +315,13 @@ export default function Header() {
                                     Poemas
                                 </Link>
                                 <Link
-                                    href="/fundadoras"
+                                    href="/assessorias"
                                     onClick={() => setMenuOpen(false)}
                                     className={`w-full py-3 text-center transition border-b border-gray-100 dark:border-white/5 last:border-0 ${
-                                        isActive("/fundadoras") ? "text-[#C95F52] font-bold" : "text-gray-800 dark:text-white"
+                                        isActive("/assessorias") ? "text-[#C95F52] font-bold" : "text-gray-800 dark:text-white"
                                     }`}
                                 >
-                                    Fundadoras
+                                    Assessorias
                                 </Link>
                                 <Link
                                     href="/contato"
@@ -429,13 +429,13 @@ export default function Header() {
                                         Poemas
                                     </Link>
                                     <Link
-                                        href="/fundadoras"
+                                        href="/assessorias"
                                         onClick={() => setMenuOpen(false)}
                                         className={`flex py-3 px-4 rounded-lg transition ${
-                                            isActive("/fundadoras") ? "bg-[#C95F52]/10 text-[#C95F52] font-bold" : "text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
+                                            isActive("/assessorias") ? "bg-[#C95F52]/10 text-[#C95F52] font-bold" : "text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-white/10"
                                         }`}
                                     >
-                                        Fundadoras
+                                        Assessorias
                                     </Link>
                                     <Link
                                         href="/contato"
