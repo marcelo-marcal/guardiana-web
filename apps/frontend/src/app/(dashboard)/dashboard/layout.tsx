@@ -101,16 +101,16 @@ export default function DashboardLayout({
                                     <span>👥</span> Usuários
                                 </Link>
                                 <Link
-                                    href="/dashboard/fundadoras"
-                                    className={getLinkClass("/dashboard/fundadoras")}
-                                >
-                                    <span>🏛️</span> Fundadoras
-                                </Link>
-                                <Link
                                     href="/dashboard/conselho"
                                     className={getLinkClass("/dashboard/conselho")}
                                 >
                                     <span>⚖️</span> Conselho
+                                </Link>
+                                <Link
+                                    href="/dashboard/assessorias"
+                                    className={getLinkClass("/dashboard/assessorias")}
+                                >
+                                    <span>🤝</span> Assessorias
                                 </Link>
                             </>
                         )}
@@ -219,18 +219,18 @@ export default function DashboardLayout({
                                             Usuários
                                         </Link>
                                         <Link
-                                            href="/dashboard/fundadoras"
-                                            onClick={() => setOpen(false)}
-                                            className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
-                                        >
-                                            Fundadoras
-                                        </Link>
-                                        <Link
                                             href="/dashboard/conselho"
                                             onClick={() => setOpen(false)}
                                             className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
                                         >
                                             Conselho
+                                        </Link>
+                                        <Link
+                                            href="/dashboard/assessorias"
+                                            onClick={() => setOpen(false)}
+                                            className="block py-3 px-4 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-[#D4AF37] transition"
+                                        >
+                                            Assessorias
                                         </Link>
                                     </>
                                 )}

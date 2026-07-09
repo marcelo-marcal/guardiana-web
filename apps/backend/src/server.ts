@@ -15,6 +15,7 @@ import { uploadRoutes } from "./modules/uploads/routes/uploads.routes.js";
 import { contactRoutes } from "./modules/contact/routes/contact.routes.js";
 import { founderRoutes } from "./modules/founders/routes/founders.routes.js";
 import { councilRoutes } from "./modules/council/routes/council.routes.js";
+import { advisoryRoutes } from "./modules/advisory/routes/advisory.routes.js";
 
 // ================================
 // CONFIGURAÇÕES DE AMBIENTE
@@ -84,6 +85,7 @@ app.use("/uploads", uploadRoutes);
 app.use("/contact", contactRoutes);
 app.use("/founders", founderRoutes);
 app.use("/council", councilRoutes);
+app.use("/advisories", advisoryRoutes);
 
 // ================================
 // INICIAR SERVIDOR
