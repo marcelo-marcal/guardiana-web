@@ -3,39 +3,51 @@
 // ================================
 // IMPORTS
 // ================================
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 // ================================
-// DADOS DA EQUIPE
+// CONFIGURAÇÃO
 // ================================
-const equipe = [
-    {
-        id: 1,
-        nome: "Jenny González",
-        cargo: "Fundadora & Diretora Editorial",
-        imagem: "/jenny-gonzalez02.png",
-        position: "object-[center_18%]",
-    },
-    {
-        id: 2,
-        nome: "Jênifer De Brum",
-        cargo: "Fundadora",
-        imagem: "/jenifer-brum.png",
-        position: "object-[center_20%]",
-    },
-    {
-        id: 3,
-        nome: "Sandra Salcedo",
-        cargo: "Curadora - Produtora Editorial",
-        imagem: "/sandra-salcedo.png",
-        position: "object-[center_22%]",
-    },
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+
+// ================================
+// TIPAGENS
+// ================================
+type Founder = {
+    id: string;
+    name: string;
+    role: string;
+    imageUrl: string | null;
+    position: string;
+};
 
 // ================================
 // COMPONENTE AUTORES / FUNDADORAS
 // ================================
 export default function Autores() {
+    const [founders, setFounders] = useState<Founder[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function loadFounders() {
+            try {
+                const response = await fetch(`${API_URL}/founders`);
+                const data = await response.json();
+                if (data.success) {
+                    setFounders(data.founders);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar fundadoras:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        void loadFounders();
+    }, []);
+
+    if (!loading && founders.length === 0) return null;
+
     return (
         <section
             id="autores"
@@ -71,34 +83,44 @@ export default function Autores() {
                         </div>
                     </div>
 
-                    <div className="grid sm:grid-cols-3 gap-6">
-                        {equipe.map((pessoa) => (
-                            <div
-                                key={pessoa.id}
-                                className="group bg-white rounded-xl overflow-hidden shadow-xl text-center transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
-                            >
-                                <div className="relative w-full h-[260px] sm:h-44 bg-white overflow-hidden">
-                                    <Image
-                                        src={pessoa.imagem}
-                                        alt={pessoa.nome}
-                                        fill
-                                        sizes="(max-width: 640px) 100vw, 33vw"
-                                        className={`object-cover ${pessoa.position} group-hover:scale-105 transition duration-500`}
-                                    />
-                                </div>
+                    {loading ? (
+                        <div className="flex justify-center py-10">
+                            <div className="w-8 h-8 border-4 border-[#D4AF37]/20 border-t-[#D4AF37] rounded-full animate-spin" />
+                        </div>
+                    ) : (
+                        <div className="grid sm:grid-cols-3 gap-6">
+                            {founders.map((pessoa) => (
+                                <div
+                                    key={pessoa.id}
+                                    className="group bg-white rounded-xl overflow-hidden shadow-xl text-center transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
+                                >
+                                    <div className="relative w-full h-[260px] sm:h-44 bg-white overflow-hidden">
+                                        {pessoa.imageUrl ? (
+                                            <Image
+                                                src={pessoa.imageUrl}
+                                                alt={pessoa.name}
+                                                fill
+                                                sizes="(max-width: 640px) 100vw, 33vw"
+                                                className={`object-cover ${pessoa.position} group-hover:scale-105 transition duration-500`}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">Sem foto</div>
+                                        )}
+                                    </div>
 
-                                <div className="px-4 py-3 sm:px-5 sm:py-5">
-                                    <h3 className="text-base sm:text-lg font-extrabold text-[#18384A] group-hover:text-[#C95F52] transition">
-                                        {pessoa.nome}
-                                    </h3>
+                                    <div className="px-4 py-3 sm:px-5 sm:py-5">
+                                        <h3 className="text-base sm:text-lg font-extrabold text-[#18384A] group-hover:text-[#C95F52] transition">
+                                            {pessoa.name}
+                                        </h3>
 
-                                    <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-[#344454]">
-                                        {pessoa.cargo}
-                                    </p>
+                                        <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-[#344454]">
+                                            {pessoa.role}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
 
                     <div className="text-center lg:text-left">
                         <p className="text-white text-base md:text-xl leading-relaxed">

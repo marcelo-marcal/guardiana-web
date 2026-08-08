@@ -1,378 +1,582 @@
 "use client";
 
-// ================================
-// IMPORTS
-// ================================
 import { useEffect, useState } from "react";
 import {
+    atualizarCategoriaPublicacao,
+    atualizarPublicacao,
+    criarCategoriaPublicacao,
+    criarPublicacao,
+    getCategoriasPublicacoes,
     getConteudoConfig,
+    getPublicacoes,
+    removerCategoriaPublicacao,
+    removerPublicacao,
     setConteudoConfig,
+    type CategoriaPublicacao,
+    type Publicacao,
 } from "../../../../services/publicacoes.services";
 
-const initialCategorias = [
-    { id: 1, categoria: "Categoria 1" },
-    { id: 2, categoria: "Categoria 2" },
-];
+const publicacaoVazia = {
+    categoryId: "",
+    title: "",
+    description: "",
+    author: "",
+    date: "",
+};
 
-const initialPublicacoes = [
-    {
-        id: 1,
-        categoria: "Categoria 1",
-        titulo: "Publicação 1",
-        descricao: "Descrição 1",
-        autor: "Autor 1",
-        data: "05/04/2026",
-    },
-    {
-        id: 2,
-        categoria: "Categoria 2",
-        titulo: "Publicação 2",
-        descricao: "Descrição 2",
-        autor: "Autor 2",
-        data: "05/04/2026",
-    },
-];
-
-// ================================
-// DASHBOARD HOME (AGORA EDITÁVEL)
-// ================================
 export default function PublicacoesAdmin() {
     const [titulo, setTitulo] = useState("");
     const [subtitulo, setSubtitulo] = useState("");
-    const [categoria, setCategoria] = useState<typeof initialCategorias>([]);
-    const [nmcategoria, setNmCategoria] = useState("");
-    const [categoriaSelecionada, setCategoriaSelecionada] = useState("");
-    const [tituloPublicacao, setTituloPublicacao] = useState("");
-    const [descricaoPublicacao, setDescricaoPublicacao] = useState("");
-    const [autorPublicacao, setAutorPublicacao] = useState("");
-    const [dataPublicacao, setDataPublicacao] = useState("");
-    const [publicacao, setPublicacao] = useState<typeof initialPublicacoes>([]);
 
-    // ================================
-    // CARREGAR DADOS
-    // ================================
+    const [categorias, setCategorias] = useState<CategoriaPublicacao[]>([]);
+    const [publicacoes, setPublicacoes] = useState<Publicacao[]>([]);
+
+    const [nomeCategoria, setNomeCategoria] = useState("");
+    const [categoriaEditandoId, setCategoriaEditandoId] = useState<
+        string | null
+    >(null);
+
+    const [formPublicacao, setFormPublicacao] = useState(publicacaoVazia);
+    const [publicacaoEditandoId, setPublicacaoEditandoId] = useState<
+        string | null
+    >(null);
+
+    const [loading, setLoading] = useState(true);
+    const [salvando, setSalvando] = useState(false);
+    const [erro, setErro] = useState("");
+
+    const estaEditandoCategoria = categoriaEditandoId !== null;
+    const estaEditandoPublicacao = publicacaoEditandoId !== null;
+
+    const carregarDados = async () => {
+        try {
+            setLoading(true);
+            setErro("");
+
+            const [conteudo, categoriasData, publicacoesData] =
+                await Promise.all([
+                    getConteudoConfig(),
+                    getCategoriasPublicacoes(),
+                    getPublicacoes(),
+                ]);
+
+            setTitulo(conteudo.titulo);
+            setSubtitulo(conteudo.subtitulo);
+            setCategorias(categoriasData);
+            setPublicacoes(publicacoesData);
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Erro ao carregar publicações.";
+
+            setErro(message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const data = getConteudoConfig();
-        const dataCategoria = localStorage.getItem("categorias");
-        const dataPublicacao = localStorage.getItem("publicacoes");
-
-        if (dataCategoria) {
-            setCategoria(JSON.parse(dataCategoria));
-        } else {
-            setCategoria(initialCategorias);
-        }
-
-        if (dataPublicacao) {
-            setPublicacao(JSON.parse(dataPublicacao));
-        } else {
-            setPublicacao(initialPublicacoes);
-        }
-
-        setTitulo(data.titulo);
-        setSubtitulo(data.subtitulo);
+        void carregarDados();
     }, []);
 
-    useEffect(() => {
-        if (categoria.length > 0) {
-            localStorage.setItem("categorias", JSON.stringify(categoria));
-        }
-    }, [categoria]);
+    const salvarCabecalho = async () => {
+        try {
+            setSalvando(true);
 
-    useEffect(() => {
-        if (publicacao.length > 0) {
-            localStorage.setItem("publicacoes", JSON.stringify(publicacao));
-        }
-    }, [publicacao]);
+            await setConteudoConfig({
+                titulo,
+                subtitulo,
+            });
 
-    // ================================
-    // SALVAR
-    // ================================
-    const salvar = () => {
-        setConteudoConfig({
-            titulo: titulo,
-            subtitulo: subtitulo,
+            alert("Cabeçalho salvo com sucesso!");
+            await carregarDados();
+        } catch (error) {
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Erro ao salvar cabeçalho.",
+            );
+        } finally {
+            setSalvando(false);
+        }
+    };
+
+    const salvarCategoria = async () => {
+        try {
+            const nomeTratado = nomeCategoria.trim();
+
+            if (!nomeTratado) {
+                alert("Informe o nome da categoria.");
+                return;
+            }
+
+            setSalvando(true);
+
+            if (estaEditandoCategoria) {
+                await atualizarCategoriaPublicacao(
+                    categoriaEditandoId,
+                    nomeTratado,
+                );
+            } else {
+                await criarCategoriaPublicacao(nomeTratado);
+            }
+
+            setCategoriaEditandoId(null);
+            setNomeCategoria("");
+            await carregarDados();
+        } catch (error) {
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Erro ao salvar categoria.",
+            );
+        } finally {
+            setSalvando(false);
+        }
+    };
+
+    const editarCategoria = (categoria: CategoriaPublicacao) => {
+        setCategoriaEditandoId(categoria.id);
+        setNomeCategoria(categoria.name);
+    };
+
+    const cancelarEdicaoCategoria = () => {
+        setCategoriaEditandoId(null);
+        setNomeCategoria("");
+    };
+
+    const removerCategoria = async (id: string) => {
+        try {
+            const confirmar = confirm("Deseja remover esta categoria?");
+
+            if (!confirmar) return;
+
+            setSalvando(true);
+            await removerCategoriaPublicacao(id);
+
+            if (categoriaEditandoId === id) {
+                cancelarEdicaoCategoria();
+            }
+
+            await carregarDados();
+        } catch (error) {
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Erro ao remover categoria.",
+            );
+        } finally {
+            setSalvando(false);
+        }
+    };
+
+    const atualizarCampoPublicacao = (
+        campo: keyof typeof publicacaoVazia,
+        valor: string,
+    ) => {
+        setFormPublicacao((atual) => ({
+            ...atual,
+            [campo]: valor,
+        }));
+    };
+
+    const salvarPublicacao = async () => {
+        try {
+            if (
+                !formPublicacao.categoryId ||
+                !formPublicacao.title ||
+                !formPublicacao.description ||
+                !formPublicacao.author ||
+                !formPublicacao.date
+            ) {
+                alert("Preencha categoria, título, descrição, autor e data.");
+                return;
+            }
+
+            setSalvando(true);
+
+            if (estaEditandoPublicacao) {
+                await atualizarPublicacao(publicacaoEditandoId, formPublicacao);
+            } else {
+                await criarPublicacao(formPublicacao);
+            }
+
+            setPublicacaoEditandoId(null);
+            setFormPublicacao(publicacaoVazia);
+            await carregarDados();
+        } catch (error) {
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Erro ao salvar publicação.",
+            );
+        } finally {
+            setSalvando(false);
+        }
+    };
+
+    const editarPublicacao = (publicacao: Publicacao) => {
+        setPublicacaoEditandoId(publicacao.id);
+        setFormPublicacao({
+            categoryId: publicacao.categoryId,
+            title: publicacao.title,
+            description: publicacao.description,
+            author: publicacao.author,
+            date: publicacao.date.slice(0, 10),
         });
-        // AVISA O SITE
-        window.dispatchEvent(new Event("conteudoAtualizado"));
-
-        alert("Conteúdo salvo!");
     };
 
-    const adicionarCategoria = () => {
-        if (!nmcategoria) return;
-
-        const novo = {
-            id: Date.now(),
-            categoria: nmcategoria,
-        };
-
-        setCategoria([...categoria, novo]);
-        setNmCategoria("");
+    const cancelarEdicaoPublicacao = () => {
+        setPublicacaoEditandoId(null);
+        setFormPublicacao(publicacaoVazia);
     };
 
-    const removerCategoria = (id: number) => {
-        setCategoria(categoria.filter((l) => l.id !== id));
-    };
+    const removerPublicacaoSelecionada = async (id: string) => {
+        try {
+            const confirmar = confirm("Deseja remover esta publicação?");
 
-    const adicionarPublicacao = () => {
-        if (
-            !tituloPublicacao ||
-            !descricaoPublicacao ||
-            !autorPublicacao ||
-            !dataPublicacao
-        )
-            return;
+            if (!confirmar) return;
 
-        const novo = {
-            id: Date.now(),
-            categoria: categoriaSelecionada,
-            titulo: tituloPublicacao,
-            descricao: descricaoPublicacao,
-            autor: autorPublicacao,
-            data: dataPublicacao,
-        };
+            setSalvando(true);
+            await removerPublicacao(id);
 
-        setPublicacao([...publicacao, novo]);
-        setTituloPublicacao("");
-        setDescricaoPublicacao("");
-        setAutorPublicacao("");
-        setDataPublicacao("");
-    };
+            if (publicacaoEditandoId === id) {
+                cancelarEdicaoPublicacao();
+            }
 
-    const removerPublicacao = (id: number) => {
-        setPublicacao(publicacao.filter((l) => l.id !== id));
+            await carregarDados();
+        } catch (error) {
+            alert(
+                error instanceof Error
+                    ? error.message
+                    : "Erro ao remover publicação.",
+            );
+        } finally {
+            setSalvando(false);
+        }
     };
 
     return (
-        <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Painel Administrativo
-            </h1>
+        <div className="space-y-10">
+            <header>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    Painel Administrativo
+                </h1>
 
-            <p className="mt-4 text-gray-600 dark:text-gray-300">
-                Edite o conteúdo da seção Publicações
-            </p>
+                <p className="mt-4 text-gray-600 dark:text-gray-300">
+                    Edite o conteúdo da seção Publicações.
+                </p>
+            </header>
 
-            {/* ================================
-               FORM HERO
-            ================================= */}
-            <div className="mt-8 space-y-4 max-w-xl">
-                <input
-                    value={titulo}
-                    onChange={(e) => setTitulo(e.target.value)}
-                    placeholder="Título da Seção Publicações"
-                    className="
-                        w-full px-4 py-3 rounded-lg
-                        bg-white dark:bg-[#020617]
-                        text-gray-900 dark:text-white
-                        border border-gray-300 dark:border-white/20
-                        placeholder:text-gray-400 dark:placeholder:text-gray-500
-                        focus:outline-none focus:ring-2 focus:ring-[#D4AF37]
-                        transition
-                        "
-                />
+            {erro && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-600 dark:border-red-900/40 dark:bg-red-950/20 dark:text-red-400">
+                    {erro}
+                </div>
+            )}
 
-                <textarea
-                    value={subtitulo}
-                    onChange={(e) => setSubtitulo(e.target.value)}
-                    placeholder="Subtítulo do Seção Publicações"
-                    className="
-                        w-full px-4 py-3 rounded-lg
-                        bg-white dark:bg-[#020617]
-                        text-gray-900 dark:text-white
-                        border border-gray-300 dark:border-white/20
-                        placeholder:text-gray-400 dark:placeholder:text-gray-500
-                        focus:outline-none focus:ring-2 focus:ring-[#D4AF37]
-                        transition
-                        "
-                />
+            {loading ? (
+                <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center text-gray-600 dark:border-white/10 dark:bg-[#020617] dark:text-gray-300">
+                    Carregando publicações...
+                </div>
+            ) : (
+                <>
+                    <section className="rounded-3xl overflow-hidden border border-gray-200 dark:border-white/10 bg-white dark:bg-[#020617] shadow-sm">
+                        <div className="relative bg-[#C95F52] px-8 py-12 text-center">
+                            <span className="text-xl text-[#18384A] dark:text-white">
+                                Conteúdo
+                            </span>
 
-                <button
-                    onClick={salvar}
-                    className="bg-[#D4AF37] px-6 py-3 rounded-lg"
-                >
-                    Salvar Alterações
-                </button>
-            </div>
+                            <h2 className="mt-4 text-4xl font-extrabold text-white">
+                                {titulo || "Título Publicações"}
+                            </h2>
 
-            <h1 className="text-2xl mt-8 font-bold text-gray-900 dark:text-white">
-                Gerenciar Categorias
-            </h1>
+                            <p className="mt-5 text-xl text-white">
+                                {subtitulo ||
+                                    "Subtítulo da seção Publicações"}
+                            </p>
+                        </div>
 
-            <p className="mt-4 text-gray-600 dark:text-gray-300">
-                Nova categoria
-            </p>
+                        <div className="p-6 grid md:grid-cols-[1fr_auto] gap-4 items-start">
+                            <div className="grid gap-4">
+                                <input
+                                    value={titulo}
+                                    onChange={(e) =>
+                                        setTitulo(e.target.value)
+                                    }
+                                    placeholder="Título da seção Publicações"
+                                    className="w-full px-4 py-3 rounded-lg bg-white dark:bg-[#020617] text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                                />
 
-            {/* ================================
-                FORM
-            ================================ */}
-            <div className="mt-8 space-y-4 max-w-xl">
-                <input
-                    value={nmcategoria}
-                    onChange={(e) => setNmCategoria(e.target.value)}
-                    placeholder="Digite o nome da nova categoria"
-                    className="
-                        w-full px-4 py-3 rounded-lg
-                        bg-white dark:bg-[#020617]
-                        text-gray-900 dark:text-white
-                        border border-gray-300 dark:border-white/20
-                        placeholder:text-gray-400 dark:placeholder:text-gray-500
-                        focus:outline-none focus:ring-2 focus:ring-[#D4AF37]
-                        transition
-                        "
-                />
+                                <textarea
+                                    value={subtitulo}
+                                    onChange={(e) =>
+                                        setSubtitulo(e.target.value)
+                                    }
+                                    placeholder="Subtítulo da seção Publicações"
+                                    rows={3}
+                                    className="w-full px-4 py-3 rounded-lg bg-white dark:bg-[#020617] text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                                />
+                            </div>
 
-                <button
-                    onClick={adicionarCategoria}
-                    className="bg-[#D4AF37] px-6 py-3 rounded-lg"
-                >
-                    Salvar Categoria
-                </button>
-            </div>
+                            <button
+                                type="button"
+                                disabled={salvando}
+                                onClick={salvarCabecalho}
+                                className="bg-[#D4AF37] px-6 py-3 rounded-lg text-black font-semibold hover:opacity-90 transition disabled:opacity-60"
+                            >
+                                Salvar cabeçalho
+                            </button>
+                        </div>
+                    </section>
 
-            {/* ================================
-                LISTA
-            ================================ */}
-            <ul className="mt-6 space-y-2">
-                {categoria.map((cat) => (
-                    <li
-                        key={cat.id}
-                        className="flex justify-between border p-3 rounded bg-white dark:bg-[#020617] border-gray-200 dark:border-white/10"
-                    >
-                        <span className="text-gray-900 dark:text-white">
-                            {cat.categoria}
-                        </span>
+                    <section className="rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#020617] p-6 shadow-sm">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    Categorias
+                                </h2>
 
-                        <button
-                            onClick={() => removerCategoria(cat.id)}
-                            className="text-red-500"
-                        >
-                            Remover
-                        </button>
-                    </li>
-                ))}
-            </ul>
+                                <p className="mt-2 text-gray-600 dark:text-gray-300">
+                                    Organize os filtros exibidos na página de
+                                    publicações.
+                                </p>
+                            </div>
 
-            <h1 className="text-2xl mt-8 font-bold text-gray-900 dark:text-white">
-                Gerenciar Publicações
-            </h1>
+                            {estaEditandoCategoria && (
+                                <button
+                                    type="button"
+                                    onClick={cancelarEdicaoCategoria}
+                                    className="text-sm font-semibold text-gray-500 hover:text-[#C95F52] transition"
+                                >
+                                    Cancelar edição
+                                </button>
+                            )}
+                        </div>
 
-            <p className="mt-4 text-gray-600 dark:text-gray-300">
-                Nova Publicação
-            </p>
+                        <div className="mt-6 grid md:grid-cols-[1fr_auto] gap-4">
+                            <input
+                                value={nomeCategoria}
+                                onChange={(e) =>
+                                    setNomeCategoria(e.target.value)
+                                }
+                                placeholder="Digite o nome da categoria"
+                                className="w-full px-4 py-3 rounded-lg bg-white dark:bg-[#020617] text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                            />
 
-            {/* ================================
-                FORM
-            ================================ */}
-            <div className="mt-8 space-y-4 max-w-xl">
-                <select
-                    value={categoriaSelecionada}
-                    onChange={(e) => setCategoriaSelecionada(e.target.value)}
-                    className="
-                        w-full px-4 py-3 rounded-lg
-                        bg-white dark:bg-[#020617]
-                        text-gray-900 dark:text-white
-                        border border-gray-300 dark:border-white/20
-                        placeholder:text-gray-400 dark:placeholder:text-gray-500
-                        focus:outline-none focus:ring-2 focus:ring-[#D4AF37]
-                        transition
-                        "
-                >
-                    <option value="">Selecione a Categoria</option>
+                            <button
+                                type="button"
+                                disabled={salvando}
+                                onClick={salvarCategoria}
+                                className="bg-[#D4AF37] px-6 py-3 rounded-lg text-black font-semibold hover:opacity-90 transition disabled:opacity-60"
+                            >
+                                {estaEditandoCategoria
+                                    ? "Salvar alterações"
+                                    : "+ Nova categoria"}
+                            </button>
+                        </div>
 
-                    {categoria.map((cat, index) => (
-                        <option key={index} value={cat.categoria}>
-                            {cat.categoria}
-                        </option>
-                    ))}
-                </select>
+                        <div className="mt-8 flex flex-wrap gap-4">
+                            {categorias.map((categoria) => (
+                                <div
+                                    key={categoria.id}
+                                    className="rounded-2xl bg-[#C95F52] p-3 shadow-sm"
+                                >
+                                    <div className="rounded-full bg-[#D4AF37] px-8 py-3 text-center text-sm font-bold text-white">
+                                        {categoria.name}
+                                    </div>
 
-                <input
-                    value={tituloPublicacao}
-                    onChange={(e) => setTituloPublicacao(e.target.value)}
-                    placeholder="Digite o título"
-                    className="
-                        w-full px-4 py-3 rounded-lg
-                        bg-white dark:bg-[#020617]
-                        text-gray-900 dark:text-white
-                        border border-gray-300 dark:border-white/20
-                        placeholder:text-gray-400 dark:placeholder:text-gray-500
-                        focus:outline-none focus:ring-2 focus:ring-[#D4AF37]
-                        transition
-                        "
-                />
+                                    <div className="mt-3 flex justify-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                editarCategoria(categoria)
+                                            }
+                                            className="rounded-lg border border-[#18384A] bg-white px-3 py-1.5 text-xs font-semibold text-[#18384A] hover:bg-[#18384A] hover:text-white transition"
+                                        >
+                                            Editar
+                                        </button>
 
-                <input
-                    value={descricaoPublicacao}
-                    onChange={(e) => setDescricaoPublicacao(e.target.value)}
-                    placeholder="Digite a descrição"
-                    className="
-                        w-full px-4 py-3 rounded-lg
-                        bg-white dark:bg-[#020617]
-                        text-gray-900 dark:text-white
-                        border border-gray-300 dark:border-white/20
-                        placeholder:text-gray-400 dark:placeholder:text-gray-500
-                        focus:outline-none focus:ring-2 focus:ring-[#D4AF37]
-                        transition
-                        "
-                />
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                void removerCategoria(
+                                                    categoria.id,
+                                                )
+                                            }
+                                            className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 transition"
+                                        >
+                                            Remover
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
 
-                <input
-                    value={autorPublicacao}
-                    onChange={(e) => setAutorPublicacao(e.target.value)}
-                    placeholder="Digite o autor"
-                    className="
-                        w-full px-4 py-3 rounded-lg
-                        bg-white dark:bg-[#020617]
-                        text-gray-900 dark:text-white
-                        border border-gray-300 dark:border-white/20
-                        placeholder:text-gray-400 dark:placeholder:text-gray-500
-                        focus:outline-none focus:ring-2 focus:ring-[#D4AF37]
-                        transition
-                        "
-                />
+                    <section className="rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#020617] p-6 shadow-sm">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    Publicações
+                                </h2>
 
-                <input
-                    type="date"
-                    value={dataPublicacao}
-                    onChange={(e) => setDataPublicacao(e.target.value)}
-                    className="
-                        w-full px-4 py-3 rounded-lg
-                        bg-white dark:bg-[#020617]
-                        text-gray-900 dark:text-white
-                        border border-gray-300 dark:border-white/20
-                        focus:outline-none focus:ring-2 focus:ring-[#D4AF37]
-                        transition
-                    "
-                />
+                                <p className="mt-2 text-gray-600 dark:text-gray-300">
+                                    Cadastre e edite os cards exibidos na página
+                                    de publicações.
+                                </p>
+                            </div>
 
-                <button
-                    onClick={adicionarPublicacao}
-                    className="bg-[#D4AF37] px-6 py-3 rounded-lg"
-                >
-                    Salvar Publicação
-                </button>
-            </div>
+                            {estaEditandoPublicacao && (
+                                <button
+                                    type="button"
+                                    onClick={cancelarEdicaoPublicacao}
+                                    className="text-sm font-semibold text-gray-500 hover:text-[#C95F52] transition"
+                                >
+                                    Cancelar edição
+                                </button>
+                            )}
+                        </div>
 
-            <ul className="mt-6 space-y-2">
-                {publicacao.map((cat) => (
-                    <li
-                        key={cat.id}
-                        className="flex justify-between border p-3 rounded bg-white dark:bg-[#020617] border-gray-200 dark:border-white/10"
-                    >
-                        <span className="text-gray-900 dark:text-white">
-                            {cat.titulo}
-                        </span>
+                        <div className="mt-6 grid md:grid-cols-2 gap-4">
+                            <select
+                                value={formPublicacao.categoryId}
+                                onChange={(e) =>
+                                    atualizarCampoPublicacao(
+                                        "categoryId",
+                                        e.target.value,
+                                    )
+                                }
+                                className="w-full px-4 py-3 rounded-lg bg-white dark:bg-[#020617] text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                            >
+                                <option value="">Selecione a categoria</option>
 
-                        <button
-                            onClick={() => removerPublicacao(cat.id)}
-                            className="text-red-500"
-                        >
-                            Remover
-                        </button>
-                    </li>
-                ))}
-            </ul>
+                                {categorias.map((categoria) => (
+                                    <option
+                                        key={categoria.id}
+                                        value={categoria.id}
+                                    >
+                                        {categoria.name}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <input
+                                value={formPublicacao.title}
+                                onChange={(e) =>
+                                    atualizarCampoPublicacao(
+                                        "title",
+                                        e.target.value,
+                                    )
+                                }
+                                placeholder="Título da publicação"
+                                className="w-full px-4 py-3 rounded-lg bg-white dark:bg-[#020617] text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                            />
+
+                            <input
+                                value={formPublicacao.description}
+                                onChange={(e) =>
+                                    atualizarCampoPublicacao(
+                                        "description",
+                                        e.target.value,
+                                    )
+                                }
+                                placeholder="Descrição"
+                                className="w-full px-4 py-3 rounded-lg bg-white dark:bg-[#020617] text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                            />
+
+                            <input
+                                value={formPublicacao.author}
+                                onChange={(e) =>
+                                    atualizarCampoPublicacao(
+                                        "author",
+                                        e.target.value,
+                                    )
+                                }
+                                placeholder="Autor"
+                                className="w-full px-4 py-3 rounded-lg bg-white dark:bg-[#020617] text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                            />
+
+                            <input
+                                type="date"
+                                value={formPublicacao.date}
+                                onChange={(e) =>
+                                    atualizarCampoPublicacao(
+                                        "date",
+                                        e.target.value,
+                                    )
+                                }
+                                className="w-full px-4 py-3 rounded-lg bg-white dark:bg-[#020617] text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                            />
+
+                            <button
+                                type="button"
+                                disabled={salvando}
+                                onClick={salvarPublicacao}
+                                className="bg-[#D4AF37] px-6 py-3 rounded-lg text-black font-semibold hover:opacity-90 transition disabled:opacity-60"
+                            >
+                                {estaEditandoPublicacao
+                                    ? "Salvar alterações"
+                                    : "+ Nova publicação"}
+                            </button>
+                        </div>
+
+                        <div className="mt-8 grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {publicacoes.map((publicacao) => (
+                                <article
+                                    key={publicacao.id}
+                                    className="rounded-2xl border border-gray-200 dark:border-white/10 bg-[#F7F7F7] dark:bg-[#0F1720] p-6 shadow-sm"
+                                >
+                                    <span className="text-xs font-semibold tracking-[0.2em] uppercase text-[#D4AF37]">
+                                        {publicacao.category.name}
+                                    </span>
+
+                                    <h3 className="mt-4 text-xl font-extrabold text-gray-900 dark:text-white">
+                                        {publicacao.title}
+                                    </h3>
+
+                                    <p className="mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                                        {publicacao.description}
+                                    </p>
+
+                                    <div className="mt-6 flex justify-between gap-4 text-xs text-gray-500 dark:text-gray-400">
+                                        <span>{publicacao.author}</span>
+                                        <span>
+                                            {new Date(
+                                                publicacao.date,
+                                            ).toLocaleDateString("pt-BR")}
+                                        </span>
+                                    </div>
+
+                                    <div className="mt-5 flex gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                editarPublicacao(publicacao)
+                                            }
+                                            className="px-4 py-2 rounded-lg border border-[#18384A] text-[#18384A] dark:text-white dark:border-white/30 hover:bg-[#18384A] hover:text-white transition"
+                                        >
+                                            Editar
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                void removerPublicacaoSelecionada(
+                                                    publicacao.id,
+                                                )
+                                            }
+                                            className="px-4 py-2 rounded-lg border border-red-300 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                                        >
+                                            Remover
+                                        </button>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                    </section>
+                </>
+            )}
         </div>
     );
 }

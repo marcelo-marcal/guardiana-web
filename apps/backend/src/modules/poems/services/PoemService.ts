@@ -1,8 +1,7 @@
 // ================================
 // IMPORTS
 // ================================
-import { AuditAction, PoemStatus, UserRole, type Prisma } from "@prisma/client";
-import { prisma } from "../../../shared/database/prisma.js";
+import { prisma, AuditAction, PoemStatus, UserRole, type Prisma } from "../../../shared/database/prisma.js";
 import type { CreatePoemDTO } from "../dto/create-poem.dto.js";
 import type { ReviewPoemDTO } from "../dto/review-poem.dto.js";
 import type { UpdatePoemDTO } from "../dto/update-poem.dto.js";
@@ -133,7 +132,6 @@ export class PoemService {
 
     // ================================
     // ATUALIZAR MEU POEMA
-    // Só pode editar se ainda não foi aprovado/publicado
     // ================================
     async updateMyPoem(poemId: string, userId: string, data: UpdatePoemDTO) {
         const poem = await prisma.poem.findUnique({
@@ -144,10 +142,6 @@ export class PoemService {
 
         if (!poem || poem.userId !== userId) {
             throw new Error("Poema não encontrado.");
-        }
-
-        if (poem.status !== PoemStatus.PENDING) {
-            throw new Error("Somente poemas pendentes podem ser editados.");
         }
 
         const updateData: Prisma.PoemUpdateInput = {};

@@ -32,17 +32,11 @@ export default function Home() {
             window.history.scrollRestoration = "manual";
         }
 
-        window.requestAnimationFrame(() => {
-            window.scrollTo({
-                top: 0,
-                left: 0,
-                behavior: "instant",
-            });
-        });
+        window.scrollTo(0, 0);
     }, []);
 
     return (
-        <main className="bg-[#F7F7F7] dark:bg-[#020617] transition-colors duration-300">
+        <main className="bg-[#F7F7F7] transition-colors duration-300 dark:bg-[#020617]">
             <Hero />
             <Sobre />
             <Livros />

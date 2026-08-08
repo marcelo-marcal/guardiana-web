@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 // ================================
 // CONFIGURAÇÃO DA API
 // ================================
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3333";
 
 // ================================
 // TIPAGEM DO USUÁRIO
@@ -44,8 +44,26 @@ type MeResponse = {
 // ================================
 // CHAVES DO LOCALSTORAGE
 // ================================
-const TOKEN_KEY = "guardiana_token";
-const USER_KEY = "guardiana_user";
+export const TOKEN_KEY = "guardiana_token";
+export const USER_KEY = "guardiana_user";
+
+// ================================
+// HELPERS DE STORAGE
+// ================================
+export const getAuthToken = () => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+};
+
+export const getAuthUser = () => {
+    if (typeof window === "undefined") return null;
+    const user = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
+    try {
+        return user ? JSON.parse(user) : null;
+    } catch {
+        return null;
+    }
+};
 
 // ================================
 // HOOK PRINCIPAL
@@ -60,6 +78,8 @@ export function useAuth() {
     const clearSession = useCallback(() => {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
+        sessionStorage.removeItem(TOKEN_KEY);
+        sessionStorage.removeItem(USER_KEY);
 
         // Remove chaves antigas do mock
         localStorage.removeItem("auth");
@@ -80,7 +100,7 @@ export function useAuth() {
         }
 
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
 
             if (!token) {
                 clearSession();
@@ -101,7 +121,12 @@ export function useAuth() {
                 return;
             }
 
-            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            const userJson = JSON.stringify(data.user);
+            if (localStorage.getItem(TOKEN_KEY)) {
+                localStorage.setItem(USER_KEY, userJson);
+            } else {
+                sessionStorage.setItem(USER_KEY, userJson);
+            }
             setUser(data.user);
         } catch {
             clearSession();
@@ -130,7 +155,7 @@ export function useAuth() {
     // ================================
     // LOGIN REAL COM BACKEND
     // ================================
-    const login = async (email: string, senha: string) => {
+    const login = async (email: string, senha: string, remember = false) => {
         try {
             const response = await fetch(`${API_URL}/auth/login`, {
                 method: "POST",
@@ -149,8 +174,9 @@ export function useAuth() {
                 return false;
             }
 
-            localStorage.setItem(TOKEN_KEY, data.token);
-            localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+            const storage = remember ? localStorage : sessionStorage;
+            storage.setItem(TOKEN_KEY, data.token);
+            storage.setItem(USER_KEY, JSON.stringify(data.user));
 
             setUser(data.user);
 

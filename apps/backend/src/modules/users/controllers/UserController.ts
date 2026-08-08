@@ -2,6 +2,7 @@
 // IMPORTS
 // ================================
 import type { Response } from "express";
+import { prisma, UserRole } from "../../../shared/database/prisma.js";
 import { createUserSchema } from "../dto/create-user.dto.js";
 import { updateProfileSchema } from "../dto/update-profile.dto.js";
 import { UserService } from "../services/UserService.js";
@@ -108,12 +109,12 @@ export class UserController {
     }
 
     // ================================
-    // LISTAR USUÁRIOS COMUNS
+    // LISTAR TODOS OS USUÁRIOS
     // Protegido: ADMIN / SUPER_ADMIN
     // ================================
     async index(_request: AuthenticatedRequest, response: Response) {
         try {
-            const users = await this.userService.listCommonUsers();
+            const users = await this.userService.listAllUsers();
 
             return response.json({
                 success: true,
@@ -129,6 +130,62 @@ export class UserController {
                 success: false,
                 message,
             });
+        }
+    }
+
+    // ================================
+    // ADMIN: CRIAR USUÁRIO
+    // ================================
+    async adminCreate(request: AuthenticatedRequest, response: Response) {
+        try {
+            const actorRole = request.user?.role as UserRole;
+            const user = await this.userService.adminCreateUser(actorRole, request.body);
+
+            return response.status(201).json({
+                success: true,
+                user,
+            });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro ao criar usuário.";
+            return response.status(400).json({ success: false, message });
+        }
+    }
+
+    // ================================
+    // ADMIN: ATUALIZAR USUÁRIO
+    // ================================
+    async adminUpdate(request: AuthenticatedRequest, response: Response) {
+        try {
+            const { id } = request.params;
+            const actorRole = request.user?.role as UserRole;
+            const user = await this.userService.adminUpdateUser(actorRole, id, request.body);
+
+            return response.json({
+                success: true,
+                user,
+            });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro ao atualizar usuário.";
+            return response.status(400).json({ success: false, message });
+        }
+    }
+
+    // ================================
+    // ADMIN: DELETAR USUÁRIO
+    // ================================
+    async adminDelete(request: AuthenticatedRequest, response: Response) {
+        try {
+            const { id } = request.params;
+            const actorRole = request.user?.role as UserRole;
+            await this.userService.deleteUser(actorRole, id);
+
+            return response.json({
+                success: true,
+                message: "Usuário removido com sucesso.",
+            });
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Erro ao deletar usuário.";
+            return response.status(400).json({ success: false, message });
         }
     }
 }

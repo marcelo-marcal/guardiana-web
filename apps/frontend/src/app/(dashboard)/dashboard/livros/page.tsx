@@ -3,14 +3,14 @@
 // ================================
 // IMPORTS
 // ================================
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getLivros, type Livro } from "../../../../services/livros.service";
+import { getAuthToken } from "@/hooks/useAuth";
 
 // ================================
 // CONFIGURAÇÃO DA API
 // ================================
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3333";
 
 // ================================
 // FORMULÁRIO INICIAL
@@ -42,43 +42,16 @@ type UploadResponse = {
 // CRUD LIVROS
 // ================================
 export default function LivrosAdmin() {
-    // ================================
-    // ESTADO: LISTA DE LIVROS
-    // ================================
     const [livros, setLivrosState] = useState<Livro[]>([]);
-
-    // ================================
-    // ESTADO: FORMULÁRIO
-    // ================================
     const [form, setForm] = useState(livroVazio);
 
-    // ================================
-    // ESTADOS DE CONTROLE
-    // ================================
     const [loading, setLoading] = useState(true);
     const [salvando, setSalvando] = useState(false);
     const [erro, setErro] = useState("");
 
-    // ================================
-    // BUSCAR TOKEN
-    // Observação:
-    // - Enquanto o login do frontend ainda não foi integrado
-    //   ao backend, buscamos possíveis chaves de token.
-    // - Depois vamos padronizar isso no useAuth real.
-    // ================================
-    const getToken = () => {
-        if (typeof window === "undefined") return null;
+    const [livroEditandoId, setLivroEditandoId] = useState<string | null>(null);
+    const estaEditando = livroEditandoId !== null;
 
-        return (
-            localStorage.getItem("guardiana_token") ||
-            localStorage.getItem("token") ||
-            localStorage.getItem("auth_token")
-        );
-    };
-
-    // ================================
-    // CARREGAR LIVROS DO BACKEND
-    // ================================
     const carregarLivros = async () => {
         try {
             setLoading(true);
@@ -99,16 +72,10 @@ export default function LivrosAdmin() {
         }
     };
 
-    // ================================
-    // CARREGAR AO ABRIR A TELA
-    // ================================
     useEffect(() => {
         void carregarLivros();
     }, []);
 
-    // ================================
-    // ATUALIZAR CAMPOS DO FORMULÁRIO
-    // ================================
     const atualizarCampo = (campo: keyof typeof livroVazio, valor: string) => {
         setForm((atual) => ({
             ...atual,
@@ -116,12 +83,9 @@ export default function LivrosAdmin() {
         }));
     };
 
-    // ================================
-    // UPLOAD REAL DA CAPA
-    // ================================
     const carregarImagem = async (arquivo: File) => {
         try {
-            const token = getToken();
+            const token = getAuthToken();
 
             if (!token) {
                 alert("Faça login novamente para enviar imagens.");
@@ -156,10 +120,23 @@ export default function LivrosAdmin() {
         }
     };
 
-    // ================================
-    // ADICIONAR LIVRO NO BACKEND
-    // ================================
-    const adicionarLivro = async () => {
+    const montarPayloadLivro = (isHomeFeature?: boolean) => ({
+        title: form.titulo,
+        author: form.autor,
+        description: form.descricao,
+        coverUrl: form.imagem,
+        year: form.ano,
+        isbn: form.isbn,
+        pages: form.paginas,
+        price: form.preco ? Number(form.preco) : null,
+        dimensions: form.dimensoes,
+        language: form.idioma,
+        format: "PHYSICAL",
+        physicalStock: 0,
+        ...(typeof isHomeFeature === "boolean" ? { isHomeFeature } : {}),
+    });
+
+    const salvarLivro = async () => {
         try {
             if (
                 !form.titulo ||
@@ -171,37 +148,34 @@ export default function LivrosAdmin() {
                 return;
             }
 
-            const token = getToken();
+            const token = getAuthToken();
 
             if (!token) {
-                alert("Faça login novamente para cadastrar livros.");
+                alert("Faça login novamente para salvar livros.");
                 return;
             }
 
             setSalvando(true);
 
-            const response = await fetch(`${API_URL}/books`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
+            const livroAtual = livros.find(
+                (livro) => livro.id === livroEditandoId,
+            );
+
+            const response = await fetch(
+                estaEditando
+                    ? `${API_URL}/books/${livroEditandoId}`
+                    : `${API_URL}/books`,
+                {
+                    method: estaEditando ? "PUT" : "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(
+                        montarPayloadLivro(livroAtual?.destaqueHome ?? false),
+                    ),
                 },
-                body: JSON.stringify({
-                    title: form.titulo,
-                    author: form.autor,
-                    description: form.descricao,
-                    coverUrl: form.imagem,
-                    year: form.ano,
-                    isbn: form.isbn,
-                    pages: form.paginas,
-                    price: form.preco ? Number(form.preco) : null,
-                    dimensions: form.dimensoes,
-                    language: form.idioma,
-                    format: "PHYSICAL",
-                    physicalStock: 0,
-                    isHomeFeature: false,
-                }),
-            });
+            );
 
             const data = (await response.json()) as {
                 success: boolean;
@@ -209,16 +183,20 @@ export default function LivrosAdmin() {
             };
 
             if (!response.ok || !data.success) {
-                throw new Error(data.message || "Erro ao cadastrar livro.");
+                throw new Error(
+                    data.message ||
+                        (estaEditando
+                            ? "Erro ao editar livro."
+                            : "Erro ao cadastrar livro."),
+                );
             }
 
             setForm(livroVazio);
+            setLivroEditandoId(null);
             await carregarLivros();
         } catch (error) {
             const message =
-                error instanceof Error
-                    ? error.message
-                    : "Erro ao cadastrar livro.";
+                error instanceof Error ? error.message : "Erro ao salvar livro.";
 
             alert(message);
         } finally {
@@ -226,16 +204,39 @@ export default function LivrosAdmin() {
         }
     };
 
-    // ================================
-    // REMOVER LIVRO NO BACKEND
-    // ================================
+    const iniciarEdicao = (livro: Livro) => {
+        setLivroEditandoId(livro.id);
+        setForm({
+            titulo: livro.titulo,
+            autor: livro.autor,
+            imagem: livro.imagem,
+            descricao: livro.descricao,
+            ano: livro.ano,
+            isbn: livro.isbn,
+            paginas: livro.paginas,
+            preco: livro.preco,
+            dimensoes: livro.dimensoes,
+            idioma: livro.idioma || "Português",
+        });
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    };
+
+    const cancelarEdicao = () => {
+        setLivroEditandoId(null);
+        setForm(livroVazio);
+    };
+
     const removerLivro = async (id: string) => {
         try {
             const confirmar = confirm("Deseja remover este livro?");
 
             if (!confirmar) return;
 
-            const token = getToken();
+            const token = getAuthToken();
 
             if (!token) {
                 alert("Faça login novamente para remover livros.");
@@ -258,6 +259,10 @@ export default function LivrosAdmin() {
                 throw new Error(data.message || "Erro ao remover livro.");
             }
 
+            if (livroEditandoId === id) {
+                cancelarEdicao();
+            }
+
             await carregarLivros();
         } catch (error) {
             const message =
@@ -269,14 +274,9 @@ export default function LivrosAdmin() {
         }
     };
 
-    // ================================
-    // ALTERAR DESTAQUE DA HOME
-    // Regra:
-    // - O backend já valida no máximo 3 destaques
-    // ================================
     const alternarDestaque = async (livro: Livro) => {
         try {
-            const token = getToken();
+            const token = getAuthToken();
 
             if (!token) {
                 alert("Faça login novamente para alterar destaques.");
@@ -316,9 +316,6 @@ export default function LivrosAdmin() {
 
     return (
         <div>
-            {/* ================================
-                CABEÇALHO
-            ================================ */}
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Gerenciar Livros
             </h1>
@@ -328,22 +325,28 @@ export default function LivrosAdmin() {
                 aparecerem em destaque na Home.
             </p>
 
-            {/* ================================
-                ERRO
-            ================================ */}
             {erro && (
                 <div className="mt-6 rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 p-4 text-red-600 dark:text-red-400">
                     {erro}
                 </div>
             )}
 
-            {/* ================================
-                FORMULÁRIO DE CADASTRO
-            ================================ */}
             <div className="mt-8 max-w-3xl rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#020617] p-6 shadow-lg">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    Novo livro
-                </h2>
+                <div className="flex items-center justify-between gap-4">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                        {estaEditando ? "Editar livro" : "Novo livro"}
+                    </h2>
+
+                    {estaEditando && (
+                        <button
+                            type="button"
+                            onClick={cancelarEdicao}
+                            className="text-sm font-semibold text-gray-500 hover:text-[#C95F52] transition"
+                        >
+                            Cancelar edição
+                        </button>
+                    )}
+                </div>
 
                 <div className="mt-6 grid md:grid-cols-2 gap-4">
                     <input
@@ -446,32 +449,45 @@ export default function LivrosAdmin() {
 
                 {form.imagem && (
                     <div className="mt-4 relative w-36 h-48 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10">
-                        <Image
+                        <img
                             src={
                                 form.imagem.startsWith("/uploads")
                                     ? `${API_URL}${form.imagem}`
                                     : form.imagem
                             }
                             alt="Prévia da capa"
-                            fill
-                            className="object-cover"
+                            className="w-full h-full object-cover"
                         />
                     </div>
                 )}
 
-                <button
-                    type="button"
-                    onClick={() => void adicionarLivro()}
-                    disabled={salvando}
-                    className="mt-6 bg-[#D4AF37] px-6 py-3 rounded-lg text-black font-semibold hover:opacity-90 transition disabled:opacity-60"
-                >
-                    {salvando ? "Salvando..." : "Adicionar Livro"}
-                </button>
+                <div className="mt-6 flex flex-wrap gap-3">
+                    <button
+                        type="button"
+                        onClick={() => void salvarLivro()}
+                        disabled={salvando}
+                        className="bg-[#D4AF37] px-6 py-3 rounded-lg text-black font-semibold hover:opacity-90 transition disabled:opacity-60"
+                    >
+                        {salvando
+                            ? "Salvando..."
+                            : estaEditando
+                              ? "Salvar Alterações"
+                              : "Adicionar Livro"}
+                    </button>
+
+                    {estaEditando && (
+                        <button
+                            type="button"
+                            onClick={cancelarEdicao}
+                            disabled={salvando}
+                            className="px-6 py-3 rounded-lg border border-gray-300 dark:border-white/20 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition disabled:opacity-60"
+                        >
+                            Cancelar
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {/* ================================
-                LISTA DE LIVROS
-            ================================ */}
             <div className="mt-10">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                     Livros cadastrados
@@ -495,11 +511,10 @@ export default function LivrosAdmin() {
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="relative w-16 h-24 rounded-md overflow-hidden bg-gray-100">
-                                        <Image
+                                        <img
                                             src={livro.imagem}
                                             alt={livro.titulo}
-                                            fill
-                                            className="object-cover"
+                                            className="w-full h-full object-cover"
                                         />
                                     </div>
 
@@ -521,6 +536,14 @@ export default function LivrosAdmin() {
                                 </div>
 
                                 <div className="flex flex-wrap gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => iniciarEdicao(livro)}
+                                        className="px-4 py-2 rounded-lg border border-[#18384A] text-[#18384A] dark:text-white dark:border-white/30 hover:bg-[#18384A] hover:text-white transition"
+                                    >
+                                        Editar
+                                    </button>
+
                                     <button
                                         type="button"
                                         onClick={() =>

@@ -5,52 +5,40 @@ import Image from "next/image";
 import Link from "next/link";
 
 // ================================
-// DADOS DAS FUNDADORAS
+// CONFIGURAÇÃO
 // ================================
-const fundadoras = [
-    {
-        id: 1,
-        imagem: "/jenny-gonzalez02.png",
-        autor: "Jenny González",
-        descricao: `Mulher várias vezes migrante. Formada em Artes.
-                    Editora com mais de 30 anos de experiência. Sua
-                    trajetória é construída entre palavras, autores e
-                    histórias que atravessam gerações. Artista visual.
-                    Escritora. Tradutora. Promotora cultural. Professora.
-                    Com uma sensibilidade estética que complementa
-                    seu olhar editorial unindo técnica e criatividade,
-                    transita entre o rigor do texto e a liberdade da
-                    imagem.`,
-    },
-    {
-        id: 2,
-        imagem: "/jenifer-brum.png",
-        autor: "Jênifer De Brum",
-        descricao: `Historiadora por formação, dedica-se a pesquisar e
-                    resgatar memórias de pessoas em toda a sua
-                    diversidade cultural. Encontra na palavra escrita
-                    uma forma de preservar histórias e ampliar vozes.
-                    Apaixonada pela leitura, vê nos livros pontes entre
-                    tempos, experiências e identidades. Seu trabalho
-                    une sensibilidade, escuta e compromisso.`,
-    },
-    {
-        id: 3,
-        imagem: "/sandra-salcedo.png",
-        autor: "Sandra Salcedo",
-        descricao: `Formada em Ciências Políticas. Apaixonada por
-                    livros e leituras, dedica-se a transformar ideias em
-                    obras que inspiram e informam. Seu olhar atento e
-                    curadoria cuidadosa refletem o compromisso com o
-                    conhecimento e a qualidade. Entre páginas e
-                    projetos, constrói pontes entre autores e leitores.`,
-    },
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3333";
+
+// ================================
+// TIPAGENS
+// ================================
+type Founder = {
+    id: string;
+    name: string;
+    role: string;
+    description: string;
+    imageUrl: string | null;
+    position: string;
+};
 
 // ================================
 // PÁGINA: FUNDADORAS
 // ================================
-export default function Fundadoras() {
+export default async function Fundadoras() {
+    let founders: Founder[] = [];
+
+    try {
+        const response = await fetch(`${API_URL}/founders`, {
+            cache: "no-store",
+        });
+        const data = await response.json();
+        if (data.success) {
+            founders = data.founders;
+        }
+    } catch (error) {
+        console.error("Erro ao carregar fundadoras:", error);
+    }
+
     return (
         <main className="bg-[#F7F7F7] dark:bg-[#020617] transition-colors">
             {/* ================================
@@ -62,7 +50,7 @@ export default function Fundadoras() {
                         Guardiana Editora
                     </span>
                     <h1 className="mt-4 text-4xl md:text-6xl font-extrabold text-[#18384A] dark:text-white leading-tight">
-                        Fundadoras
+                        Assessorias
                     </h1>
                 </div>
             </section>
@@ -72,56 +60,58 @@ export default function Fundadoras() {
             ================================ */}
             <section className="px-6 pb-24">
                 <div className="max-w-7xl mx-auto space-y-24">
-                    {fundadoras.map((bloco) => {
+                    {founders.length === 0 ? (
+                        <p className="text-center text-gray-500">Em breve, mais informações sobre nossas fundadoras.</p>
+                    ) : founders.map((bloco, index) => {
                         return (
                             <div
                                 key={bloco.id}
-                                className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center`}
+                                className={`grid lg:grid-cols-2 gap-12 lg:gap-20 items-center ${
+                                    index % 2 !== 0 ? "lg:flex-row-reverse" : ""
+                                }`}
                             >
                                 {/* ================================
                                     TEXTO DAS FUNDADORAS
                                 ================================ */}
-                                <div className="space-y-8">
-                                    <div className="space-y-7">
-                                        <article
-                                            key={bloco.autor}
-                                            className="
-                                                group
-                                                rounded-2xl
-                                                bg-white dark:bg-[#0F1720]
-                                                border border-gray-200 dark:border-white/10
-                                                p-6
-                                                shadow-md
-                                                hover:-translate-y-1
-                                                hover:shadow-xl
-                                                transition-all duration-500
-                                            "
+                                <div className={index % 2 !== 0 ? "lg:order-2" : "lg:order-1"}>
+                                    <article
+                                        className="
+                                            group
+                                            rounded-2xl
+                                            bg-white dark:bg-[#0F1720]
+                                            border border-gray-200 dark:border-white/10
+                                            p-8
+                                            shadow-md
+                                            hover:-translate-y-1
+                                            hover:shadow-xl
+                                            transition-all duration-500
+                                        "
+                                    >
+                                        <h2 className="text-2xl text-center md:text-3xl font-extrabold text-[#18384A] dark:text-white">
+                                            {bloco.name}
+                                        </h2>
+                                        <p className="text-[#C95F52] text-center font-bold text-sm uppercase mb-4">{bloco.role}</p>
+                                        <p
+                                            style={{
+                                                whiteSpace: "pre-line",
+                                            }}
+                                            className="mt-3 text-center text-[#344454] dark:text-gray-300 text-base md:text-lg leading-relaxed italic"
                                         >
-                                            <h2 className="text-2xl text-center md:text-3xl font-extrabold text-[#18384A] dark:text-white">
-                                                {bloco.autor}
-                                            </h2>
-                                            <p
-                                                style={{
-                                                    whiteSpace: "pre-line",
-                                                }}
-                                                className="mt-3 md:h-[300px] text-center text-[#344454] dark:text-gray-300 text-base md:text-lg leading-relaxed"
-                                            >
-                                                {bloco.descricao}
-                                            </p>
-                                        </article>
-                                    </div>
+                                            &quot;{bloco.description}&quot;
+                                        </p>
+                                    </article>
                                 </div>
 
                                 {/* ================================
                                     IMAGEM DA FUNDADORA
                                 ================================ */}
-                                <div className="mt-10">
+                                <div className={`mt-10 ${index % 2 !== 0 ? "lg:order-1" : "lg:order-2"}`}>
                                     <div
                                         className="
                                             group
                                             relative
                                             w-full
-                                            h-[200px] md:h-[800px]
+                                            h-[400px] md:h-[600px]
                                             rounded-3xl
                                             overflow-hidden
                                             shadow-xl
@@ -131,13 +121,16 @@ export default function Fundadoras() {
                                             transition-all duration-500
                                         "
                                     >
-                                        <Image
-                                            src={bloco.imagem}
-                                            alt="Serviços Editoriais Guardiana"
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition duration-700"
-                                            priority={bloco.id === 1}
-                                        />
+                                        {bloco.imageUrl ? (
+                                            <Image
+                                                src={bloco.imageUrl}
+                                                alt={bloco.name}
+                                                fill
+                                                className={`object-cover ${bloco.position} group-hover:scale-105 transition duration-700`}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">Sem imagem</div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -148,7 +141,6 @@ export default function Fundadoras() {
 
             {/* ================================
                 CTA FINAL
-                - mt-auto mantém a faixa colada embaixo
             ================================ */}
             <section className="mt-auto relative overflow-hidden px-6 py-20 bg-[#C95F52] dark:bg-[#7E342D]">
                 <div className="max-w-7xl mx-auto text-center">

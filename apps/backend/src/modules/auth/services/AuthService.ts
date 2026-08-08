@@ -1,10 +1,8 @@
-import { prisma } from "../../../shared/database/prisma.js";
-import { AuditAction, UserRole } from "@prisma/client"; // Import UserRole
+import { prisma, AuditAction, UserRole } from "../../../shared/database/prisma.js";
 import crypto from "node:crypto";
 import { EmailService } from "../../../shared/services/EmailService.js";
 import jwt from "jsonwebtoken";
-
-// import bcrypt from "bcrypt"; // Descomente e instale 'bcrypt' para senhas seguras
+import bcrypt from "bcryptjs";
 
 export class AuthService {
     private emailService = new EmailService();
@@ -30,24 +28,9 @@ export class AuthService {
         let user = await prisma.user.findUnique({ where: { email } });
         const emailPrefix = email.split('@')[0];
 
-        // REGRA: Se o usuário já existe e já completou o cadastro (nome diferente do e-mail)
-        if (user && user.name !== emailPrefix) {
-            // Loga o usuário diretamente
-            const token = this.generateToken(user);
+        // O código de acesso agora é sempre obrigatório para garantir a segurança.
+        // A regra de login direto foi removida para evitar que qualquer pessoa com o e-mail possa logar.
 
-            return {
-                action: "LOGGED_IN",
-                user: {
-                    id: user.id,
-                    email: user.email,
-                    role: user.role,
-                    name: user.name
-                },
-                token
-            };
-        }
-
-        // Se o usuário não existe ou ainda é novo (nome é o prefixo do e-mail)
         const code = crypto.randomInt(100000, 999999).toString();
         const expires = new Date(Date.now() + 15 * 60 * 1000);
 
@@ -98,7 +81,23 @@ export class AuthService {
         // Limpa o código após o uso
         await prisma.user.update({
             where: { id: user.id },
-            data: { verificationCode: null, verificationExpires: null }
+            data: {
+                verificationCode: null,
+                verificationExpires: null,
+                lastLoginAt: new Date(),
+                lastActivityAt: new Date(),
+            }
+        });
+
+        // Cria log de auditoria
+        await prisma.auditLog.create({
+            data: {
+                actorUserId: user.id,
+                action: AuditAction.LOGIN,
+                entity: "User",
+                entityId: user.id,
+                description: `Usuário ${user.email} logou via código.`,
+            },
         });
 
         const token = this.generateToken(user);
@@ -118,13 +117,19 @@ export class AuthService {
     // ================================
     // CONCLUIR CADASTRO
     // ================================
-    async completeRegistration(email: string, name: string, literaryInterests?: string) {
+    async completeRegistration(email: string, name: string, password?: string, literaryInterests?: string) {
+        const updateData: any = {
+            name,
+            literaryInterests: literaryInterests ?? null,
+        };
+
+        if (password) {
+            updateData.passwordHash = await bcrypt.hash(password, 10);
+        }
+
         const user = await prisma.user.update({
             where: { email },
-            data: {
-                name,
-                literaryInterests: literaryInterests ?? null,
-            }
+            data: updateData
         });
 
         return {
@@ -137,6 +142,55 @@ export class AuthService {
             },
             message: "Cadastro concluído com sucesso."
         };
+    }
+
+    // ================================
+    // LOGIN TRADICIONAL (EMAIL/SENHA)
+    // ================================
+    async login(email: string, password: string) {
+        const user = await prisma.user.findUnique({ where: { email } });
+
+        if (!user) {
+            throw new Error("Credenciais inválidas.");
+        }
+
+        if (user.status !== "ACTIVE") {
+            throw new Error("Sua conta está inativa ou bloqueada.");
+        }
+
+        if (!user.passwordHash) {
+            throw new Error("Usuário não possui senha definida. Acesse via código.");
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+
+        if (!passwordMatch) {
+            throw new Error("Credenciais inválidas.");
+        }
+
+        const token = this.generateToken(user);
+
+        // Atualiza campos de login
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                lastLoginAt: new Date(),
+                lastActivityAt: new Date(),
+            }
+        });
+
+        // Cria log de auditoria
+        await prisma.auditLog.create({
+            data: {
+                actorUserId: user.id,
+                action: AuditAction.LOGIN,
+                entity: "User",
+                entityId: user.id,
+                description: `Usuário ${user.email} logou via senha.`,
+            },
+        });
+
+        return { user: { id: user.id, email: user.email, name: user.name, role: user.role }, token };
     }
 
     // ================================
@@ -154,19 +208,26 @@ export class AuthService {
             throw new Error("Acesso não autorizado para este perfil.");
         }
 
-        // TODO: Implementar comparação de senha segura usando hashing (ex: bcrypt)
-        // Exemplo com bcrypt (após instalar e importar):
-        // const passwordMatch = await bcrypt.compare(password, user.passwordHash || '');
-        // if (!passwordMatch) {
-        //     throw new Error("Credenciais inválidas.");
-        // }
-        // AVISO: A comparação abaixo é INSEGURA e APENAS para fins de teste.
-        // Substitua por hashing de senha em produção!
-        if (!user.passwordHash || user.passwordHash !== password) {
+        if (!user.passwordHash) {
+            throw new Error("Usuário não possui senha definida.");
+        }
+
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+
+        if (!passwordMatch) {
             throw new Error("Credenciais inválidas.");
         }
 
         const token = this.generateToken(user);
+
+        // Atualiza campos de login
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                lastLoginAt: new Date(),
+                lastActivityAt: new Date(),
+            }
+        });
 
         // Cria log de auditoria para o login do administrador
         await prisma.auditLog.create({

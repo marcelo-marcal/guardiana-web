@@ -4,12 +4,12 @@
 // IMPORTS
 // ================================
 import { useCallback, useEffect, useState, useMemo } from "react";
+import { getAuthToken } from "@/hooks/useAuth";
 
 // ================================
 // CONFIGURAÇÕES
 // ================================
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333";
-const TOKEN_KEY = "guardiana_token";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3333";
 
 // ================================
 // TIPAGENS
@@ -114,7 +114,7 @@ export default function ConfiguracoesPage() {
     const handleSaveSocialLinks = async () => {
         setSaving(true);
         try {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = getAuthToken();
             if (!token) throw new Error("Sessão não encontrada.");
 
             const response = await fetch(`${API_URL}/auth/settings`, {

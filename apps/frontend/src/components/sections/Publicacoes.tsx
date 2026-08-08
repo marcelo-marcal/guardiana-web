@@ -13,171 +13,189 @@ import Image from "next/image";
 // ================================
 // REACT
 // ================================
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // ================================
-// DADOS / SERVICES
+// SERVICES DA API
+// Agora as publicações vêm do PostgreSQL,
+// não mais do localStorage.
 // ================================
-import { PublicacaoConfig } from "../../data/publicacaoConfig";
-import { getConteudoConfig } from "../../services/publicacoes.services";
+import {
+    getCategoriasPublicacoes,
+    getConteudoConfig,
+    getPublicacoes,
+    type CategoriaPublicacao,
+    type Publicacao,
+    type PublicacaoConfig,
+} from "../../services/publicacoes.services";
 
 // ================================
-// MOCK INICIAL DE CATEGORIAS
-// Futuramente será substituído pelo backend
+// TIPO ADAPTADO PARA O CARD ANTIGO
+// O componente PublicacaoCard ainda espera:
+// id, titulo, descricao, autor, data, categoria.
+// Então convertemos a resposta da API para esse formato.
 // ================================
-const initialCategorias = [
-    { id: 1, categoria: "Todas" },
-    { id: 2, categoria: "Sociedade" },
-    { id: 3, categoria: "Cultura" },
-    { id: 4, categoria: "Saúde" },
-    { id: 5, categoria: "Relacionamentos" },
-];
+type PublicacaoCardData = {
+    id: number;
+    titulo: string;
+    descricao: string;
+    autor: string;
+    data: string;
+    categoria: string;
+    destaque?: boolean;
+};
 
 // ================================
-// MOCK INICIAL DE PUBLICAÇÕES
-// Futuramente será substituído pelo backend
+// HELPERS
 // ================================
-const initialPublicacoes = [
-    {
-        id: 1,
-        categoria: "Sociedade",
-        titulo: "O poder das palavras na transformação social",
-        descricao:
-            "Como a escrita pode impactar comunidades e gerar mudanças reais no mundo.",
-        autor: "Ana Silva",
-        data: "2024-03-01",
-    },
-    {
-        id: 2,
-        categoria: "Cultura",
-        titulo: "Literatura feminina e protagonismo",
-        descricao:
-            "A importância da voz feminina na construção de narrativas contemporâneas.",
-        autor: "Mariana Costa",
-        data: "2024-02-20",
-    },
-    {
-        id: 3,
-        categoria: "Saúde",
-        titulo: "Escrever para curar",
-        descricao:
-            "A escrita como ferramenta terapêutica no desenvolvimento pessoal.",
-        autor: "Juliana Rocha",
-        data: "2024-02-10",
-    },
-    {
-        id: 4,
-        categoria: "Relacionamentos",
-        titulo: "Narrativas que conectam pessoas",
-        descricao:
-            "Histórias reais que criam empatia e fortalecem relações humanas.",
-        autor: "Fernanda Alves",
-        data: "2024-01-28",
-    },
-    {
-        id: 5,
-        categoria: "Sociedade",
-        titulo: "Narrativas que conectam pessoas",
-        descricao:
-            "Histórias reais que criam empatia e fortalecem relações humanas.",
-        autor: "Alves Fernandes",
-        data: "2024-01-28",
-    },
-];
+function formatarData(data: string) {
+    return new Date(data).toLocaleDateString("pt-BR");
+}
+
+function converterPublicacaoParaCard(
+    publicacao: Publicacao,
+    index: number,
+): PublicacaoCardData {
+    return {
+        id: index + 1,
+        titulo: publicacao.title,
+        descricao: publicacao.description,
+        autor: publicacao.author,
+        data: formatarData(publicacao.date),
+        categoria: publicacao.category.name,
+        destaque: index === 0,
+    };
+}
 
 // ================================
-// Seção de Publicações
+// SEÇÃO DE PUBLICAÇÕES DA HOME
 // ================================
 export default function Publicacoes() {
     // ================================
-    // Estado do filtro
+    // ESTADO DO FILTRO
     // ================================
     const [categoriaAtiva, setCategoriaAtiva] = useState("Todas");
 
     // ================================
-    // Estado do conteúdo configurável
+    // ESTADO DO CONTEÚDO CONFIGURÁVEL
     // ================================
     const [conteudoConfig, setConteudoConfig] =
         useState<PublicacaoConfig | null>(null);
 
     // ================================
-    // Estado das categorias
+    // ESTADO DAS CATEGORIAS VINDAS DO BANCO
     // ================================
-    const [categorias, setCategorias] = useState<typeof initialCategorias>([]);
+    const [categorias, setCategorias] = useState<CategoriaPublicacao[]>([]);
 
     // ================================
-    // Estado das publicações
+    // ESTADO DAS PUBLICAÇÕES VINDAS DO BANCO
     // ================================
-    const [publicacao, setPublicacao] = useState<typeof initialPublicacoes>([]);
+    const [publicacoes, setPublicacoes] = useState<Publicacao[]>([]);
 
     // ================================
-    // Separa destaque
+    // ESTADO DE CARREGAMENTO
     // ================================
-    const destaque = publicacao.find((p) => p.id === 1);
+    const [loading, setLoading] = useState(true);
 
     // ================================
-    // Filtra publicações
+    // ESTADO DE ERRO
+    // ================================
+    const [erro, setErro] = useState("");
+
+    // ================================
+    // CONVERTE PUBLICAÇÕES DA API PARA O FORMATO DO CARD
+    // ================================
+    const publicacoesParaTela = useMemo(
+        () => publicacoes.map(converterPublicacaoParaCard),
+        [publicacoes],
+    );
+
+    // ================================
+    // SEPARA DESTAQUE
+    // A primeira publicação retornada pelo backend vira destaque.
+    // ================================
+    const destaque = publicacoesParaTela[0];
+
+    // ================================
+    // FILTRA PUBLICAÇÕES
     // ================================
     const filtradas =
         categoriaAtiva === "Todas"
-            ? publicacao
-            : publicacao.filter((p) => p.categoria === categoriaAtiva);
+            ? publicacoesParaTela
+            : publicacoesParaTela.filter(
+                  (publicacao) => publicacao.categoria === categoriaAtiva,
+              );
 
     // ================================
-    // Remove destaque do grid
+    // REMOVE DESTAQUE DO GRID
+    // Somente quando estiver na aba "Todas".
+    // Quando o usuário clica em uma categoria,
+    // a publicação deve aparecer normalmente.
     // ================================
-    const restantes = filtradas.filter((p) => p.id !== 1);
+    const restantes =
+       categoriaAtiva === "Todas"
+          ? filtradas.filter((publicacao) => publicacao.id !== destaque?.id)
+          : filtradas;
 
     // ================================
-    // Carrega configuração da seção
+    // CARREGAR DADOS DA API
+    // ================================
+    const carregarPublicacoes = async () => {
+        try {
+            setLoading(true);
+            setErro("");
+
+            const [conteudo, categoriasData, publicacoesData] =
+                await Promise.all([
+                    getConteudoConfig(),
+                    getCategoriasPublicacoes(),
+                    getPublicacoes(),
+                ]);
+
+            setConteudoConfig(conteudo);
+            setCategorias(categoriasData);
+            setPublicacoes(publicacoesData);
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : "Erro ao carregar publicações.";
+
+            setErro(message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ================================
+    // CARREGA DADOS AO ABRIR A HOME
     // ================================
     useEffect(() => {
-        const data = getConteudoConfig();
-        setConteudoConfig(data);
+        void carregarPublicacoes();
 
         const atualizar = () => {
-            setConteudoConfig(getConteudoConfig());
+            void carregarPublicacoes();
         };
 
         window.addEventListener("conteudoAtualizado", atualizar);
+        window.addEventListener("publicacoesAtualizadas", atualizar);
 
         return () => {
             window.removeEventListener("conteudoAtualizado", atualizar);
+            window.removeEventListener("publicacoesAtualizadas", atualizar);
         };
     }, []);
 
     // ================================
-    // Carrega categorias do localStorage
-    // Caso ainda não exista, usa o mock inicial
+    // EVITA ERRO DE HIDRATAÇÃO
     // ================================
-    useEffect(() => {
-        const data = localStorage.getItem("categorias");
-
-        if (data) {
-            setCategorias(JSON.parse(data));
-        } else {
-            setCategorias(initialCategorias);
-        }
-    }, []);
+    if (loading || !conteudoConfig) return null;
 
     // ================================
-    // Carrega publicações do localStorage
-    // Caso ainda não exista, usa o mock inicial
+    // SE DER ERRO OU NÃO TIVER PUBLICAÇÕES,
+    // NÃO QUEBRA A HOME
     // ================================
-    useEffect(() => {
-        const data = localStorage.getItem("publicacoes");
-
-        if (data) {
-            setPublicacao(JSON.parse(data));
-        } else {
-            setPublicacao(initialPublicacoes);
-        }
-    }, []);
-
-    // ================================
-    // Evita erro de hidratação
-    // ================================
-    if (!conteudoConfig) return null;
+    if (erro || publicacoesParaTela.length === 0) return null;
 
     return (
         <section
@@ -211,7 +229,7 @@ export default function Publicacoes() {
             {/* ================================
                 DECORAÇÃO - LÂMPADA DIREITA
             ================================ */}
-            <div className="absolute right-0 top-[330px] md:top-[350px] w-36 h-36 md:w-64 md:h-64 opacity-95 pointer-events-none">
+            <div className="absolute right-0 top-[330px] md:top-[350px] w-36 h-36 md:w-64 md:h-64 opacity-65 pointer-events-none">
                 <Image
                     src="/decor-lampada.png"
                     alt="Lâmpada decorativa"
@@ -243,31 +261,37 @@ export default function Publicacoes() {
 
                 {/* ================================
                     FILTRO DE CATEGORIA
-                    - Botões no estilo da referência
-                    - Mantém hover/animação
                 ================================ */}
                 <div className="flex flex-wrap justify-center gap-5 md:gap-8 mb-14">
-                    {categorias.map((cat) => {
-                        const ativo = categoriaAtiva === cat.categoria;
+                    <button
+                        type="button"
+                        onClick={() => setCategoriaAtiva("Todas")}
+                        className={`min-w-[150px] px-6 py-3 rounded-full text-sm font-bold transition-all duration-300 ${
+                            categoriaAtiva === "Todas"
+                                ? "bg-[#C8A92F] text-white shadow-lg scale-105"
+                                : "bg-[#C8A92F] text-white hover:scale-105 hover:brightness-110 shadow-md"
+                        }`}
+                    >
+                        Todas
+                    </button>
 
-                        const classeBase =
-                            "min-w-[150px] px-6 py-3 rounded-full text-sm font-bold transition-all duration-300";
-
-                        const classeAtivo =
-                            "bg-[#C8A92F] text-white shadow-lg scale-105";
-
-                        const classeInativo =
-                            "bg-[#C8A92F] text-white hover:scale-105 hover:brightness-110 shadow-md";
+                    {categorias.map((categoria) => {
+                        const ativo = categoriaAtiva === categoria.name;
 
                         return (
                             <button
-                                key={cat.id}
-                                onClick={() => setCategoriaAtiva(cat.categoria)}
-                                className={`${classeBase} ${
-                                    ativo ? classeAtivo : classeInativo
+                                key={categoria.id}
+                                type="button"
+                                onClick={() =>
+                                    setCategoriaAtiva(categoria.name)
+                                }
+                                className={`min-w-[150px] px-6 py-3 rounded-full text-sm font-bold transition-all duration-300 ${
+                                    ativo
+                                        ? "bg-[#C8A92F] text-white shadow-lg scale-105"
+                                        : "bg-[#C8A92F] text-white hover:scale-105 hover:brightness-110 shadow-md"
                                 }`}
                             >
-                                {cat.categoria}
+                                {categoria.name}
                             </button>
                         );
                     })}

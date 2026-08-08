@@ -170,10 +170,17 @@ export default function Footer() {
                             </Link>
 
                             <Link
-                                href="/fundadoras"
+                                href="/poemas"
                                 className="hover:text-[#D4AF37] transition"
                             >
-                                Fundadoras
+                                Poemas
+                            </Link>
+
+                            <Link
+                                href="/assessorias"
+                                className="hover:text-[#D4AF37] transition"
+                            >
+                                Assessorias
                             </Link>
 
                             <Link

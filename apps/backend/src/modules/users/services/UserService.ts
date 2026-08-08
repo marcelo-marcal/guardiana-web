@@ -2,8 +2,7 @@
 // IMPORTS
 // ================================
 import bcrypt from "bcryptjs";
-import { UserRole, UserStatus, type Prisma } from "@prisma/client";
-import { prisma } from "../../../shared/database/prisma.js";
+import { prisma, UserRole, UserStatus, type Prisma } from "../../../shared/database/prisma.js";
 import type { CreateUserDTO } from "../dto/create-user.dto.js";
 import type { UpdateProfileDTO } from "../dto/update-profile.dto.js";
 
@@ -115,6 +114,124 @@ export class UserService {
     }
 
     // ================================
+    // LISTAR TODOS OS USUÁRIOS
+    // Admin/SuperAdmin
+    // ================================
+    async listAllUsers() {
+        return prisma.user.findMany({
+            orderBy: {
+                createdAt: "desc",
+            },
+            select: this.publicUserSelect(),
+        });
+    }
+
+    // ================================
+    // CRIAR QUALQUER USUÁRIO (ADMIN)
+    // ================================
+    async adminCreateUser(actorRole: UserRole, data: CreateUserDTO & { role: UserRole }) {
+        const isActorSuper = String(actorRole) === "SUPER_ADMIN";
+        const isNewRoleSuper = String(data.role) === "SUPER_ADMIN";
+
+        if (isNewRoleSuper && !isActorSuper) {
+            throw new Error("Apenas um SUPER_ADMIN pode criar outros SUPER_ADMINS.");
+        }
+
+        const existingUser = await prisma.user.findUnique({
+            where: { email: data.email },
+        });
+
+        if (existingUser) {
+            throw new Error("Já existe um usuário com este e-mail.");
+        }
+
+        const passwordHash = await bcrypt.hash(data.password, 10);
+
+        return prisma.user.create({
+            data: {
+                name: data.name,
+                email: data.email,
+                passwordHash,
+                role: data.role,
+                status: UserStatus.ACTIVE,
+                avatarUrl: data.avatarUrl ?? null,
+            },
+            select: this.publicUserSelect(),
+        });
+    }
+
+    // ================================
+    // ATUALIZAR QUALQUER USUÁRIO (ADMIN)
+    // ================================
+    async adminUpdateUser(actorRole: UserRole, userId: string, data: UpdateProfileDTO & { role?: UserRole }) {
+        const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+
+        if (!targetUser) {
+            throw new Error("Usuário não encontrado.");
+        }
+
+        const isActorSuper = String(actorRole) === "SUPER_ADMIN";
+        const isTargetSuper = String(targetUser.role) === "SUPER_ADMIN";
+        const isNewRoleSuper = String(data.role) === "SUPER_ADMIN";
+
+        // Se o alvo é SUPER_ADMIN, o ator PRECISA ser SUPER_ADMIN
+        if (isTargetSuper && !isActorSuper) {
+            throw new Error("Você não tem permissão para alterar um usuário SUPER_ADMIN.");
+        }
+
+        // Se quer promover para SUPER_ADMIN, o ator PRECISA ser SUPER_ADMIN
+        if (isNewRoleSuper && !isActorSuper) {
+            throw new Error("Você não tem permissão para promover usuários a SUPER_ADMIN.");
+        }
+
+        const updateData: Prisma.UserUpdateInput = {};
+
+        if (data.name !== undefined) updateData.name = data.name;
+        if (data.email !== undefined) {
+            const existingUser = await prisma.user.findUnique({
+                where: { email: data.email }
+            });
+            if (existingUser && existingUser.id !== userId) {
+                throw new Error("E-mail já está em uso.");
+            }
+            updateData.email = data.email;
+        }
+        if (data.role !== undefined) updateData.role = data.role;
+        if (data.avatarUrl !== undefined) updateData.avatarUrl = data.avatarUrl;
+        if (data.password) {
+            updateData.passwordHash = await bcrypt.hash(data.password, 10);
+        }
+
+        return prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+            select: this.publicUserSelect(),
+        });
+    }
+
+    // ================================
+    // DELETAR USUÁRIO
+    // ================================
+    async deleteUser(actorRole: UserRole, userId: string) {
+        const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+
+        if (!targetUser) {
+            throw new Error("Usuário não encontrado.");
+        }
+
+        const isActorSuper = String(actorRole) === "SUPER_ADMIN";
+        const isTargetSuper = String(targetUser.role) === "SUPER_ADMIN";
+
+        if (isTargetSuper && !isActorSuper) {
+            throw new Error("Você não tem permissão para remover um usuário SUPER_ADMIN.");
+        }
+
+        return prisma.user.delete({
+            where: { id: userId },
+        });
+    }
+
+    // ================================
     // CAMPOS PÚBLICOS DO USUÁRIO
     // Nunca retorna passwordHash
     // ================================
@@ -128,6 +245,8 @@ export class UserService {
             avatarUrl: true,
             bio: true,
             literaryInterests: true,
+            lastLoginAt: true,
+            lastActivityAt: true,
             createdAt: true,
             updatedAt: true,
         };
