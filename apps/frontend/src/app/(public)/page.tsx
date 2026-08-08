@@ -31,11 +31,12 @@ export default function Home() {
         if ("scrollRestoration" in window.history) {
             window.history.scrollRestoration = "manual";
         }
+
         window.scrollTo(0, 0);
     }, []);
 
     return (
-        <main className="bg-[#F7F7F7] dark:bg-[#020617] transition-colors duration-300">
+        <main className="bg-[#F7F7F7] transition-colors duration-300 dark:bg-[#020617]">
             <Hero />
             <Sobre />
             <Livros />
